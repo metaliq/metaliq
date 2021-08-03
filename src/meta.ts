@@ -3,7 +3,9 @@ import { Policy } from "./policy"
 /**
  * Meta-structure of Type in optional Parent with optional Update processes.
  */
-export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
+export type Meta<T, P = any> = MetaItems<T, P> & Meta$<T, P> & MetaFields<T>
+
+export type MetaItems<T, P> = T extends Array<infer I> ? Array<Meta<I, P>> : never
 
 /**
  * Mapped fields part of the meta-structure of an object type.
@@ -46,6 +48,7 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
   fields?: {
     [K in FieldKey<T>]?: MetaSpec<T[K], T>
   }
+  items?: T extends Array<infer I> ? MetaSpec<I> : never
 }
 
 /**
@@ -69,13 +72,19 @@ const MetaProto = {
   }
 }
 
+const MetaListProto = Object.assign([], {
+  toString () {
+    return "An array meta"
+  }
+})
+
 /**
  * Create a Meta object with the given spec, value and optional process map, parent and key.
  */
 export function metafy <T, P = any> (
   spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>
 ): Meta<T, P> {
-  const proto = Object.create(MetaProto)
+  const proto = Array.isArray(value) ? Object.create(MetaListProto) : Object.create(MetaProto)
   const meta: Meta<T, P> = <unknown>Object.assign(proto, {
     $: {
       parent,
@@ -98,6 +107,11 @@ export function metafy <T, P = any> (
     Object.assign(meta, { [key]: metafy(fieldSpec, fieldValue, meta, key) })
     const metaFields = meta as MetaFields<T>
     metaFields[key] = metafy(fieldSpec, fieldValue, meta, key)
+  }
+  if (Array.isArray(value) && typeof spec.items === "object") {
+    for (const item of value) {
+      meta.push(<never>metafy(spec.items, item, parent, key))
+    }
   }
 
   return meta
