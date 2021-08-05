@@ -30,9 +30,14 @@ export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | View<T>>): View
 
 export const fieldView = <T>(fieldKey: FieldKey<T>): View<T> =>
   meta => {
-    const field = meta[fieldKey]
-    const view = field.$.spec.view || validatedInput
-    return view(field)
+    const fieldValue = meta[fieldKey]
+    if (Array.isArray(fieldValue)) {
+      const view = fieldValue.$.spec.items?.view || validatedInput
+      return fieldValue.map(view)
+    } else {
+      const view = fieldValue.$.spec.view || validatedInput
+      return view(fieldValue)
+    }
   }
 
 export const validatedInput: View<any> = meta => html`

@@ -1,4 +1,4 @@
-import { initMetaState, Meta, fieldKeys } from "../../meta"
+import { initMetaState, Meta, MetaArray, fieldKeys } from "../../meta"
 
 export interface ValidationSpecification<T, P> {
   validator?: Validator<T, P>
@@ -71,7 +71,15 @@ export function validateAll<T extends {}> (meta: Meta<T>) {
   if (error) result.push(meta)
   const keys = fieldKeys(meta.$.spec)
   for (const key of keys) {
-    const childErrors = validateAll(meta[key])
+    const sub = meta[key]
+    let childErrors: Array<Meta<any>>
+    if (Array.isArray(sub)) {
+      const subArr = sub as MetaArray<any>
+      childErrors = subArr.flatMap(validateAll)
+    } else {
+      const subMeta = sub as Meta<any>
+      childErrors = validateAll(subMeta)
+    }
     result.splice(result.length, 0, ...childErrors)
   }
   meta.$.state.allErrors = result
