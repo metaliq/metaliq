@@ -3,16 +3,20 @@ import { Policy } from "./policy"
 /**
  * Meta-structure of Type in optional Parent with optional Update processes.
  */
-export type Meta<T, P = any> = MetaItems<T, P> & Meta$<T, P> & MetaFields<T>
-
-export type MetaItems<T, P> = T extends Array<infer I> ? Array<Meta<I, P>> : never
+export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
 
 /**
  * Mapped fields part of the meta-structure of an object type.
  */
 export type MetaFields<T> = {
-  [K in FieldKey<T>]: Meta<T[K], T>
+  [K in FieldKey<T>]: MetaField<T, K>
 }
+
+export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
+  ? MetaArray<I, T>
+  : Meta<T[K], T>
+
+export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
 
 /**
  * Dollar property containing additional info.
@@ -72,20 +76,36 @@ const MetaProto = {
   }
 }
 
-const MetaListProto = Object.assign([], {
-  toString () {
-    return "An array meta"
-  }
-})
-
 /**
- * Create a Meta object with the given spec, value and optional process map, parent and key.
+ * Create a Meta object with the given spec, value and optional parent and key.
  */
 export function metafy <T, P = any> (
   spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>
 ): Meta<T, P> {
-  const proto = Array.isArray(value) ? Object.create(MetaListProto) : Object.create(MetaProto)
-  const meta: Meta<T, P> = <unknown>Object.assign(proto, {
+  const m$ = meta$(spec, value, parent, key)
+  const proto = Object.create(MetaProto)
+  const meta: Meta<T, P> = <unknown>Object.assign(proto, m$) as Meta<T, P>
+
+  for (const maker of metaStateMakers) {
+    Object.assign(meta.$.state, maker(value, spec, parent, key))
+  }
+
+  const fields = fieldKeys(spec)
+  for (const fieldKey of fields) {
+    const fieldValue = value?.[fieldKey]
+    metaset(meta, fieldKey, fieldValue)
+  }
+
+  return meta
+}
+
+/**
+ * Create a Meta$ for the given spec, value and optional parent and key.
+ */
+export function meta$ <T, P> (
+  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>
+): Meta$<T, P> {
+  return {
     $: {
       parent,
       key,
@@ -94,27 +114,7 @@ export function metafy <T, P = any> (
       value,
       set: (val: T) => metaset(parent, key, <any>val as P[FieldKey<P>])
     }
-  }) as Meta<T, P>
-
-  for (const maker of metaStateMakers) {
-    Object.assign(meta.$.state, maker(value, spec, parent, key))
   }
-
-  const fields = fieldKeys(spec)
-  for (const key of fields) {
-    const fieldValue = value?.[key]
-    const fieldSpec = spec.fields[key]
-    Object.assign(meta, { [key]: metafy(fieldSpec, fieldValue, meta, key) })
-    const metaFields = meta as MetaFields<T>
-    metaFields[key] = metafy(fieldSpec, fieldValue, meta, key)
-  }
-  if (Array.isArray(value) && typeof spec.items === "object") {
-    for (const item of value) {
-      meta.push(<never>metafy(spec.items, item, parent, key))
-    }
-  }
-
-  return meta
 }
 
 /**
@@ -123,9 +123,15 @@ export function metafy <T, P = any> (
 export function metaset <P, K extends FieldKey<P>> (
   parent: Meta<P>, key: K, value: P[K]
 ) {
-  const childSpec = parent.$.spec.fields[key] as MetaSpec<P[K], P>
-  const parentFields = parent as MetaFields<P>
-  parentFields[key] = metafy(childSpec, value, parent)
+  const fieldSpec = parent.$.spec.fields[key] as MetaSpec<P[K], P>
+  if (Array.isArray(value) && fieldSpec.items) {
+    const arr$ = meta$(fieldSpec, value, parent, key)
+    const arr = value.map(val => metafy(fieldSpec.items, val, parent, key))
+    const metaArr = Object.assign(arr, arr$)
+    Object.assign(parent, { [key]: metaArr })
+  } else {
+    Object.assign(parent, { [key]: metafy(fieldSpec, value, parent, key) })
+  }
 }
 
 /**
@@ -150,13 +156,19 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
 export function commitMeta<T> (meta: Meta<T>) {
   const keys = fieldKeys(meta.$.spec)
   for (const key of keys) {
-    const subMeta = meta[key]
-    commitMeta(subMeta)
-    if (v(meta) === null && v(subMeta) !== null) {
-      meta.$.value = <T>{} // Initialise previously null meta value when descendant values present
-    }
-    if (v(meta) !== null && typeof v(subMeta) !== "object") {
-      meta.$.value[key] = v(subMeta) as T[FieldKey<T>]
+    const sub = meta[key]
+    if (Array.isArray(sub)) {
+      const subArr = sub as MetaArray<any>
+      console.warn(`Meta array of length ${subArr.length} not committed`) // TODO: Commit meta arrays back to underlying value
+    } else {
+      const subMeta = sub as Meta<any>
+      commitMeta(subMeta)
+      if (v(meta) === null && v(subMeta) !== null) {
+        meta.$.value = <T>{} // Initialise previously null meta value when descendant values present
+      }
+      if (v(meta) !== null && typeof v(subMeta) !== "object") {
+        meta.$.value[key] = v(subMeta) as T[FieldKey<T>]
+      }
     }
   }
 }
@@ -172,8 +184,14 @@ export function applyToMeta<T> (meta: Meta<T>, value: T) {
   if (meta.$.spec.fields) { // Object value - recurse
     const keys = fieldKeys(meta.$.spec)
     for (const key of keys) {
-      const subMeta = meta[key]
-      applyToMeta(subMeta, value[key])
+      const sub = meta[key]
+      if (Array.isArray(value[key])) {
+        const subArr = sub as MetaArray<any>
+        console.warn(`Array of length ${subArr.length} not applied to meta`) // TODO: Commit meta arrays back to underlying value
+      } else {
+        const subMeta = sub as Meta<any>
+        applyToMeta(subMeta, value[key])
+      }
     }
   } else {
     meta.$.value = value

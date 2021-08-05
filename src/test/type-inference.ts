@@ -2,6 +2,7 @@ import { FieldKey, Meta, metafy, MetaSpec } from "../meta"
 
 import { TerminologySpec } from "../policies/terminology/terminology"
 import { AppSpecification } from "../policies/transition/app"
+import { minLength } from "../policies/validation/constraints"
 
 /**
  * A collection of tests for type inference.
@@ -58,3 +59,50 @@ export function procTest () {
     metafy(testSpec, <TestType>testAppSpec.init, null)
   console.log(meta.c.$.value)
 }
+
+type Route = {
+  name: string
+  waypoints: Waypoint[]
+}
+
+type Waypoint = {
+  lat: number
+  long: number
+}
+
+const waypointSpec: MetaSpec<Waypoint> = {
+  fields: {
+    lat: {
+      label: "Latitude"
+    },
+    long: {
+      label: "Longitude"
+    }
+  }
+}
+
+const routeSpec: MetaSpec<Route> = {
+  fields: {
+    name: {
+      label: "Name",
+      validator: minLength(3)
+    },
+    waypoints: {
+      label: "Waypoints",
+      items: waypointSpec
+    }
+  }
+}
+
+const waypointMeta = metafy(routeSpec, {
+  name: "Trip",
+  waypoints: [
+    { lat: 12.34, long: 56.78 },
+    { lat: 98.76, long: 54.32 }
+  ]
+})
+
+console.log(waypointMeta.waypoints.$.value)
+
+const wpMeta = waypointMeta.waypoints[0]
+console.log(wpMeta)
