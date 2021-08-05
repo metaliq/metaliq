@@ -39,13 +39,6 @@ export type Meta$<T, P = any> = {
 }
 
 /**
- * Associated meta-processes.
- */
-export type MetaUpdate<T> = (meta: Meta<T>, event?: Event) => any
-export type MetaUpdateMaker<T> = (...params: any[]) => MetaUpdate<T>
-export type MetaUpdateMap<T> = { [index: string]: MetaUpdate<T> }
-
-/**
  * Specification for a given Type, optional Parent and set of Update processes.
  */
 export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
@@ -72,7 +65,18 @@ export function initMetaState (maker: MetaStateMaker<any>) {
 
 const MetaProto = {
   toString () {
-    return this?.$?.value?.toString() || this
+    const value = this?.$?.value
+    if (["object", "undefined"].includes(typeof value)) {
+      let path = this.$?.key ?? "Meta"
+      let parent = this.$?.parent
+      while (parent) {
+        path = `${parent?.$?.key ?? "Meta"}.${path}`
+        parent = parent.$?.parent
+      }
+      return `${path}`
+    } else {
+      return value?.toString() || this
+    }
   }
 }
 

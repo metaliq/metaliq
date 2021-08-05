@@ -23,15 +23,6 @@ declare module "../../policy" {
   }
 }
 
-export type Process<T> = (data: T, channels?: ChannelMap) => (event?: Event) => any
-export type ProcessMap<T> = { [index: string]: Process<T> }
-
-export type MetaProcess<T, P = any> = (meta: Meta<T, P>, event?: Event) => any
-export interface MetaProcessMap<T> { [index: string]: MetaProcess<T> }
-
-export type Channel = (data: any) => any
-export type ChannelMap = { [index: string]: Channel }
-
 export type Init<T> = T | (() => T) | (() => Promise<T>)
 export type Review = (meta: Meta<any>) => any
 
@@ -46,13 +37,32 @@ export async function run (spec: MetaSpec<any>) {
   return meta
 }
 
+export type MetaProcess<T, P = any> = (meta: Meta<T, P>, event?: Event) => any
+export interface MetaProcessMap<T, P = any> { [index: string]: MetaProcess<T, P> }
+
+// TODO: Add channel support to processes
+export type Channel = (data: any) => any
+export type ChannelMap = { [index: string]: Channel }
+
+/**
+ * Types for mapping basic processes to MetaProcesses.
+ */
+export type Process<T> = (data: T, event?: Event) => any
+export type ProcessMap<T> = { [index: string]: Process<T> }
+
 /**
  * For a given function of (T, event?), return a MetaProcess which is a function of (Meta<T>, event?)
  * that applies any change to the underlying T to the Meta.
  */
-export const metaProc = <T, P = any> (proc: (t: T, event?: Event) => any): MetaProcess<T, P> =>
+export const metaProc = <T, P = any> (proc: Process<T>): MetaProcess<T, P> =>
   (meta, event) => {
     const result = proc(v(meta))
     applyToMeta(meta, v(meta))
     return result
   }
+
+export const metaProcMap = <T, P = any> (procMap: ProcessMap<T>): MetaProcessMap<T, P> => {
+  const result: MetaProcessMap<T, P> = {}
+  Object.keys(procMap).forEach(key => Object.assign(result, { [key]: metaProc(procMap[key]) }))
+  return result
+}
