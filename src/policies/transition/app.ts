@@ -1,4 +1,4 @@
-import { Meta, metafy, MetaSpec } from "../../meta"
+import { applyToMeta, Meta, metafy, MetaSpec, v } from "../../meta"
 import { start, Up } from "./up"
 import { renderPage } from "../presentation/view"
 
@@ -26,7 +26,7 @@ declare module "../../policy" {
 export type Process<T> = (data: T, channels?: ChannelMap) => (event?: Event) => any
 export type ProcessMap<T> = { [index: string]: Process<T> }
 
-export type MetaProcess<T> = (meta: Meta<T>, channels?: ChannelMap) => (event?: Event) => any
+export type MetaProcess<T, P = any> = (meta: Meta<T, P>, event?: Event) => any
 export interface MetaProcessMap<T> { [index: string]: MetaProcess<T> }
 
 export type Channel = (data: any) => any
@@ -45,3 +45,14 @@ export async function run (spec: MetaSpec<any>) {
   await start({ review })
   return meta
 }
+
+/**
+ * For a given function of (T, event?), return a MetaProcess which is a function of (Meta<T>, event?)
+ * that applies any change to the underlying T to the Meta.
+ */
+export const metaProc = <T, P = any> (proc: (t: T, event?: Event) => any): MetaProcess<T, P> =>
+  (meta, event) => {
+    const result = proc(v(meta))
+    applyToMeta(meta, v(meta))
+    return result
+  }

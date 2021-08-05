@@ -199,16 +199,6 @@ export function applyToMeta<T> (meta: Meta<T>, value: T) {
 }
 
 /**
- * For a given function of T, return a function of Meta<T>
- * which applies any change to the underlying T to the Meta.
- */
-export const morph = <T> (proc: (t: T) => any) => (meta: Meta<T>) => {
-  const result = proc(v(meta))
-  applyToMeta(meta, v(meta))
-  return result
-}
-
-/**
  * Replace the given meta with a new one made from the given value.
  */
 export function replaceMeta <T, P = any> (meta: Meta<T, P>, value: T) {
