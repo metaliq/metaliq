@@ -63,20 +63,34 @@ export function initMetaState (maker: MetaStateMaker<any>) {
   metaStateMakers.push(maker)
 }
 
+/**
+ * Return a path string for the given meta,
+ * with the given root meta name which defaults to "Meta".
+ */
+function metaPath (meta: Meta$<any>, root = "Meta"): string {
+  const value = meta.$.value
+  if (["object", "undefined"].includes(typeof value)) {
+    let path = meta.$.key ?? root
+    let parent = meta.$.parent
+    while (parent) {
+      path = `${parent.$.key ?? root}.${path}`
+      parent = parent.$.parent
+    }
+    return `${path}`
+  } else {
+    return value?.toString() || root
+  }
+}
+
 const MetaProto = {
   toString () {
-    const value = this?.$?.value
-    if (["object", "undefined"].includes(typeof value)) {
-      let path = this.$?.key ?? "Meta"
-      let parent = this.$?.parent
-      while (parent) {
-        path = `${parent?.$?.key ?? "Meta"}.${path}`
-        parent = parent.$?.parent
-      }
-      return `${path}`
-    } else {
-      return value?.toString() || this
-    }
+    return metaPath(this)
+  }
+}
+
+class MetaArrayProto extends Array {
+  toString () {
+    return metaPath(<unknown> this as Meta$<any>)
   }
 }
 
@@ -131,7 +145,7 @@ export function metaset <P, K extends FieldKey<P>> (
   if (Array.isArray(value) && fieldSpec.items) {
     const arr$ = meta$(fieldSpec, value, parent, key)
     const arr = value.map(val => metafy(fieldSpec.items, val, parent, key))
-    const metaArr = Object.assign(arr, arr$)
+    const metaArr = Object.assign(new MetaArrayProto(), arr, arr$)
     Object.assign(parent, { [key]: metaArr })
   } else {
     Object.assign(parent, { [key]: metafy(fieldSpec, value, parent, key) })
