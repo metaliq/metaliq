@@ -112,7 +112,7 @@ export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
   </div>
 `
 
-export const button = <T>(click: Update<T>): MetaView<T> => meta => html`
+export const button = <T>(click: Update<Meta<T>>): MetaView<T> => meta => html`
   <button @click=${up(click, meta)}>Click</button> 
 `
 

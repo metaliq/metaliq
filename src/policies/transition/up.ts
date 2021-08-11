@@ -162,7 +162,7 @@ export type LogEntry<T> = {
  * up(bootstrap, model)()
  * ```
  */
-export let up: Up<any>
+export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (event?: Event) => any
 
 /**
  * Initiate an `up` function for the given context.
