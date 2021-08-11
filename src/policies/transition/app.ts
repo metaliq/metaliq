@@ -37,18 +37,18 @@ export async function run (spec: MetaSpec<any>) {
   return meta
 }
 
+/**
+ * Processes take the underlying data and MetaProcesses take a Meta of that data.
+ */
+export type Process<T> = (data: T, event?: Event) => any
+export type ProcessMap<T> = { [index: string]: Process<T> }
+
 export type MetaProcess<T, P = any> = (meta: Meta<T, P>, event?: Event) => any
 export interface MetaProcessMap<T, P = any> { [index: string]: MetaProcess<T, P> }
 
 // TODO: Add channel support to processes
 export type Channel = (data: any) => any
 export type ChannelMap = { [index: string]: Channel }
-
-/**
- * Types for mapping basic processes to MetaProcesses.
- */
-export type Process<T> = (data: T, event?: Event) => any
-export type ProcessMap<T> = { [index: string]: Process<T> }
 
 /**
  * For a given function of (T, event?), return a MetaProcess which is a function of (Meta<T>, event?)

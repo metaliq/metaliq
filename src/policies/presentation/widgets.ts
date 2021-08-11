@@ -1,25 +1,25 @@
 import { html } from "lit"
-import { up } from "../transition/up"
-import { FieldKey, fieldKeys, Meta, Meta$, MetaUpdate } from "../../meta"
+import { up, Update } from "../transition/up"
+import { FieldKey, fieldKeys, Meta, Meta$ } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
-import { ViewResult, View } from "./view"
+import { MetaView, ViewResult } from "./view"
 import { Condition } from "../deduction/deduction"
 
 export const fieldClasses = (span: number = 12) => `block text-sm font-medium text-gray-700 col-span-${span}`
 export const inputClasses = "mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border-gray-300 rounded-md"
 export const errorClasses = (meta: Meta$<any>) => meta.$.state.error ? " bg-red-100 border-red-300" : ""
 
-export const namedFieldViews = <T>(fields: Array<FieldKey<T>>): View<T> =>
+export const namedFieldViews = <T>(fields: Array<FieldKey<T>>): MetaView<T> =>
   meta => grid(
     fields.map(fieldViewForMeta(meta))
   )
 
-export const allFieldViews: View<any> = meta => grid(
+export const allFieldViews: MetaView<any> = meta => grid(
   fieldKeys(meta.$.spec).map(fieldViewForMeta(meta))
 )
 
-export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | View<T>>): View<T, P> =>
+export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | MetaView<T>>): MetaView<T, P> =>
   meta => grid(
     items.map(item => {
       if (typeof item === "string") {
@@ -28,7 +28,7 @@ export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | View<T>>): View
     })
   )
 
-export const fieldView = <T>(fieldKey: FieldKey<T>): View<T> =>
+export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   meta => {
     const fieldValue = meta[fieldKey]
     if (Array.isArray(fieldValue)) {
@@ -40,7 +40,7 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): View<T> =>
     }
   }
 
-export const validatedInput: View<any> = meta => html`
+export const validatedInput: MetaView<any> = meta => html`
   <label class=${fieldClasses()}>
     ${meta.$.spec.label}
     <input type="text"
@@ -65,7 +65,7 @@ function validateInput (meta: Meta<any>, event: Event) {
   validate(meta)
 }
 
-export const errorsBlock: View<any> = meta => html`
+export const errorsBlock: MetaView<any> = meta => html`
   <div class="text-red-500">
     ${meta.$.state.allErrors.map(errorMeta => html`
       <div class="font-bold">${labelPath(meta, errorMeta)}</div>
@@ -80,7 +80,7 @@ const grid = (content: ViewResult) => html`
   </div>
 `
 
-export const section = <T>(content: View<T>): View<T> => meta => html`
+export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
   <div class="mx-4 mt-4 md:mt-0 first:mt-4 col-span-12">
     <div class="md:grid md:grid-cols-3 md:gap-6">
       <div class="md:col-span-1">
@@ -112,13 +112,13 @@ export const section = <T>(content: View<T>): View<T> => meta => html`
   </div>
 `
 
-export const button = <T>(click: MetaUpdate<T>): View<T> => meta => html`
+export const button = <T>(click: Update<T>): MetaView<T> => meta => html`
   <button @click=${up(click, meta)}>Click</button> 
 `
 
 export const ifThen = <T, P = any>(
   condition: Condition<T, P, boolean>,
-  thenView: View<T>,
-  elseView?: View<T>
-): View<T, P> =>
+  thenView: MetaView<T>,
+  elseView?: MetaView<T>
+): MetaView<T, P> =>
     meta => condition(meta) ? thenView(meta) : elseView?.(meta) ?? ""

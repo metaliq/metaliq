@@ -77,6 +77,8 @@ function metaPath (meta: Meta$<any>, root = "Meta"): string {
       parent = parent.$.parent
     }
     return `${path}`
+  } else if (typeof value === "boolean") {
+    return value ? "true" : "" // Allow coercion of falsy values
   } else {
     return value?.toString() || root
   }
