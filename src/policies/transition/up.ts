@@ -31,12 +31,12 @@
  * or as a tuple of the form [update, data].
  * Any other update result type will be ignored, hence the return type `any`.
  */
-export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (event?: Event) => any
+export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (event?: any) => any
 
 /**
  * A function that updates data, optionally accepting the event that triggered it.
  */
-export type Update<T> = (data?: T, event?: Event) => any
+export type Update<T> = (data?: T, event?: any) => any
 
 /**
  * Options for defining subsequent browser processing of the event after being handled by `up`.
@@ -127,7 +127,7 @@ export type LogEntry<T> = {
   /**
    * Event that triggered the update
    */
-  event?: Event
+  event?: any
 }
 
 /**
@@ -162,7 +162,7 @@ export type LogEntry<T> = {
  * up(bootstrap, model)()
  * ```
  */
-export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (event?: Event) => any
+export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (event?: any) => any
 
 /**
  * Initiate an `up` function for the given context.
