@@ -51,9 +51,7 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
 /**
  * Provider of initial meta state, to be implemented in policy modules.
  */
-export type MetaStateMaker<T, P = any> = (
-  value?: T, spec?: MetaSpec<T, P>, parent?: P, key?: keyof P
-) => Policy.State<T, P>
+export type MetaStateMaker<T, P = any> = (meta: Meta<T, P>) => Policy.State<T, P>
 
 /**
  * Register of modular providers for initial field properties.
@@ -106,14 +104,14 @@ export function metafy <T, P = any> (
   const proto = Object.create(MetaProto)
   const meta: Meta<T, P> = <unknown>Object.assign(proto, m$) as Meta<T, P>
 
-  for (const maker of metaStateMakers) {
-    Object.assign(meta.$.state, maker(value, spec, parent, key))
-  }
-
   const fields = fieldKeys(spec)
   for (const fieldKey of fields) {
     const fieldValue = value?.[fieldKey]
     metaset(meta, fieldKey, fieldValue)
+  }
+
+  for (const maker of metaStateMakers) {
+    Object.assign(meta.$.state, maker(meta))
   }
 
   return meta
