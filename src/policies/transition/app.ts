@@ -1,5 +1,5 @@
 import { applyToMeta, Meta, metafy, MetaSpec, v } from "../../meta"
-import { start, Up } from "./up"
+import { startUp, Up } from "./up"
 import { renderPage } from "../presentation/view"
 
 export interface AppSpecification<T> {
@@ -33,7 +33,7 @@ export async function run (spec: MetaSpec<any>) {
   const review = () => {
     (spec.review || renderPage)(meta)
   }
-  await start({ review })
+  await startUp({ review })
   return meta
 }
 
@@ -45,10 +45,6 @@ export type ProcessMap<T> = { [index: string]: Process<T> }
 
 export type MetaProcess<T, P = any> = (meta: Meta<T, P>, event?: Event) => any
 export interface MetaProcessMap<T, P = any> { [index: string]: MetaProcess<T, P> }
-
-// TODO: Add channel support to processes
-export type Channel = (data: any) => any
-export type ChannelMap = { [index: string]: Channel }
 
 /**
  * For a given function of (T, event?), return a MetaProcess which is a function of (Meta<T>, event?)

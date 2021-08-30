@@ -7,13 +7,13 @@
  *      /_/
  *```
  *
- * A simple, local/global, framework-agnostic, event-driven,
- * reactive application state mechanism.
+ * A simple, reactive, framework-agnostic, local/global,
+ * message-driven application state mechanism.
  *
  */
 
 /**
- * A function that returns an event handler for the given update function and data,
+ * A function that returns a message or event handler for the given update function and data,
  * that will trigger the `review` function of its associated context at well-defined points.
  * These are:
  *
@@ -31,15 +31,15 @@
  * or as a tuple of the form [update, data].
  * Any other update result type will be ignored, hence the return type `any`.
  */
-export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (event?: any) => any
+export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => any
 
 /**
- * A function that updates data, optionally accepting the event that triggered it.
+ * A function that updates data, optionally accepting a message such as the event that triggered it.
  */
-export type Update<T> = (data?: T, event?: any) => any
+export type Update<T> = (data?: T, message?: any) => any
 
 /**
- * Options for defining subsequent browser processing of the event after being handled by `up`.
+ * Options for defining subsequent processing of a browser event after being handled by `up`.
  * Options default to false, i.e. the case where everything is handled within update functions.
  */
 export type UpOptions = {
@@ -75,7 +75,7 @@ export type UpContext = {
    * or `true` to use console.log.
    * If not specified there is no logging.
    */
-  log?: boolean | ((entry: LogEntry<any>) => any)
+  log?: boolean | LogFunction<any>
 
   /**
    * Whether to assign the module level `up` function to this context.
@@ -89,6 +89,8 @@ export type UpContext = {
    */
   init?: Update<any>
 }
+
+export type LogFunction<T> = (entry: LogEntry<T>) => any
 
 /**
  * The values that will be sent to any specified logging function.
@@ -125,9 +127,9 @@ export type LogEntry<T> = {
   data?: T
 
   /**
-   * Event that triggered the update
+   * Message / event that triggered the update
    */
-  event?: any
+  message?: any
 }
 
 /**
@@ -153,7 +155,7 @@ export type LogEntry<T> = {
  *
  * The `up` function can also be called within regular code,
  * but remember to add additional parentheses to trigger the
- * returned event handler.
+ * returned message handler.
  * For example, to run an async load process for an application model,
  * with rendering before (e.g. "Loading...") and after completion,
  * call it with `up` like this:
@@ -162,7 +164,7 @@ export type LogEntry<T> = {
  * up(bootstrap, model)()
  * ```
  */
-export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (event?: any) => any
+export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => any
 
 /**
  * Initiate an `up` function for the given context.
@@ -187,7 +189,7 @@ export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (event
  * })
  *```
  */
-export const start = async (context: UpContext): Promise<Up<any>> => {
+export const startUp = async (context: UpContext): Promise<Up<any>> => {
   const log = context.log === true
     ? console.log
     : typeof context.log === "function"
@@ -196,9 +198,9 @@ export const start = async (context: UpContext): Promise<Up<any>> => {
 
   const started: Up<any> = (
     update, data, { doDefault = false, propagate = false, isChained = false } = {}
-  ) => async (event) => {
-    doDefault || event?.preventDefault?.()
-    propagate || event?.stopPropagation?.()
+  ) => async (message) => {
+    doDefault || message?.preventDefault?.()
+    propagate || message?.stopPropagation?.()
 
     const entry: LogEntry<any> = {
       name: update?.name,
@@ -207,14 +209,14 @@ export const start = async (context: UpContext): Promise<Up<any>> => {
       isChained,
       update,
       data,
-      event
+      message
     }
 
     let result: any
     try {
       // Log and perform update
       await log(entry)
-      result = update?.(data, event)
+      result = update?.(data, message)
     } catch (e) {
       // Catch any update error, review (for example to display error state) and rethrow to halt the chain
       await context.review?.()
