@@ -1,5 +1,5 @@
 /**
- * The Policy namespace holds the interfaces for system Specifications and State.
+ * The Policy namespace holds the interfaces for system Configuration, Specifications and extended State.
  * These interfaces are extended within policy modules in order to build an overall policy
  * that encompasses their system capablities.
  *
@@ -12,6 +12,11 @@
  */
 
 export declare namespace Policy {
+
+  export interface Configuration {
+    /** Project name **/
+    name: string
+  }
 
   export interface Specification<T, P = any> {
     this?: Specification<T, P> // Self reference for easy inclusion of generic type parameters when merging
