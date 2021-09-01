@@ -1,4 +1,4 @@
-import { applyToMeta, Meta, metafy, MetaSpec, v } from "../../meta"
+import { Meta, metafy, MetaSpec } from "../../meta"
 import { startUp, Up } from "./up"
 import { renderPage } from "../presentation/view"
 
@@ -35,30 +35,4 @@ export async function run (spec: MetaSpec<any>) {
   }
   await startUp({ review })
   return meta
-}
-
-/**
- * Processes take the underlying data and MetaProcesses take a Meta of that data.
- */
-export type Process<T> = (data: T, event?: Event) => any
-export type ProcessMap<T> = { [index: string]: Process<T> }
-
-export type MetaProcess<T, P = any> = (meta: Meta<T, P>, event?: Event) => any
-export interface MetaProcessMap<T, P = any> { [index: string]: MetaProcess<T, P> }
-
-/**
- * For a given function of (T, event?), return a MetaProcess which is a function of (Meta<T>, event?)
- * that applies any change to the underlying T to the Meta.
- */
-export const metaProc = <T, P = any> (proc: Process<T>): MetaProcess<T, P> =>
-  (meta, event) => {
-    const result = proc(v(meta))
-    applyToMeta(meta, v(meta))
-    return result
-  }
-
-export const metaProcMap = <T, P = any> (procMap: ProcessMap<T>): MetaProcessMap<T, P> => {
-  const result: MetaProcessMap<T, P> = {}
-  Object.keys(procMap).forEach(key => Object.assign(result, { [key]: metaProc(procMap[key]) }))
-  return result
 }

@@ -217,6 +217,40 @@ export function applyToMeta<T> (meta: Meta<T>, value: T) {
 }
 
 /**
+ * A function that takes a reference to a data structure and an optional message and potentially returns a result.
+ * The convention is that the provided data may be changed, so this is a "morphing" function rather than a pure one.
+ */
+export type Morph<T, M = any, R = any> = (data: T, message?: M) => R
+
+/**
+ * A morph function for a meta type.
+ */
+export type MetaMorph<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?: M) => R
+
+/**
+ * Return a meta morph function for the given morph.
+ */
+export const metaMorph = <T, M = any, R = any> (morph: Morph<T, M, R>): MetaMorph<T, any, M, R> => (meta, message) => {
+  const result = morph(v(meta))
+  applyToMeta(meta, v(meta))
+  return result
+}
+
+/**
+ * Convenience types and function for converting from a map of morphs to the equivalent map of metamorphs.
+ * Can be useful for defining an interface for a meta system component
+ * and supplying a map of functions for the underlying data.
+ */
+export type MorphMap<T> = { [index: string]: Morph<T> }
+export type MetaMorphMap<T, MM extends MorphMap<T> = {}> = { [K in keyof MM]: MetaMorph<T> }
+
+export const metaMorphMap = <T, MM extends MorphMap<T>> (morphMap: MM): MetaMorphMap<T, MM> => {
+  const result: MetaMorphMap<T> = {}
+  Object.keys(morphMap).forEach(key => Object.assign(result, { [key]: metaMorph(morphMap[key]) }))
+  return result as MetaMorphMap<T, MM>
+}
+
+/**
  * Replace the given meta with a new one made from the given value.
  */
 export function replaceMeta <T, P = any> (meta: Meta<T, P>, value: T) {
