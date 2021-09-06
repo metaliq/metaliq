@@ -38,5 +38,6 @@ export async function run (spec: MetaSpec<any>) {
   if (spec.routes) { // TODO: Recursive search for routes on inner spec?
     initRoutes()
   }
+  Object.assign(window, meta)
   return meta
 }
