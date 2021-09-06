@@ -1,6 +1,6 @@
 import { initMetaState, Meta, MetaArray, fieldKeys } from "../../meta"
 
-export interface ValidationSpecification<T, P> {
+export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
 }
 
@@ -12,7 +12,7 @@ export interface ValidationState {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends ValidationSpecification<T, P> {}
+    interface Specification<T, P> extends ValidationSpec<T, P> {}
 
     interface State<T, P> extends ValidationState {
       this?: State<T, P>

@@ -45,7 +45,9 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
   fields?: {
     [K in FieldKey<T>]?: MetaSpec<T[K], T>
   }
-  items?: T extends Array<infer I> ? MetaSpec<I> : never
+  items?: T extends Array<infer I>
+    ? I extends unknown ? MetaSpec<any> : MetaSpec<I>
+    : never
 }
 
 /**
@@ -231,7 +233,7 @@ export type MetaMorph<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message
  * Return a meta morph function for the given morph.
  */
 export const metaMorph = <T, M = any, R = any> (morph: Morph<T, M, R>): MetaMorph<T, any, M, R> => (meta, message) => {
-  const result = morph(v(meta))
+  const result = morph(v(meta), message)
   applyToMeta(meta, v(meta))
   return result
 }

@@ -1,13 +1,13 @@
 import { render, TemplateResult } from "lit"
 import { Meta } from "../../meta"
 
-export interface ViewSpecification<T, P> {
+export interface PresentationSpec<T, P> {
   view?: MetaView<T, P>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends ViewSpecification<T, P> {}
+    interface Specification<T, P> extends PresentationSpec<T, P> {}
   }
 }
 

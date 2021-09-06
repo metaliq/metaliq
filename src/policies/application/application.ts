@@ -1,8 +1,9 @@
 import { Meta, metafy, MetaSpec } from "../../meta"
-import { startUp, Up } from "./up"
-import { renderPage } from "../presentation/view"
+import { startUp, Up } from "../transition/up"
+import { renderPage } from "../presentation/presentation"
+import { initRoutes } from "../navigation/navigation"
 
-export interface AppSpecification<T> {
+export interface ApplicationSpec<T> {
   init?: Init<T>
   review?: Review
 }
@@ -13,7 +14,7 @@ export interface AppState<T> {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends AppSpecification<T> {
+    interface Specification<T, P> extends ApplicationSpec<T> {
       this?: Specification<T, P>
     }
 
@@ -34,5 +35,8 @@ export async function run (spec: MetaSpec<any>) {
     (spec.review || renderPage)(meta)
   }
   await startUp({ review })
+  if (spec.routes) { // TODO: Recursive search for routes on inner spec?
+    initRoutes()
+  }
   return meta
 }

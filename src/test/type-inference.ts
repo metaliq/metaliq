@@ -1,7 +1,7 @@
 import { FieldKey, Meta, metafy, MetaSpec } from "../meta"
 
 import { TerminologySpec } from "../policies/terminology/terminology"
-import { AppSpecification } from "../policies/transition/app"
+import { ApplicationSpec } from "../policies/application/application"
 import { minLength } from "../policies/validation/constraints"
 
 /**
@@ -37,7 +37,7 @@ const testPresentationSpec: TerminologySpec = {
   label: "Test"
 }
 
-const testAppSpec: AppSpecification<TestType> = {
+const testAppSpec: ApplicationSpec<TestType> = {
   init: {
     a: 1,
     b: 2

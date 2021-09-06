@@ -3,7 +3,7 @@ import { up, Update } from "../transition/up"
 import { FieldKey, fieldKeys, Meta, Meta$ } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
-import { MetaView, ViewResult } from "./view"
+import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
 
 export const fieldClasses = (span: number = 12) => `block text-sm font-medium text-gray-700 col-span-${span}`
