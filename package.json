@@ -12,6 +12,7 @@
   "license": "MIT",
   "description": "MetaliQ - A framework for specification-based meta-programming",
   "devDependencies": {
+    "@types/dedent": "^0.7.0",
     "@typescript-eslint/eslint-plugin": "4",
     "eslint": "7",
     "eslint-config-standard-with-typescript": "^20.0.0",
@@ -25,6 +26,7 @@
     "lit": "^2.0.0-rc.2"
   },
   "dependencies": {
+    "dedent": "^0.7.0",
     "path-to-regexp": "^6.2.0"
   }
 }
