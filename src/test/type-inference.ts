@@ -2,7 +2,7 @@ import { FieldKey, Meta, metafy, MetaSpec } from "../meta"
 
 import { TerminologySpec } from "../policies/terminology/terminology"
 import { ApplicationSpec } from "../policies/application/application"
-import { minLength } from "../policies/validation/constraints"
+import { minLength } from "../policies/validation/constraints/foundation"
 
 /**
  * A collection of tests for type inference.

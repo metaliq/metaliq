@@ -1,13 +1,19 @@
-import { initMetaState, Meta, MetaArray, fieldKeys } from "../../meta"
+import { initMetaState, Meta, MetaArray, fieldKeys, MetaMorph, fromSpec } from "../../meta"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
+  mandatory?: boolean | MetaMorph<T, P, boolean>
+  disabled?: boolean | MetaMorph<T, P, boolean>
+  hidden?: boolean | MetaMorph<T, P, boolean>
 }
 
 export interface ValidationState {
-  visited?: boolean
+  validated?: boolean // Indicates that this field has been visited for validation
   error?: ValidationResult // An error message string or true for an unspecified error,
   allErrors?: Array<Meta<any>>
+  mandatory?: boolean
+  disabled?: boolean
+  hidden?: boolean
 }
 
 declare module "../../policy" {
@@ -37,9 +43,13 @@ export type ValidationResult = string | boolean
  */
 export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
-initMetaState(() => ({
+initMetaState(meta => ({
   error: false, // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
-  visited: false
+  validated: false,
+  // TODO: Update these potentially conditional values from the spec as appropriate, and apply them in validation
+  mandatory: fromSpec(meta, "mandatory"),
+  disabled: fromSpec(meta, "disabled"),
+  hidden: fromSpec(meta, "hidden")
 }))
 
 /**
@@ -57,6 +67,7 @@ export function validate (meta: Meta<any>) {
       meta.$.state.error = false
     }
   }
+  meta.$.state.validated = true
   return meta.$.state.error
 }
 

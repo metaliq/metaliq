@@ -1,14 +1,13 @@
 import { html } from "lit"
+import { live } from "lit/directives/live.js"
+import { ifDefined } from "lit/directives/if-defined.js"
+import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "../transition/up"
-import { FieldKey, fieldKeys, Meta, Meta$ } from "../../meta"
+import { FieldKey, fieldKeys, Meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
-
-export const fieldClasses = (span: number = 12) => `block text-sm font-medium text-gray-700 col-span-${span}`
-export const inputClasses = "mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border-gray-300 rounded-md"
-export const errorClasses = (meta: Meta$<any>) => meta.$.state.error ? " bg-red-100 border-red-300" : ""
 
 export const namedFieldViews = <T>(fields: Array<FieldKey<T>>): MetaView<T> =>
   meta => grid(
@@ -41,11 +40,15 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   }
 
 export const validatedInput: MetaView<any> = meta => html`
-  <label class=${fieldClasses()}>
+  <label class="block text-sm font-medium text-gray-700 col-span-12">
     ${meta.$.spec.label}
     <input type="text"
-      class=${inputClasses + errorClasses(meta)}
-      value=${meta.$.value ?? ""}
+      disabled=${ifDefined(meta.$.state.disabled)}
+      class="mq-input ${classMap({
+        "mq-error": meta.$.state.error,
+        "mq-disabled": meta.$.state.disabled
+      })}"
+      value=${live(meta.$.value ?? "")}
       @blur=${up(validateInput, meta)} />
     ${errorMsg(meta, "mt-2")}
   </label>
@@ -53,7 +56,7 @@ export const validatedInput: MetaView<any> = meta => html`
 
 const fieldViewForMeta = <T>(meta: Meta<T>) => (key: FieldKey<T>) => fieldView(key)(meta)
 
-const errorMsg = (meta: Meta<any>, classes = "") => {
+export const errorMsg = (meta: Meta<any>, classes = "") => {
   const error = meta.$.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
   classes = `block text-red-500 ${classes}`

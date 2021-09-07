@@ -31,13 +31,18 @@ export async function run (spec: MetaSpec<any>) {
   // TODO: Make init recursive (or even move to core metafy? but async better here).
   const data = typeof spec.init === "function" ? await spec.init() : spec.init ?? {}
   const meta = metafy(spec, data)
+
   const review = () => {
     (spec.review || renderPage)(meta)
   }
   await startUp({ review })
+
+  // TODO: Delegate to other policies for startup tasks
+  Object.assign(window, { meta })
+  document.title = spec.label
+  if (spec.path) history.pushState(null, null, spec.path)
   if (spec.routes) { // TODO: Recursive search for routes on inner spec?
     initRoutes()
   }
-  Object.assign(window, meta)
   return meta
 }

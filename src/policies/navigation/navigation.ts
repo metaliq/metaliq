@@ -1,12 +1,12 @@
 import { Router, Route } from "./router"
-import { initMetaState, Meta, MetaMorph } from "../../meta"
+import { initMetaState, Meta, metaMorph, MetaMorph, Morph } from "../../meta"
 import { up } from "../transition/up"
 
 export interface NavigationSpec<T, P = any> {
   /**
    * Route processing for this spec.
    */
-  routes?: Array<RouteMetaMorph<T, P>>
+  routes?: Array<RouteMorph<T, P>>
   /**
    * An initial path from the application base URL for this spec.
    */
@@ -23,7 +23,7 @@ declare module "../../policy" {
  * Type for the items in the `routes` specification property.
  * Links a defined route with an associated update.
  */
-export type RouteMetaMorph<T, P = any> = [Route<any>, MetaMorph<T, P>]
+export type RouteMorph<T, P = any> = [Route<any>, Morph<T, P>]
 
 /**
  * Internal policy state.
@@ -37,7 +37,7 @@ const policy: NavigationPolicy = { routeMetas: [] }
 
 initMetaState(meta => {
   for (const [route, morph] of meta.$.spec.routes || []) {
-    policy.routeMetas.push([route, morph, meta])
+    policy.routeMetas.push([route, metaMorph(morph), meta])
   }
   return {}
 })

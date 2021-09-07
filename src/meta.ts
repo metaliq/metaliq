@@ -24,6 +24,8 @@ export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
  */
 export type Meta$<T, P = any> = {
   $: {
+    // Link to the containing meta object - useful for backlinks from values
+    meta?: Meta<T>
     // Ancestry within object graph (if applicable)
     parent?: Meta<P>
     key?: FieldKey<P>
@@ -102,18 +104,28 @@ class MetaArrayProto extends Array {
 export function metafy <T, P = any> (
   spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>
 ): Meta<T, P> {
+  // Create extended meta information object with value embedded in $.value
   const m$ = meta$(spec, value, parent, key)
   const proto = Object.create(MetaProto)
   const meta: Meta<T, P> = <unknown>Object.assign(proto, m$) as Meta<T, P>
+  // Assign the meta object to itself - useful for backlinks from values
+  meta.$.meta = meta
 
+  // Descend through spec keys creating further meta objects
   const fields = fieldKeys(spec)
   for (const fieldKey of fields) {
     const fieldValue = value?.[fieldKey]
     metaset(meta, fieldKey, fieldValue)
   }
 
+  // Perform any policy-based state initialisation tasks
   for (const maker of metaStateMakers) {
     Object.assign(meta.$.state, maker(meta))
+  }
+
+  // Create backlink from value object to meta object to enable moving to and fro
+  if (value && typeof value === "object") {
+    Object.assign(value, m$)
   }
 
   return meta
@@ -155,20 +167,7 @@ export function metaset <P, K extends FieldKey<P>> (
 }
 
 /**
- * Shortcut to get the stored value.
- */
-export const v = <T>(meta: Meta<T>): T => meta.$.value
-
-export type FieldKey<T> = Extract<keyof T, string>
-
-/**
- * Return the keys of a field spec.
- */
-export const fieldKeys = <T>(spec: MetaSpec<T>) =>
-  Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
-
-/**
- * Process to commit the nested meta values to the value of the given meta.
+ * Process to commit the current state of the embedded / nested value object to the given meta.
  * Any values that were originally null stay null if all recursively nested sub-values are null,
  * but if any of the nested sub-values have been populated then the higher level value
  * is initialised to an object with the sub-values assigned to it.
@@ -194,14 +193,15 @@ export function commitMeta<T> (meta: Meta<T>) {
 }
 
 /**
- * Applies the given value recursively to the superstate's primitive field sub-values.
- * This function is useful for applying an externally sourced value to a superstate
+ * Applies the given data value recursively to the meta-object's primitive field sub-values.
+ * This function is useful for applying an externally sourced value to a meta object
  * prior to then committing that value.
- * Calling this function followed by a commit would set all object values within the superstate.
+ * Calling this function followed by a commit would set both the transient and embedded state of the meta.
  */
 export function applyToMeta<T> (meta: Meta<T>, value: T) {
   if (!meta.$.spec) return
   if (meta.$.spec.fields) { // Object value - recurse
+    if (!value) return
     const keys = fieldKeys(meta.$.spec)
     for (const key of keys) {
       const sub = meta[key]
@@ -217,6 +217,27 @@ export function applyToMeta<T> (meta: Meta<T>, value: T) {
     meta.$.value = value
   }
 }
+
+/**
+ * Shortcut to get the embedded value from the meta object.
+ */
+export const v = <T>(meta: Meta<T>): T => meta.$.value
+
+/**
+ * Shortcut from a value object to the containing meta object.
+ */
+export const m = <T>(value: T): Meta<T> => (<unknown>value as { $: { meta: Meta<T> } }).$.meta
+
+/**
+ * Convenience type for defining methods that take an underlying data property.
+ */
+export type FieldKey<T> = Extract<keyof T, string>
+
+/**
+ * Return the keys of a field spec.
+ */
+export const fieldKeys = <T>(spec: MetaSpec<T>) =>
+  Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
  * A function that takes a reference to a data structure and an optional message and potentially returns a result.
@@ -253,10 +274,21 @@ export const metaMorphMap = <T, MM extends MorphMap<T>> (morphMap: MM): MetaMorp
 }
 
 /**
- * Replace the given meta with a new one made from the given value.
+ * Replace the given meta within its parent with a new one made from the given value.
  */
 export function replaceMeta <T, P = any> (meta: Meta<T, P>, value: T) {
   const parent = meta.$.parent
   const key = meta.$.key
   Object.assign(parent, { [key]: metafy(meta.$.spec, value, parent, key) })
+}
+
+/**
+ * Get a value that is specified as either a literal or MetaMorph in the spec.
+ * For an example of such a property see `mandatory` flag in `ValidationSpec`.
+ */
+export const fromSpec: MetaMorph<any, any, keyof Policy.Specification<any>> = (meta, specKey) => {
+  const specProp = meta.$.spec[specKey]
+  return typeof specProp === "function"
+    ? specProp(meta)
+    : specProp
 }
