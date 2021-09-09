@@ -1,14 +1,37 @@
-import { Meta, metafy, MetaSpec } from "../../meta"
-import { startUp, Up } from "../transition/up"
+import { fieldKeys, Meta, metafy, MetaSpec } from "../../meta"
+import { LogFunction, startUp, Up } from "../transition/up"
 import { renderPage } from "../presentation/presentation"
 import { initRoutes } from "../navigation/navigation"
 
 export interface ApplicationSpec<T> {
+  /**
+   * Initial value or a function to return the initial value.
+   * Initialisers will be applied recursively within the spec,
+   * with the data structure initialised for the outermost spec
+   * before then setting values from inner spec initialisers.
+   */
   init?: Init<T>
+
+  /**
+   * Log function to be called on each update - passed as `log` to `up`.
+   */
+  log?: boolean | LogFunction<Meta<T>>
+
+  /**
+   * Review function to be called after each update - passed as `review` to `up`.
+   */
   review?: Review
+
+  /**
+   * Flag to create a localised context with state updates isolated from the rest of an application.
+   */
+  local?: boolean
 }
 
-export interface AppState<T> {
+export interface ApplicationState<T> {
+  /**
+   * Localised `up` function that is available when `local` has been set to true in the spec.
+   */
   up?: Up<Meta<T>>
 }
 
@@ -18,24 +41,25 @@ declare module "../../policy" {
       this?: Specification<T, P>
     }
 
-    interface State<T, P> extends AppState<T>{
+    interface State<T, P> extends ApplicationState<T>{
       this?: State<T, P>
     }
   }
 }
 
-export type Init<T> = T | (() => T) | (() => Promise<T>)
+export type InitFunction<T> = () => T | (() => Promise<T>)
+export type Init<T> = T | InitFunction<T>
 export type Review = (meta: Meta<any>) => any
 
-export async function run (spec: MetaSpec<any>) {
-  // TODO: Make init recursive (or even move to core metafy? but async better here).
-  const data = typeof spec.init === "function" ? await spec.init() : spec.init ?? {}
-  const meta = metafy(spec, data)
-
-  const review = () => {
-    (spec.review || renderPage)(meta)
+export async function run<T> (spec: MetaSpec<T>) {
+  const value = await initSpecValue(spec)
+  const meta = metafy(spec, value)
+  const review = async () => {
+    await (spec.review || renderPage)(meta)
   }
-  await startUp({ review })
+  const log = spec.log || false
+  const local = spec.local || false
+  await startUp({ review, log, local })
 
   // TODO: Delegate to other policies for startup tasks
   Object.assign(window, { meta })
@@ -45,4 +69,20 @@ export async function run (spec: MetaSpec<any>) {
     initRoutes()
   }
   return meta
+}
+
+async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
+  const data: T = typeof spec.init === "function"
+    ? (await (spec.init as InitFunction<T>)()) as T
+    : spec.init ?? {} as T
+
+  // Recursively allocate the values of any nested initialisations
+  for (const key of fieldKeys(spec)) {
+    const fieldSpec = spec.fields[key]
+    if (fieldSpec.init) {
+      const fieldData = await initSpecValue(fieldSpec)
+      data[key] = fieldData
+    }
+  }
+  return data
 }

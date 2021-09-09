@@ -71,7 +71,7 @@ export type UpContext = {
   review?: (...params: any[]) => any
 
   /**
-   * An optional logging function (sync or async) that is called from each update,
+   * An optional logging function (sync or async) that is called on each update,
    * or `true` to use console.log.
    * If not specified there is no logging.
    */
@@ -83,11 +83,6 @@ export type UpContext = {
    * This is used for creating non-global update scopes, for example within a specific component.
    */
   local?: boolean
-
-  /**
-   * An optional update to be performed immediately to initialise the context.
-   */
-  init?: Update<any>
 }
 
 export type LogFunction<T> = (entry: LogEntry<T>) => any
@@ -230,7 +225,7 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
       result = await result
     }
     // Review after update
-    context.review?.()
+    await context.review?.()
 
     // Handle update chaining
     if (!Array.isArray(result) || typeof result[0] === "function") {
@@ -254,8 +249,7 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
 
   // Assign the global `up` reference
   context.local || (up = started)
-  // Run any initial update
-  await started(context.init)()
+  await context.review?.()
   // Return the created `up` function for local usage
   return started
 }
