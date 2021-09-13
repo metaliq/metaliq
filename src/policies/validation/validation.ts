@@ -75,10 +75,11 @@ export function validate (meta: Meta<any>) {
  * Validate the entire object recursively.
  * Returns an array of the SuperStates that are in an error state,
  * from which a cumulative error presentation may be constructed.
+ * If revalidate parameter is set to true, only previously validated items are validated
  */
-export function validateAll<T extends {}> (meta: Meta<T>) {
+export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = false) {
   const result: Array<Meta<any>> = []
-  const error = validate(meta)
+  const error = (!revalidate || meta.$.state.validated) && validate(meta)
   if (error) result.push(meta)
   const keys = fieldKeys(meta.$.spec)
   for (const key of keys) {
@@ -86,10 +87,10 @@ export function validateAll<T extends {}> (meta: Meta<T>) {
     let childErrors: Array<Meta<any>>
     if (Array.isArray(sub)) {
       const subArr = sub as MetaArray<any>
-      childErrors = subArr.flatMap(validateAll)
+      childErrors = subArr.flatMap(child => validateAll(child, revalidate))
     } else {
       const subMeta = sub as Meta<any>
-      childErrors = validateAll(subMeta)
+      childErrors = validateAll(subMeta, revalidate)
     }
     result.splice(result.length, 0, ...childErrors)
   }
