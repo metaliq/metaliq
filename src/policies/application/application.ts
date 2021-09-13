@@ -1,7 +1,11 @@
 import { fieldKeys, Meta, metafy, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "../transition/up"
-import { renderPage } from "../presentation/presentation"
 import { initRoutes } from "../navigation/navigation"
+
+/**
+ * Policy module to define general specification and operation of a Metaliq application.
+ * This establishes an update and review mechanism.
+ */
 
 export interface ApplicationSpec<T> {
   /**
@@ -51,22 +55,30 @@ export type InitFunction<T> = () => T | (() => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 export type Review = (meta: Meta<any>) => any
 
-export async function run<T> (spec: MetaSpec<T>) {
-  const value = await initSpecValue(spec)
-  const meta = metafy(spec, value)
+export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
+  let spec: MetaSpec<T>
+  let meta: Meta<T>
+  // Determine whether a spec or an initialised meta was passed
+  if (typeof (<any>specOrMeta).$ === "object") {
+    meta = specOrMeta as Meta<T>
+    spec = meta.$.spec
+  } else {
+    spec = specOrMeta as MetaSpec<T>
+    const value = await initSpecValue(spec)
+    meta = metafy(spec, value)
+  }
+
   const review = async () => {
-    await (spec.review || renderPage)(meta)
+    await spec.review(meta)
   }
   const log = spec.log || false
   const local = spec.local || false
   await startUp({ review, log, local })
 
-  // TODO: Delegate to other policies for startup tasks
-  Object.assign(window, { meta })
-  document.title = spec.label
+  // TODO: Add a postStart hook to delegate to navigation
   if (spec.path) history.pushState(null, null, spec.path)
-  if (spec.routes) { // TODO: Recursive search for routes on inner spec?
-    initRoutes()
+  if (spec.routes) {
+    await initRoutes()
   }
   return meta
 }

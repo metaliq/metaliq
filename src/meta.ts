@@ -36,7 +36,6 @@ export type Meta$<T, P = any> = {
 
     // Underlying value getter and setter
     value?: T
-    set: (val: T) => void
   }
 }
 
@@ -61,8 +60,16 @@ export type MetaStateMaker<T, P = any> = (meta: Meta<T, P>) => Policy.State<T, P
  * Register of modular providers for initial field properties.
  */
 const metaStateMakers: Array<MetaStateMaker<any>> = []
+
 export function initMetaState (maker: MetaStateMaker<any>) {
   metaStateMakers.push(maker)
+}
+
+// Internal mechanism for processing meta state makers.
+function makeState (meta: Meta<any>) {
+  for (const maker of metaStateMakers) {
+    meta.$.state = Object.assign({}, maker(meta), meta.$.state) // Preserve any predefined state, for example from serialisation
+  }
 }
 
 /**
@@ -120,7 +127,7 @@ export function metafy <T, P = any> (
 
   // Perform any policy-based state initialisation tasks
   for (const maker of metaStateMakers) {
-    Object.assign(meta.$.state, maker(meta))
+    meta.$.state = Object.assign({}, maker(meta), meta.$.state) // Preserve any predefined state, for example from serialisation
   }
 
   // Create backlink from value object to meta object to enable moving to and fro
@@ -142,9 +149,8 @@ export function meta$ <T, P> (
       parent,
       key,
       spec,
-      state: {},
-      value,
-      set: (val: T) => metaset(parent, key, <any>val as P[FieldKey<P>])
+      state: (m(value)?.$?.state || parent?.[key]?.$?.state || {}) as Policy.State<T, P>,
+      value
     }
   }
 }
@@ -219,6 +225,19 @@ export function applyToMeta<T> (meta: Meta<T>, value: T) {
 }
 
 /**
+ * Apply a given spec to an existing meta.
+ */
+export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
+  meta.$.spec = spec
+  makeState(meta)
+  for (const key of fieldKeys(spec)) {
+    const fieldSpec = <unknown>spec.fields[key] as MetaSpec<T[FieldKey<T>]>
+    const fieldMeta = <unknown>meta[key] as Meta<T[FieldKey<T>]>
+    applySpec(fieldMeta, fieldSpec)
+  }
+}
+
+/**
  * Shortcut to get the embedded value from the meta object.
  */
 export const v = <T>(meta: Meta<T>): T => meta.$.value
@@ -226,7 +245,7 @@ export const v = <T>(meta: Meta<T>): T => meta.$.value
 /**
  * Shortcut from a value object to the containing meta object.
  */
-export const m = <T>(value: T): Meta<T> => (<unknown>value as { $: { meta: Meta<T> } }).$.meta
+export const m = <T>(value: T): Meta<T> => (<unknown>value as { $: { meta: Meta<T> } })?.$?.meta
 
 /**
  * Convenience type for defining methods that take an underlying data property.

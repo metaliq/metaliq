@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "dedent": "^0.7.0",
+    "flatted": "^3.2.2",
     "path-to-regexp": "^6.2.0"
   }
 }

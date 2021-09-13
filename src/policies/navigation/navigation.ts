@@ -42,11 +42,11 @@ initMetaState(meta => {
   return {}
 })
 
-export function initRoutes () {
+export async function initRoutes () {
   for (const [route, morph, meta] of policy.routeMetas) {
     route.on = (p, q) => morph(meta, { ...p, ...q })
   }
 
   const noop = () => {}
-  new Router(policy.routeMetas.map(([route]) => route), null, up(noop)).start()
+  await new Router(policy.routeMetas.map(([route]) => route), up(noop)).start()
 }

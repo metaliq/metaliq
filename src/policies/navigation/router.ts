@@ -25,6 +25,7 @@ export function route<P extends object, Q extends object = any> (pattern: string
     pattern,
     on,
     go: function (pathParams?, queryParams?) {
+      // TODO: Allow pathParams and queryParams to be a getter with this.data
       const currentPathParams = (this.router.currentRoute || this).match(location.pathname)?.params
       const pathObj = Object.assign(currentPathParams, pathParams)
       const queryObj = Object.assign(searchToObject(location.search), queryParams)
@@ -42,45 +43,52 @@ export function route<P extends object, Q extends object = any> (pattern: string
 
 export class Router {
 
+  static disabled = false
+
   routes: Array<Route<any>>
 
   currentRoute?: Route<any>
 
-  data: any
+  onHandled: (...params: any[]) => any
 
-  onPathChange: () => void
-
-  constructor (routes: Array<Route<object>>, data?: any, onHandled?: (...params: any[]) => any) {
-    routes.forEach(route => {
+  constructor (routes: Array<Route<object>>, onHandled?: (...params: any[]) => any) {
+    (this.routes = routes).forEach(route => {
       route.router = this
     })
-
-    this.data = data
-
-    this.onPathChange = async () => {
-      const path = location.pathname
-      for (const route of routes) {
-        const urlMatch = route.match(path)
-        if (urlMatch) {
-          await route.on(this.data, Object.assign(urlMatch.params, searchToObject(location.search)))
-          if (onHandled) onHandled()
-          this.currentRoute = route
-          return
-        }
-      }
-      console.warn(`Unrecognised route: ${path}`)
-    }
+    this.onHandled = onHandled
   }
 
-  start () {
-    this.onPathChange()
-    window.addEventListener("popstate", this.onPathChange)
-    return this // Allow chained `const router = new LitRouter(routes).start()`
+  async onPathChange () {
+    const path = location.pathname
+    for (const route of this.routes) {
+      const urlMatch = route.match(path)
+      if (urlMatch) {
+        this.currentRoute = route
+        if (!Router.disabled) {
+          await route.on(urlMatch.params, searchToObject(location.search))
+          if (this.onHandled) this.onHandled()
+        }
+        return
+      }
+    }
+    console.warn(`Unrecognised route: ${path}`)
+  }
+
+  // Proxy the async path change method to a valid event handler
+
+  handler = () => {
+    this.onPathChange().catch(e => { throw e })
+  }
+
+  async start () {
+    window.addEventListener("popstate", this.handler)
+    await this.onPathChange()
+    return this // Enable router = await new Router().start()
   }
 
   stop () {
-    window.removeEventListener("popstate", this.onPathChange)
-    return this // For consistency with start()
+    window.removeEventListener("popstate", this.handler)
+    return this // Consistent with start()
   }
 }
 

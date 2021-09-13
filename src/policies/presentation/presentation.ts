@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { Meta } from "../../meta"
+import { initMetaState, Meta } from "../../meta"
 
 export interface PresentationSpec<T, P> {
   view?: MetaView<T, P>
@@ -21,6 +21,16 @@ export type MetaView<T, P = any> = (meta: Meta<T, P>) => ViewResult
 
 export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
   meta => view(meta.$.value)
+
+initMetaState(meta => {
+  // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
+  if (!meta.$.parent && !meta.$.spec.review) {
+    meta.$.spec.review = renderPage
+    Object.assign(window, { meta })
+    document.title = meta.$.spec.label
+  }
+  return {}
+})
 
 /**
  * A widget takes some configuration and returns a View.
