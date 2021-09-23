@@ -1,11 +1,9 @@
-export interface GraphQLSpec {
+export interface GraphQLConfig {
   schemaUrl?: string
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends GraphQLSpec {
-      this?: Specification<T, P>
-    }
+    interface Configuration extends GraphQLConfig {}
   }
 }
