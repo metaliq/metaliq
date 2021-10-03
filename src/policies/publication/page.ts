@@ -5,11 +5,13 @@ export type PageScript = {
   src?: string
   content?: string
 }
+
 type PageInfo = {
   title: string
   styles?: string[]
   scripts?: PageScript[]
 }
+
 export const page = (info: PageInfo) => dedent`
   <!doctype html>
   <html lang="en">
@@ -24,6 +26,7 @@ export const page = (info: PageInfo) => dedent`
     </body>
   </html>
 `
+
 const pageScript = (script: PageScript) => script.content
   ? dedent`
     <script ${ifDefinedAttr(script.type, "type")} ${ifDefinedAttr(script.src, "src")}>
@@ -33,5 +36,6 @@ const pageScript = (script: PageScript) => script.content
   : dedent`
     <script ${ifDefinedAttr(script.type, "type")} ${ifDefinedAttr(script.src, "src")}></script>
   `
+
 const ifDefinedAttr = (value: string, name: string) =>
   value ? `${name}="${value}"` : ""
