@@ -134,7 +134,7 @@ export type LogEntry<T> = {
  * Example of usage in a Lit template:
  *
  * ```
- * import { up } from "@klaudhaus/up"
+ * import { up } from "@metaliq/up"
  * import { html } from "lit"
  *
  * const addItem = (list: string[]) {

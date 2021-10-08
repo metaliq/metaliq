@@ -28,12 +28,12 @@ export function route<P extends object, Q extends object = any> (pattern: string
       // TODO: Allow pathParams and queryParams to be a getter with this.data
       const currentPathParams = (this.router.currentRoute || this).match(location.pathname)?.params
       const pathObj = Object.assign(currentPathParams, pathParams)
+      const path = (<Route<P, Q>> this).make(pathObj)
       const queryObj = Object.assign(searchToObject(location.search), queryParams)
+      const hasQuery = !!Object.keys(queryObj).length
+      const query = hasQuery ? `?${objectToSearch(queryParams)}` : ""
 
-      const query = queryObj ? `?${objectToSearch(queryParams)}` : ""
-      const href = (<Route<P, Q>> this).make(pathObj)
-
-      history.pushState(null, null, `${href}${query}`)
+      history.pushState(null, null, `${path}${query}`)
       window.dispatchEvent(new PopStateEvent("popstate"))
     },
     match: match(pattern.toString(), { decode: decodeURIComponent }),
