@@ -86,7 +86,7 @@ const grid = (content: ViewResult) => html`
 export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
   <div class="mx-4 mt-4 md:mt-0 first:mt-4 col-span-12">
     <div class="md:grid md:grid-cols-3 md:gap-6">
-      <div class="md:col-span-1">
+      <div class="md:col-span-1 p-4">
         <div class="px-4 sm:px-0">
           <h3 class="text-lg font-medium leading-6 text-gray-900">
             ${meta.$.spec.label}
@@ -108,11 +108,15 @@ export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
     </div>
   </div>
 
-  <div class="hidden sm:block" aria-hidden="true">
+  <div class="hidden sm:block col-span-12" aria-hidden="true">
     <div class="py-5">
       <div class="border-t border-gray-200"></div>
     </div>
   </div>
+`
+
+export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
+  <div class="bg-gray-100 py-4">${content(meta)}</div>
 `
 
 export const button = <T>(click: Update<Meta<T>>): MetaView<T> => meta => html`
