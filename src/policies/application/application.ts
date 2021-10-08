@@ -1,5 +1,5 @@
 import { fieldKeys, Meta, metafy, MetaSpec } from "../../meta"
-import { LogFunction, startUp, Up } from "../transition/up"
+import { LogFunction, startUp, Up } from "@metaliq/up"
 import { initRoutes } from "../navigation/navigation"
 
 /**

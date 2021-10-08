@@ -1,6 +1,6 @@
 import { Router, Route } from "./router"
 import { initMetaState, Meta, metaMorph, MetaMorph, Morph } from "../../meta"
-import { up } from "../transition/up"
+import { up } from "@metaliq/up"
 
 export interface NavigationSpec<T, P = any> {
   /**
