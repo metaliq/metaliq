@@ -4,6 +4,9 @@
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
+  "bin": {
+    "metaliq": "./bin/cli.cjs"
+  },
   "scripts": {
     "dev": "tsc --watch",
     "install": "tsc"
@@ -12,6 +15,9 @@
   "license": "MIT",
   "description": "MetaliQ - A framework for specification-based meta-programming",
   "devDependencies": {
+    "@metaliq/up": "^0.2.0",
+    "@types/fs-extra": "^9.0.13",
+    "@types/node": "^16.10.3",
     "@typescript-eslint/eslint-plugin": "4",
     "eslint": "7",
     "eslint-config-standard-with-typescript": "^20.0.0",
@@ -19,17 +25,21 @@
     "eslint-plugin-node": "11",
     "eslint-plugin-promise": "4",
     "lit": "^2.0.0",
-    "typescript": "^4.3.5",
-    "@metaliq/up": "^0.2.0"
+    "typescript": "^4.3.5"
   },
   "peerDependencies": {
-    "lit": "^2.0.0",
-    "@metaliq/up": "^0.2.0"
+    "@metaliq/up": "^0.2.0",
+    "lit": "^2.0.0"
   },
   "dependencies": {
+    "@lit-labs/ssr": "^1.0.0",
     "@types/dedent": "^0.7.0",
+    "@web/dev-server": "^0.1.25",
+    "commander": "^8.2.0",
     "dedent": "^0.7.0",
+    "esm-wallaby": "^3.2.25",
     "flatted": "^3.2.2",
+    "fs-extra": "^10.0.0",
     "path-to-regexp": "^6.2.0"
   }
 }
