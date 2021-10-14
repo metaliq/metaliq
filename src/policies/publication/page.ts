@@ -1,3 +1,6 @@
+/**
+ * Module providing simple page rendering model.
+ */
 import dedent from "dedent"
 
 export type PageScript = {
@@ -6,23 +9,25 @@ export type PageScript = {
   content?: string
 }
 
-type PageInfo = {
-  title: string
+export type PageInfo = {
+  title?: string
   styles?: string[]
   scripts?: PageScript[]
+  body?: string
 }
 
-export const page = (info: PageInfo) => dedent`
+export const page = (pageInfo: PageInfo) => dedent`
   <!doctype html>
   <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0">
-      <title>${info.title}</title>
-      ${info.styles.map(style => `<link href="${style}" rel="stylesheet">`).join("\n        ")}
-      ${info.scripts?.map(pageScript).join("\n        ")}
+      <title>${pageInfo.title}</title>
+      ${pageInfo.styles.map(style => `<link href="${style}" rel="stylesheet">`).join("\n        ")}
+      ${pageInfo.scripts?.map(pageScript).join("\n        ")}
     </head>
     <body>
+      ${pageInfo.body || ""}
     </body>
   </html>
 `
