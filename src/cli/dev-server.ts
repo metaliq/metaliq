@@ -13,10 +13,14 @@ const config: DevServerConfig = {
 /**
  * Start a dev server for the project at the given path
  */
-export async function startProjectServer (path: string, port: number) {
+export async function startProjectServer (path: string, port: number, middlewares: string[] = []) {
   if (server) server.stop()
   server = await startDevServer({
-    config: { ...config, rootDir: path, port },
+    config: {
+      ...config,
+      port,
+      rootDir: path
+    },
     readCliArgs: false,
     readFileConfig: false,
     autoExitProcess: false

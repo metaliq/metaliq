@@ -2,6 +2,9 @@ import { parse, stringify } from "flatted"
 
 export type Maybe<T> = T | null
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+export type MaybeReturn <T> = T | void
+
 export function sortBy<T> (keyOrKeys: keyof T | Array<keyof T>) {
   const keys: Array<keyof T> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
   return (a: T, b: T) => {

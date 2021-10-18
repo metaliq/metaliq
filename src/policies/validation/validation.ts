@@ -1,10 +1,10 @@
-import { initMetaState, Meta, MetaArray, fieldKeys, MetaMorph, fromSpec } from "../../meta"
+import { fieldKeys, specValue, Meta, MetaArray, MetaProc, metaSetups } from "../../meta"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
-  mandatory?: boolean | MetaMorph<T, P, boolean>
-  disabled?: boolean | MetaMorph<T, P, boolean>
-  hidden?: boolean | MetaMorph<T, P, boolean>
+  mandatory?: boolean | MetaProc<T, P, boolean>
+  disabled?: boolean | MetaProc<T, P, boolean>
+  hidden?: boolean | MetaProc<T, P, boolean>
 }
 
 export interface ValidationState {
@@ -43,14 +43,18 @@ export type ValidationResult = string | boolean
  */
 export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
-initMetaState(meta => ({
-  error: false, // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
-  validated: false,
-  // TODO: Update these potentially conditional values from the spec as appropriate, and apply them in validation
-  mandatory: fromSpec(meta, "mandatory"),
-  disabled: fromSpec(meta, "disabled"),
-  hidden: fromSpec(meta, "hidden")
-}))
+metaSetups.push(meta => {
+  if (meta.$.spec.validator) {
+    return {
+      error: false, // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
+      validated: false,
+      // TODO: Update these potentially conditional values from the spec as appropriate, and apply them in validation
+      mandatory: specValue(meta, "mandatory"),
+      disabled: specValue(meta, "disabled"),
+      hidden: specValue(meta, "hidden")
+    }
+  }
+})
 
 /**
  * Validate any field or object state.
@@ -66,9 +70,10 @@ export function validate (meta: Meta<any>) {
     } else {
       meta.$.state.error = false
     }
+    meta.$.state.validated = true
+    return meta.$.state.error
   }
-  meta.$.state.validated = true
-  return meta.$.state.error
+  return true
 }
 
 /**

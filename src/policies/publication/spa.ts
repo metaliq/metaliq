@@ -1,4 +1,13 @@
 import { PageInfo } from "./page"
+import { PublicationTarget } from "./publication"
+
+declare module "./publication" {
+  namespace Publication {
+    interface PublicationSpec {
+      spa?: SinglePageAppConfig
+    }
+  }
+}
 
 export type SinglePageAppConfig = {
   prod?: boolean
@@ -6,10 +15,10 @@ export type SinglePageAppConfig = {
   pageInfo?: PageInfo
 }
 
-declare module "./publication" {
-  namespace Publication {
-    interface TargetConfigs {
-      spa?: SinglePageAppConfig
-    }
+export const spa: PublicationTarget = {
+  async builder (spec) {
+    const { build } = await import ("./spa-build.js")
+    build(spec)
+    return true
   }
 }

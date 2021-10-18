@@ -1,6 +1,5 @@
-import { fieldKeys, Meta, metafy, MetaSpec } from "../../meta"
+import { fieldKeys, Meta, metafy, MetaProc, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
-import { initRoutes } from "../navigation/navigation"
 
 /**
  * Policy module to define general specification and operation of a Metaliq application.
@@ -55,7 +54,9 @@ export type InitFunction<T> = (() => T) | (() => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 export type Review = (meta: Meta<any>) => any
 
-export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
+export const metaAppInitializers: Array<MetaProc<any>> = []
+
+export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>, target?: string) {
   let spec: MetaSpec<T>
   let meta: Meta<T>
   // Determine whether a spec or an initialised meta was passed
@@ -75,11 +76,10 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   const local = spec.local || false
   await startUp({ review, log, local })
 
-  // TODO: Add a postStart hook to delegate to navigation
-  if (spec.path) history.pushState(null, null, spec.path)
-  if (spec.routes) {
-    await initRoutes()
+  for (const init of metaAppInitializers) {
+    await init(meta)
   }
+
   return meta
 }
 

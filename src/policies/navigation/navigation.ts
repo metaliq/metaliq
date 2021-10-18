@@ -1,12 +1,13 @@
-import { Router, Route } from "./router"
-import { initMetaState, Meta, metaMorph, MetaMorph, Morph } from "../../meta"
+import { Route, Router } from "./router"
+import { Meta, metaProc, MetaProc, metaSetups, Process } from "../../meta"
 import { up } from "@metaliq/up"
+import { metaAppInitializers } from "../application/application"
 
 export interface NavigationSpec<T, P = any> {
   /**
    * Route processing for this spec.
    */
-  routes?: Array<RouteMorph<T, P>>
+  routes?: Array<RouteProc<T, P>>
   /**
    * An initial path from the application base URL for this spec.
    */
@@ -23,28 +24,38 @@ declare module "../../policy" {
  * Type for the items in the `routes` specification property.
  * Links a defined route with an associated update.
  */
-export type RouteMorph<T, P = any> = [Route<any>, Morph<T, P>]
+export type RouteProc<T, P = any> = [Route<any>, Process<T, P>]
 
 /**
  * Internal policy state.
  */
 type NavigationPolicy = {
   // Internal registry of specified routes against their metas.
-  routeMetas: Array<RouteMetaMorphMeta<any>>
+  routeMetas: Array<RouteMetaProcMeta<any>>
 }
-type RouteMetaMorphMeta<T, P = any> = [Route<any>, MetaMorph<T, P>, Meta<T, P>]
+type RouteMetaProcMeta<T, P = any> = [Route<any>, MetaProc<T, P>, Meta<T, P>]
 const policy: NavigationPolicy = { routeMetas: [] }
 
-initMetaState(meta => {
-  for (const [route, morph] of meta.$.spec.routes || []) {
-    policy.routeMetas.push([route, metaMorph(morph), meta])
+metaSetups.push(meta => {
+  const spec = meta.$.spec
+  if (spec.routes) {
+    for (const [route, proc] of meta.$.spec.routes || []) {
+      policy.routeMetas.push([route, metaProc(proc), meta])
+    }
   }
-  return {}
+})
+
+metaAppInitializers.push(async (meta: Meta<any>) => {
+  const spec = meta.$.spec
+  if (spec.path) history.pushState(null, null, spec.path)
+  if (spec.routes) {
+    await initRoutes()
+  }
 })
 
 export async function initRoutes () {
-  for (const [route, morph, meta] of policy.routeMetas) {
-    route.on = (p, q) => morph(meta, { ...p, ...q })
+  for (const [route, proc, meta] of policy.routeMetas) {
+    route.on = (p, q) => proc(meta, { ...p, ...q })
   }
 
   const noop = () => {}

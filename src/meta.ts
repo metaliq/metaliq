@@ -1,4 +1,5 @@
 import { Policy } from "./policy"
+import { MaybeReturn } from "./util/util"
 
 /**
  * Meta-structure of Type in optional Parent with optional Update processes.
@@ -52,23 +53,17 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
 }
 
 /**
- * Provider of initial meta state, to be implemented in policy modules.
+ * Setups are registered by policies to perform any policy-based tasks and state initialisation.
+ * Setups should check the policy's term(s) in the meta spec to determine applicability of any such setup.
  */
-export type MetaStateMaker<T, P = any> = (meta: Meta<T, P>) => Policy.State<T, P>
+export type MetaSetup<T, P = any> = (meta: Meta<T, P>) => MaybeReturn<Policy.State<T, P>>
 
-/**
- * Register of modular providers for initial field properties.
- */
-const metaStateMakers: Array<MetaStateMaker<any>> = []
+export const metaSetups: Array<MetaSetup<any>> = []
 
-export function initMetaState (maker: MetaStateMaker<any>) {
-  metaStateMakers.push(maker)
-}
-
-// Internal mechanism for processing meta state makers.
-function makeState (meta: Meta<any>) {
-  for (const maker of metaStateMakers) {
-    meta.$.state = Object.assign({}, maker(meta), meta.$.state) // Preserve any predefined state, for example from serialisation
+function setupMeta (meta: Meta<any>) {
+  for (const maker of metaSetups) {
+    const state = maker(meta) || {}
+    meta.$.state = Object.assign({}, state, meta.$.state) // Preserve any predefined state, for example from serialisation
   }
 }
 
@@ -125,10 +120,7 @@ export function metafy <T, P = any> (
     metaset(meta, fieldKey, fieldValue)
   }
 
-  // Perform any policy-based state initialisation tasks
-  for (const maker of metaStateMakers) {
-    meta.$.state = Object.assign({}, maker(meta), meta.$.state) // Preserve any predefined state, for example from serialisation
-  }
+  setupMeta(meta)
 
   // Create backlink from value object to meta object to enable moving to and fro
   if (value && typeof value === "object") {
@@ -229,7 +221,7 @@ export function applyToMeta<T> (meta: Meta<T>, value: T) {
  */
 export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
   meta.$.spec = spec
-  makeState(meta)
+  setupMeta(meta)
   for (const key of fieldKeys(spec)) {
     const fieldSpec = <unknown>spec.fields[key] as MetaSpec<T[FieldKey<T>]>
     const fieldMeta = <unknown>meta[key] as Meta<T[FieldKey<T>]>
@@ -259,37 +251,39 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
- * A function that takes a reference to a data structure and an optional message and potentially returns a result.
- * The convention is that the provided data may be changed, so this is a "morphing" function rather than a pure one.
+ * A processing function that takes a reference to a data structure
+ * and an optional message and potentially returns a result.
+ * By convention, the provided data value may be mutated, but no other side effect should be produced.
+ * So this is neither a "pure" function or a completely "impure" one - it is a data transformation process.
  */
-export type Morph<T, M = any, R = any> = (data: T, message?: M) => R
+export type Process<T, M = any, R = any> = (data: T, message?: M) => R
 
 /**
- * A morph function for a meta type.
+ * A process function for a meta type.
  */
-export type MetaMorph<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?: M) => R
+export type MetaProc<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?: M) => R
 
 /**
- * Return a meta morph function for the given morph.
+ * Return a meta process function for the given underlying process.
  */
-export const metaMorph = <T, M = any, R = any> (morph: Morph<T, M, R>): MetaMorph<T, any, M, R> => (meta, message) => {
-  const result = morph(v(meta), message)
+export const metaProc = <T, M = any, R = any> (proc: Process<T, M, R>): MetaProc<T, any, M, R> => (meta, message) => {
+  const result = proc(v(meta), message)
   applyToMeta(meta, v(meta))
   return result
 }
 
 /**
- * Convenience types and function for converting from a map of morphs to the equivalent map of metamorphs.
+ * Convenience types and function for converting from a map of procs to the equivalent map of metaprocs.
  * Can be useful for defining an interface for a meta system component
  * and supplying a map of functions for the underlying data.
  */
-export type MorphMap<T> = { [index: string]: Morph<T> }
-export type MetaMorphMap<T, MM extends MorphMap<T> = {}> = { [K in keyof MM]: MetaMorph<T> }
+export type ProcessMap<T> = { [index: string]: Process<T> }
+export type MetaProcMap<T, MM extends ProcessMap<T> = {}> = { [K in keyof MM]: MetaProc<T> }
 
-export const metaMorphMap = <T, MM extends MorphMap<T>> (morphMap: MM): MetaMorphMap<T, MM> => {
-  const result: MetaMorphMap<T> = {}
-  Object.keys(morphMap).forEach(key => Object.assign(result, { [key]: metaMorph(morphMap[key]) }))
-  return result as MetaMorphMap<T, MM>
+export const metaProcMap = <T, MM extends ProcessMap<T>> (procMap: MM): MetaProcMap<T, MM> => {
+  const result: MetaProcMap<T> = {}
+  Object.keys(procMap).forEach(key => Object.assign(result, { [key]: metaProc(procMap[key]) }))
+  return result as MetaProcMap<T, MM>
 }
 
 /**
@@ -302,10 +296,10 @@ export function replaceMeta <T, P = any> (meta: Meta<T, P>, value: T) {
 }
 
 /**
- * Get a value that is specified as either a literal or MetaMorph in the spec.
+ * Get a value that is specified as either a literal or MetaProcess in the spec.
  * For an example of such a property see `mandatory` flag in `ValidationSpec`.
  */
-export const fromSpec: MetaMorph<any, any, keyof Policy.Specification<any>> = (meta, specKey) => {
+export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (meta, specKey) => {
   const specProp = meta.$.spec[specKey]
   return typeof specProp === "function"
     ? specProp(meta)

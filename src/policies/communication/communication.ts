@@ -1,4 +1,4 @@
-import { initMetaState, Meta, MetaMorph } from "../../meta"
+import { Meta, MetaProc, metaSetups } from "../../meta"
 
 export interface CommunicationSpec<T, P> {
   /**
@@ -7,7 +7,7 @@ export interface CommunicationSpec<T, P> {
    * Designed primarily for use by singleton receivers (e.g. message logging or display).
    * Multicasting would need to be handled internally within the data payload, e.g. by ID.
    */
-  channels?: Array<MetaMorph<T, P>>
+  channels?: Array<MetaProc<T, P>>
 }
 
 declare module "../../policy" {
@@ -20,22 +20,21 @@ declare module "../../policy" {
  * Internal policy register.
  */
 type CommunicationPolicy = {
-  channelMap: Map<MetaMorph<any>, Meta<any>>
+  channelMap: Map<MetaProc<any>, Meta<any>>
 }
 const policy: CommunicationPolicy = { channelMap: new Map() }
 
-initMetaState(meta => {
+metaSetups.push(meta => {
   for (const channel of meta.$.spec.channels || []) {
     policy.channelMap.set(channel, meta)
   }
-  return {}
 })
 
 /**
  * Make a channel call.
  * If the channel is registered the message will be sent along with the
  */
-export function call<T, P, M, R> (morph: MetaMorph<T, P, M, R>, message: M) {
-  const meta = policy.channelMap.get(morph) as Meta<T, P>
-  if (meta) return morph(meta, message)
+export function call<T, P, M, R> (proc: MetaProc<T, P, M, R>, message: M) {
+  const meta = policy.channelMap.get(proc) as Meta<T, P>
+  if (meta) return proc(meta, message)
 }
