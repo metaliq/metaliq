@@ -19,7 +19,6 @@ export const runner: Runner = async ({ specName, simplePath, spec, config }) => 
     appIndex: "index.html",
     middleware: [
       async (ctx, next) => {
-        console.log(ctx.path)
         if (ctx.path === "/bin/app.js") {
           ctx.body = appJs(specName, simplePath)
         } else if (ctx.path === "/") {

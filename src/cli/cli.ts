@@ -6,8 +6,10 @@ import { Command } from "commander"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
 import { MetaSpec } from "../meta"
 import { spa } from "../policies/publication/spa"
+import { Policy } from "../policy"
 
 const pExec = promisify(exec)
+installWindowOnGlobal() // Shim to prevent import error in lit
 
 type BaseOptions = {
   file?: string
@@ -21,17 +23,17 @@ const program = new Command()
 program
   .name("metaliq")
   .version("0.1.0")
-  .option("-c, --config <filePath>", "Use the specified configuration")
 
 program
   .command("run [specName]")
-  .option("-f --file <file>", "File location within source dir, with or without .ts extension", "model/specs")
+  .option("-f --file <file>", "Spec file location within source dir, with or without .ts extension", "specs")
+  .option("-c --conf <file>", "File location within source dir, with or without .ts extension", "policy")
   .description("Start the MetaliQ development server for the given path/spec (defaults to appSpec)")
   .action(run)
 
 program
   .command("build [specName]")
-  .option("-f --file <file>", "File location within source dir, with or without .ts extension", "model/specs")
+  .option("-f --file <file>", "File location within source dir, with or without .ts extension", "specs")
   .description("Run the build for the given spec (defaults to appSpec)")
   .action(build)
 
@@ -67,6 +69,7 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   const simplePath = optionsSimplePath(options)
   console.log(`Loading MetaliQ specification ${simplePath} > ${specName}`)
   const spec = await importSpec(specName)
+  const config = await importConfig()
   const pubTarget = spec.publication?.target || spa
 
   if (!pubTarget?.runner) {
@@ -74,7 +77,7 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   } else {
     console.log(`Launching runtime for publication target ${pubTarget.name}`)
     // TODO: Load policy config
-    await pubTarget.runner({ specName, simplePath, spec, config: {} })
+    await pubTarget.runner({ specName, simplePath, spec, config })
   }
 }
 
@@ -88,10 +91,15 @@ async function build (specName: string = "appSpec", options: BuildOptions = {}) 
 }
 
 async function importSpec (name: string = "appSpec", path: string = "specs") {
-  installWindowOnGlobal() // Shim to prevent import error in lit
   const module = await import (join(process.cwd(), `bin/${path}.js`))
   const spec: MetaSpec<any> = module[name]
   return spec
+}
+
+async function importConfig (name: string = "config", path: string = "policy") {
+  const module = await import (join(process.cwd(), `bin/${path}.js`))
+  const config: Policy.Configuration = module[name]
+  return config
 }
 
 const optionsSimplePath = (options: BaseOptions) => {
