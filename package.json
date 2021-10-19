@@ -17,6 +17,7 @@
   "devDependencies": {
     "@metaliq/up": "^0.2.0",
     "@types/fs-extra": "^9.0.13",
+    "@types/mime-types": "^2.1.1",
     "@types/node": "^16.10.3",
     "@typescript-eslint/eslint-plugin": "4",
     "eslint": "7",
@@ -40,6 +41,7 @@
     "esm-wallaby": "^3.2.25",
     "flatted": "^3.2.2",
     "fs-extra": "^10.0.0",
+    "mime-types": "^2.1.33",
     "path-to-regexp": "^6.2.0"
   }
 }

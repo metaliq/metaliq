@@ -1,19 +1,21 @@
-import { Command } from "commander"
-import { promisify } from "util"
-import { exec } from "child_process"
-import { startProjectServer } from "./dev-server"
-import dedent from "dedent"
-import { ensureDir, writeFile } from "fs-extra"
+import { exec, spawn } from "child_process"
 import { join } from "path"
+import { promisify } from "util"
+
+import { Command } from "commander"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
 import { MetaSpec } from "../meta"
-import { Publication } from "../policies/publication/publication"
 import { spa } from "../policies/publication/spa"
 
 const pExec = promisify(exec)
 
-export type BuildResult = boolean
-export type Builder = (spec: MetaSpec<any>, policyConfig: Publication.PublicationSpec) => Promise<BuildResult>
+type BaseOptions = {
+  file?: string
+}
+
+type BuildOptions = BaseOptions
+
+type RunOptions = BaseOptions
 
 const program = new Command()
 program
@@ -24,9 +26,8 @@ program
 program
   .command("run [specName]")
   .option("-f --file <file>", "File location within source dir, with or without .ts extension", "model/specs")
-  .option("-p --port <port>", "Port number", "8900")
   .description("Start the MetaliQ development server for the given path/spec (defaults to appSpec)")
-  .action(serve)
+  .action(run)
 
 program
   .command("build [specName]")
@@ -36,39 +37,64 @@ program
 
 program.parse()
 
-async function serve (specName: string = "appSpec", options: any = {}) {
-  const port = +options?.port || 8900
-  console.log("Starting file watching compiler")
-  exec("tsc --watch")
-  console.log(`Starting metaliq serve for ${specName} on port ${port}`)
+async function run (specName: string = "appSpec", options: RunOptions = {}) {
+  // Initial project compilation with watch
+  await new Promise((resolve, reject) => {
+    let resolved = false
+    const tscProcess = spawn("tsc", ["--watch"])
+    tscProcess.stdout.on("data", data => {
+      const msg = data.toString()
+      if (msg.toString().match(/Starting compilation/)) {
+        console.log("Starting file watching compiler")
+      } else if (msg.match(/0 errors/)) {
+        if (!resolved) {
+          console.log("Initial compilation complete")
+          resolved = true
+          resolve(data)
+        } else {
+          console.log("Recompiled project code")
+        }
+      } else {
+        console.log(`Compiler message: ${msg}`)
+      }
+    })
+    tscProcess.stderr.on("data", data => {
+      console.log("")
+      reject(data)
+    })
+  })
+
+  const simplePath = optionsSimplePath(options)
+  console.log(`Loading MetaliQ specification ${simplePath} > ${specName}`)
   const spec = await importSpec(specName)
   const pubTarget = spec.publication?.target || spa
-  console.log(pubTarget)
-  // TODO: Serve app.js and index.html from metaliq cli
-  await ensureDir("bin")
-  await writeFile("bin/app.js", dedent`
-    import { run } from "metaliq/lib/policies/application/application"
-    import { ${spec} } from "./model/specs.js"
-    
-    run(${spec})
-  `)
-  await startProjectServer(process.cwd(), port)
+
+  if (!pubTarget?.runner) {
+    console.log("Missing publication target runtime")
+  } else {
+    console.log(`Launching runtime for publication target ${pubTarget.name}`)
+    // TODO: Load policy config
+    await pubTarget.runner({ specName, simplePath, spec, config: {} })
+  }
 }
 
-async function build (specName: string = "appSpec", options: { file?: string } = {}) {
-  if (options.file?.substr(-3).match(/\.[tj]s/)) options.file = options.file.substring(0, -4)
-  const path = options.file || "specs"
-  console.log(`Building MetaliQ specification ${path} > ${specName}`)
+async function build (specName: string = "appSpec", options: BuildOptions = {}) {
+  const simplePath = optionsSimplePath(options)
+  console.log(`Building MetaliQ specification ${simplePath} > ${specName}`)
   console.log(`Working dir ${process.cwd()}`)
   await pExec("tsc")
-  const spec = await importSpec(specName, path)
-  await spec.publication.target.builder(spec, {}) // TODO: Load and pass publication policy config (or merge here?)
+  const spec = await importSpec(specName, simplePath)
+  await spec.publication.target.builder({ specName, simplePath, spec, config: {} }) // TODO: Load and pass publication policy config (or merge here?)
 }
 
 async function importSpec (name: string = "appSpec", path: string = "specs") {
   installWindowOnGlobal() // Shim to prevent import error in lit
   const module = await import (join(process.cwd(), `bin/${path}.js`))
-  console.log(module)
   const spec: MetaSpec<any> = module[name]
   return spec
+}
+
+const optionsSimplePath = (options: BaseOptions) => {
+  if (options.file?.substr(-3).match(/\.[tj]s/)) options.file = options.file.substring(0, -4)
+  return options.file || "specs"
 }

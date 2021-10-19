@@ -15,7 +15,7 @@ export declare namespace Policy {
 
   export interface Configuration {
     /** Project name **/
-    name: string
+    name?: string
   }
 
   export interface Specification<T, P = any> {

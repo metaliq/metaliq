@@ -1,5 +1,5 @@
-import { Builder } from "../../cli/cli"
-import { MetaProc } from "../../meta"
+import { MetaSpec } from "../../meta"
+import { Policy } from "../../policy"
 
 export declare namespace Publication {
   /**
@@ -29,6 +29,51 @@ declare module "../../policy" {
  * Provide the appropriate processing steps from individual publication type modules.
  */
 export type PublicationTarget = {
+
+  /**
+   * User-friendly name for this publication target.
+   */
+  name: string
+
+  /**
+   * Run function.
+   */
+  runner?: Runner
+
+  /**
+   * Build function.
+   */
   builder?: Builder
-  runner?: MetaProc<any>
 }
+
+/**
+ * The initiation context for a publication, with project location and loaded instance of the spec and config.
+ */
+export type PublicationContext = {
+
+  /**
+   * Spec name as exported from its module.
+   */
+  specName: string
+
+  /**
+   * Path within the source folder, without extension.
+   */
+  simplePath: string
+
+  /**
+   * Loaded spec.
+   */
+  spec: MetaSpec<any>
+
+  /**
+   * Loaded project level policy config.
+   */
+  config: Policy.Configuration
+}
+
+export type BuildResult = boolean
+export type Builder = (context: PublicationContext) => Promise<BuildResult>
+
+export type RunResult = boolean
+export type Runner = (context: PublicationContext) => Promise<RunResult>
