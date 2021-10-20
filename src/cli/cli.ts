@@ -74,12 +74,13 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   const simplePath = optionsSimplePath(options)
   console.log(`Loading MetaliQ specification ${simplePath} > ${specName}`)
   const spec = await importSpec(specName)
-  const pubTarget = spec.publication?.target || spa
+  console.log(`Loaded specification ${spec.label}`)
 
+  const pubTarget = spec.publication?.target || spa
   if (!pubTarget?.runner) {
     console.log("Missing publication target runtime")
   } else {
-    console.log(`Launching runtime for publication target ${pubTarget.name}`)
+    console.log(`Running specification with publication target ${pubTarget.name}`)
     await pubTarget.runner({ specName, simplePath, spec })
   }
 }

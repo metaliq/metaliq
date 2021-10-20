@@ -6,7 +6,8 @@ import { nodeResolve } from "@rollup/plugin-node-resolve"
 import commonJs from "@rollup/plugin-commonjs"
 import ignore from "rollup-plugin-ignore"
 import { minify as minifyJs } from "terser"
-import { defaultShouldMinify, minifyHTMLLiterals } from "minify-html-literals"
+import minifyHTMLLiterals from "rollup-plugin-minify-html-literals"
+import { defaultShouldMinify } from "minify-html-literals"
 import CleanCSS from "clean-css"
 
 import { Builder, Runner } from "./publication"
@@ -107,7 +108,14 @@ const makeProdJs = async (input: string) => {
     plugins: [
       ignore(["electron", "./spa-node"], { commonjsBugFix: true }),
       nodeResolve(),
-      commonJs()
+      commonJs(),
+      minifyHTMLLiterals({
+        options: {
+          shouldMinify (template) {
+            return defaultShouldMinify(template) || template.tag === "svg"
+          }
+        }
+      })
     ]
   })
   const bundledJs = await bundler.generate({ format: "esm" })
@@ -116,15 +124,8 @@ const makeProdJs = async (input: string) => {
   const minJsResult = await minifyJs(bundledJs.output[0].code, {
     output: {
       comments: false
-    },
-    mangle: false
-  })
-  const minJs = minJsResult.code
-  const minJsAndTemplates = minifyHTMLLiterals(minJs, {
-    shouldMinify (template) {
-      return defaultShouldMinify(template) || template.tag === "svg"
     }
-  }).code
+  })
 
-  return minJsAndTemplates
+  return minJsResult.code
 }
