@@ -41,27 +41,33 @@ program.parse()
 async function run (specName: string = "appSpec", options: RunOptions = {}) {
   // Initial project compilation with watch
   await new Promise((resolve, reject) => {
-    let resolved = false
+    let completed = false
     const tscProcess = spawn("tsc", ["--watch"])
     tscProcess.stdout.on("data", data => {
       const msg = data.toString()
-      if (msg.toString().match(/Starting compilation/)) {
-        console.log("Starting file watching compiler")
-      } else if (msg.match(/0 errors/)) {
-        if (!resolved) {
+      if (msg.match(/0 errors/)) {
+        if (!completed) {
           console.log("Initial compilation complete")
-          resolved = true
-          resolve(data)
+          completed = true
+          resolve(true)
         } else {
           console.log("Recompiled project code")
         }
+      } else if (msg.toString().match(/Starting compilation/)) {
+        console.log("Starting file watching compiler")
       } else {
         console.log(`Compiler message: ${msg}`)
       }
     })
     tscProcess.stderr.on("data", data => {
-      console.log("")
-      reject(data)
+      const msg = data.toString()
+      if (msg.match(/Debugger/)) {
+        console.log("Running in Node DEBUG mode")
+      } else {
+        console.log(`Compilation Error\n${msg}`)
+        completed = true
+        reject(data)
+      }
     })
   })
 
@@ -93,7 +99,7 @@ async function importSpec (name: string = "appSpec", path: string = "specs") {
   return spec
 }
 
-const optionsSimplePath = (options: BaseOptions) => {
+function optionsSimplePath (options: BaseOptions) {
   if (options.file?.substr(-3).match(/\.[tj]s/)) options.file = options.file.substring(0, -4)
   return options.file || "specs"
 }
