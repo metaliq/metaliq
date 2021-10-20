@@ -1,5 +1,5 @@
 import { PageInfo } from "./page"
-import { PublicationTarget } from "./publication"
+import { Builder, PublicationTarget, Runner } from "./publication"
 
 declare module "./publication" {
   namespace Publication {
@@ -23,17 +23,18 @@ export const defaultSpaConfig: SinglePageAppConfig = {
   pageInfo: {}
 }
 
+const nodeModule = "./spa-node.js"
+
 export const spa: PublicationTarget = {
   name: "Single Page Application",
 
-  async builder ({ specName, simplePath, spec }) {
-    const { build } = await import ("./spa-node.js")
-    build(spec)
-    return true
+  async builder (context) {
+    const { builder }: { builder: Builder } = await import (nodeModule)
+    return await builder(context)
   },
 
   async runner (context) {
-    const { runner } = await import ("./spa-node.js")
+    const { runner }: { runner: Runner } = await import (nodeModule)
     return await runner(context)
   }
 }
