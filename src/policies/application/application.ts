@@ -54,9 +54,9 @@ export type InitFunction<T> = (() => T) | (() => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 export type Review = (meta: Meta<any>) => any
 
-export const metaAppInitializers: Array<MetaProc<any>> = []
+export const bootstrappers: Array<MetaProc<any>> = []
 
-export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>, target?: string) {
+export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   let spec: MetaSpec<T>
   let meta: Meta<T>
   // Determine whether a spec or an initialised meta was passed
@@ -76,8 +76,8 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>, target?: string
   const local = spec.local || false
   await startUp({ review, log, local })
 
-  for (const init of metaAppInitializers) {
-    await init(meta)
+  for (const bootstrapper of bootstrappers) {
+    await bootstrapper(meta)
   }
 
   return meta

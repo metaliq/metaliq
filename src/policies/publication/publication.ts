@@ -1,5 +1,4 @@
 import { MetaSpec } from "../../meta"
-import { Policy } from "../../policy"
 
 export declare namespace Publication {
   /**
@@ -65,11 +64,6 @@ export type PublicationContext = {
    * Loaded spec.
    */
   spec: MetaSpec<any>
-
-  /**
-   * Loaded project level policy config.
-   */
-  config: Policy.Configuration
 }
 
 export type BuildResult = boolean

@@ -6,7 +6,6 @@ import { Command } from "commander"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
 import { MetaSpec } from "../meta"
 import { spa } from "../policies/publication/spa"
-import { Policy } from "../policy"
 
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
@@ -69,15 +68,13 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   const simplePath = optionsSimplePath(options)
   console.log(`Loading MetaliQ specification ${simplePath} > ${specName}`)
   const spec = await importSpec(specName)
-  const config = await importConfig()
   const pubTarget = spec.publication?.target || spa
 
   if (!pubTarget?.runner) {
     console.log("Missing publication target runtime")
   } else {
     console.log(`Launching runtime for publication target ${pubTarget.name}`)
-    // TODO: Load policy config
-    await pubTarget.runner({ specName, simplePath, spec, config })
+    await pubTarget.runner({ specName, simplePath, spec })
   }
 }
 
@@ -87,19 +84,13 @@ async function build (specName: string = "appSpec", options: BuildOptions = {}) 
   console.log(`Working dir ${process.cwd()}`)
   await pExec("tsc")
   const spec = await importSpec(specName, simplePath)
-  await spec.publication.target.builder({ specName, simplePath, spec, config: {} }) // TODO: Load and pass publication policy config (or merge here?)
+  await spec.publication.target.builder({ specName, simplePath, spec })
 }
 
 async function importSpec (name: string = "appSpec", path: string = "specs") {
   const module = await import (join(process.cwd(), `bin/${path}.js`))
   const spec: MetaSpec<any> = module[name]
   return spec
-}
-
-async function importConfig (name: string = "config", path: string = "policy") {
-  const module = await import (join(process.cwd(), `bin/${path}.js`))
-  const config: Policy.Configuration = module[name]
-  return config
 }
 
 const optionsSimplePath = (options: BaseOptions) => {

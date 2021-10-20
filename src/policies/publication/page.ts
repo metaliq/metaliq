@@ -1,7 +1,7 @@
 /**
  * Module providing simple page rendering model.
  */
-import dedent from "dedent"
+import dedent from "ts-dedent"
 
 export type PageScript = {
   type?: string

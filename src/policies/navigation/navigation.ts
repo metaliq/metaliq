@@ -1,7 +1,9 @@
 import { Route, Router } from "./router"
 import { Meta, metaProc, MetaProc, metaSetups, Process } from "../../meta"
 import { up } from "@metaliq/up"
-import { metaAppInitializers } from "../application/application"
+import { bootstrappers } from "../application/application"
+
+export { route } from "./router"
 
 export interface NavigationSpec<T, P = any> {
   /**
@@ -45,15 +47,15 @@ metaSetups.push(meta => {
   }
 })
 
-metaAppInitializers.push(async (meta: Meta<any>) => {
+bootstrappers.push(async (meta: Meta<any>) => {
   const spec = meta.$.spec
-  if (spec.path) history.pushState(null, null, spec.path)
+  if (spec.path && typeof history !== "undefined") history.pushState(null, null, spec.path)
   if (spec.routes) {
-    await initRoutes()
+    await initNav()
   }
 })
 
-export async function initRoutes () {
+export async function initNav () {
   for (const [route, proc, meta] of policy.routeMetas) {
     route.on = (p, q) => proc(meta, { ...p, ...q })
   }
