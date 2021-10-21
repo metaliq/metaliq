@@ -55,9 +55,9 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
   return true
 }
 
-export const builder: Builder = async ({ specName, simplePath, spec }) => {
+export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   const spaConfig: SinglePageAppConfig = spec.publication?.spa
-  const outDir = "./www" // TODO: Make configurable
+  const outDir = "./www" // TODO: Make output base directory configurable
 
   // Clean previous build
   await remove(outDir)
@@ -65,18 +65,19 @@ export const builder: Builder = async ({ specName, simplePath, spec }) => {
   await writeFile("bin/app.js", appJs(specName, simplePath))
   const js = await makeProdJs("bin/app.js")
   const css = new CleanCSS({
-    level: 0 // Mystery - why does level 1 get rid of keyframes?
-  }).minify(["./css/index.css"]) // TODO: Make index.css file configurable
+    level: 0, // Mystery - why does level 1 get rid of keyframes?
+    rebaseTo: "css" // TODO: Figure out rebasing based off: 1) configurable CSS output, 2) configurable base href
+  }).minify(["./css/index.css"]) // TODO: Make CSS input file configurable
 
-  await ensureAndWriteFile(`${outDir}/prod.html`, html)
-  await ensureAndWriteFile(`${outDir}/bin/index.js`, js)
-  await ensureAndWriteFile(`${outDir}/styles.css`, css.styles)
+  await ensureAndWriteFile(`${outDir}/prod.html`, html) // TODO: Make HTML output path configurable
+  await ensureAndWriteFile(`${outDir}/bin/app.js`, js) // TODO: Make JS output path configurable
+  await ensureAndWriteFile(`${outDir}/css/index.css`, css.styles) // TODO: Make CSS output path configurable
 
-  for (const file of [ // TODO: Make included files configurable
+  for (const file of [ // TODO: Make included files input and output paths configurable
     "img",
     "node_modules/bootstrap-icons"
   ]) {
-    await copy(file, `${outDir}/${file}`)
+    await copy(file, `${outDir}/${file}`, { dereference: true })
   }
 
   return true
@@ -93,7 +94,7 @@ const indexHtml = (spaConfig: SinglePageAppConfig) => page({
   ...(spaConfig?.pageInfo || {}),
   scripts: [
     ...(spaConfig.pageInfo?.scripts || []),
-    { src: "bin/app.js", type: "module" }
+    { src: "bin/app.js", type: "module" } // TODO: Make JS output location configurable
   ]
 })
 

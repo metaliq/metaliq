@@ -29,8 +29,8 @@ export const spa: PublicationTarget = {
   name: "Single Page Application",
 
   async builder (context) {
-    const { builder }: { builder: Builder } = await import (nodeModule)
-    return await builder(context)
+    const { spaBuilder }: { spaBuilder: Builder } = await import (nodeModule)
+    return await spaBuilder(context)
   },
 
   async runner (context) {

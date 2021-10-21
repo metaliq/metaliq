@@ -39,7 +39,7 @@
     "@rollup/plugin-virtual": "^2.0.3",
     "@types/dedent": "^0.7.0",
     "@web/dev-server": "^0.1.25",
-    "clean-css": "^5.2.1",
+    "clean-css": "^4.2.3",
     "commander": "^8.2.0",
     "esm-wallaby": "^3.2.25",
     "flatted": "^3.2.2",
