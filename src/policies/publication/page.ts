@@ -14,12 +14,14 @@ export type PageInfo = {
   styles?: string[]
   scripts?: PageScript[]
   body?: string
+  baseHref?: string
 }
 
 export const page = (pageInfo: PageInfo) => dedent`
   <!doctype html>
   <html lang="en">
     <head>
+      ${pageInfo.baseHref ? `<base href="${pageInfo.baseHref}"/>` : ""}
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0">
       <title>${pageInfo.title}</title>

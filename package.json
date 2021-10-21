@@ -39,6 +39,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/mime-types": "^2.1.1",
     "@web/dev-server": "^0.1.25",
+    "@web/dev-server-core": "^0.3.16",
     "clean-css": "^4.2.3",
     "commander": "^8.2.0",
     "esm-wallaby": "^3.2.25",

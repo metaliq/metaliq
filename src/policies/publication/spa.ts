@@ -34,7 +34,7 @@ export const spa: PublicationTarget = {
   },
 
   async runner (context) {
-    const { runner }: { runner: Runner } = await import (nodeModule)
-    return await runner(context)
+    const { spaRunner }: { spaRunner: Runner } = await import (nodeModule)
+    return await spaRunner(context)
   }
 }

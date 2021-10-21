@@ -9,6 +9,8 @@ import { minify as minifyJs } from "terser"
 import minifyHTMLLiterals from "rollup-plugin-minify-html-literals"
 import { defaultShouldMinify } from "minify-html-literals"
 import CleanCSS from "clean-css"
+import { Logger } from "@web/dev-server-core"
+import { historyApiFallbackMiddleware } from "@web/dev-server-core/dist/middleware/historyApiFallbackMiddleware"
 
 import { Builder, Runner } from "./publication"
 import { SinglePageAppConfig } from "./spa"
@@ -18,7 +20,18 @@ import { ensureAndWriteFile } from "./util"
 
 let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
-export const runner: Runner = async ({ specName, simplePath, spec }) => {
+// Dummy logger for reordered server middleware
+const logger: Logger = {
+  debug (...messages) {},
+  error (...messages) {},
+  group () {},
+  groupEnd () {},
+  log (...messages) {},
+  logSyntaxError () {},
+  warn (...messages) {}
+}
+
+export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
   const spaConfig: SinglePageAppConfig = spec.publication?.spa
   const port = spaConfig?.devPort || 8400
   console.log(`Starting MetaliQ SPA server on port ${port}`)
@@ -29,8 +42,9 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
     nodeResolve: true,
     open: true,
     watch: true,
-    appIndex: "index.html",
     middleware: [
+      // Manually adding historyApiFallback instead of setting appIndex so it runs prior to index page middleware
+      historyApiFallbackMiddleware("/index.html", "/", logger),
       async (ctx, next) => {
         if (ctx.path === "/bin/app.js") {
           ctx.body = appJs(specName, simplePath)
@@ -95,7 +109,8 @@ const indexHtml = (spaConfig: SinglePageAppConfig) => page({
   scripts: [
     ...(spaConfig.pageInfo?.scripts || []),
     { src: "bin/app.js", type: "module" } // TODO: Make JS output location configurable
-  ]
+  ],
+  baseHref: "/" // TODO: Make base href output location configurable
 })
 
 /**
