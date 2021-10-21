@@ -16,8 +16,6 @@
   "description": "MetaliQ - A framework for specification-based meta-programming",
   "devDependencies": {
     "@metaliq/up": "^0.2.0",
-    "@types/fs-extra": "^9.0.13",
-    "@types/mime-types": "^2.1.1",
     "@types/node": "^16.10.3",
     "@typescript-eslint/eslint-plugin": "4",
     "eslint": "7",
@@ -38,6 +36,8 @@
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@rollup/plugin-virtual": "^2.0.3",
     "@types/dedent": "^0.7.0",
+    "@types/fs-extra": "^9.0.13",
+    "@types/mime-types": "^2.1.1",
     "@web/dev-server": "^0.1.25",
     "clean-css": "^4.2.3",
     "commander": "^8.2.0",
