@@ -4,6 +4,7 @@ import { promisify } from "util"
 
 import { Command } from "commander"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
+
 import { MetaSpec } from "../meta"
 import { spa } from "../policies/publication/spa"
 
