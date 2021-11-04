@@ -10,16 +10,16 @@ import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
 
 export const namedFieldViews = <T>(fields: Array<FieldKey<T>>): MetaView<T> =>
-  meta => grid(
+  meta => form(
     fields.map(fieldViewForMeta(meta))
   )
 
-export const allFieldViews: MetaView<any> = meta => grid(
+export const allFieldViews: MetaView<any> = meta => form(
   fieldKeys(meta.$.spec).map(fieldViewForMeta(meta))
 )
 
 export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | MetaView<T>>): MetaView<T, P> =>
-  meta => grid(
+  meta => form(
     items.map(item => {
       if (typeof item === "string") {
         return fieldView(item)(meta)
@@ -40,12 +40,12 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   }
 
 export const validatedInput: MetaView<any> = meta => html`
-  <label class="block text-sm font-medium text-gray-700 col-span-12">
+  <label class="mq-label">
     ${meta.$.spec.label}
     <input type="text"
       disabled=${ifDefined(meta.$.state.disabled)}
       class="mq-input ${classMap({
-        "mq-error": meta.$.state.error,
+        "mq-error-field": meta.$.state.error,
         "mq-disabled": meta.$.state.disabled
       })}"
       value=${live(meta.$.value ?? "")}
@@ -59,7 +59,7 @@ const fieldViewForMeta = <T>(meta: Meta<T>) => (key: FieldKey<T>) => fieldView(k
 export const errorMsg = (meta: Meta<any>, classes = "") => {
   const error = meta.$.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
-  classes = `block text-red-500 ${classes}`
+  classes = `mq-error-msg ${classes}`
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
 }
 
@@ -77,8 +77,8 @@ export const errorsBlock: MetaView<any> = meta => html`
   </div>
 `
 
-const grid = (content: ViewResult) => html`
-  <div class="grid grid-cols-12 gap-6">
+const form = (content: ViewResult) => html`
+  <div class="mq-form">
     ${content}
   </div>
 `
@@ -116,7 +116,7 @@ export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
 `
 
 export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
-  <div class="bg-gray-100 py-4">${content(meta)}</div>
+  <div class="mq-form-page">${content(meta)}</div>
 `
 
 export const button = <T>(click: Update<Meta<T>>): MetaView<T> => meta => html`

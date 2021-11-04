@@ -27,7 +27,7 @@ program
 program
   .command("run [specName]")
   .option("-f --file <file>", "Spec file location within source dir, with or without .ts extension", "specs")
-  .option("-c --conf <file>", "File location within source dir, with or without .ts extension", "policy")
+  .option("-c --conf <conf>", "File location within source dir, with or without .ts extension", "policy")
   .description("Start the MetaliQ development server for the given path/spec (defaults to appSpec)")
   .action(run)
 
@@ -92,7 +92,8 @@ async function build (specName: string = "appSpec", options: BuildOptions = {}) 
   console.log(`Working dir ${process.cwd()}`)
   await pExec("tsc")
   const spec = await importSpec(specName, simplePath)
-  await spec.publication.target.builder({ specName, simplePath, spec })
+  const pubTarget = spec.publication?.target || spa
+  await pubTarget.builder({ specName, simplePath, spec })
 }
 
 async function importSpec (name: string = "appSpec", path: string = "specs") {
