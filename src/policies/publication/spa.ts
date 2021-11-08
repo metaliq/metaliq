@@ -52,11 +52,17 @@ const nodeModule = "./spa-node.js"
 export const spa: PublicationTarget = {
   name: "Single Page Application",
 
+  /**
+   * A wrapper around a dynamically imported builder, in order that Node packages are not linked in a browser context
+   */
   async builder (context) {
     const { spaBuilder }: { spaBuilder: Builder } = await import (nodeModule)
     return await spaBuilder(context)
   },
 
+  /**
+   * A wrapper around a dynamically imported runner, in order that Node packages are not linked in a browser context
+   */
   async runner (context) {
     const { spaRunner }: { spaRunner: Runner } = await import (nodeModule)
     return await spaRunner(context)

@@ -3,7 +3,6 @@ import { DevServerConfig, startDevServer } from "@web/dev-server"
 import mime from "mime-types"
 import { copy, remove } from "fs-extra"
 import CleanCSS from "clean-css"
-import { Logger } from "@web/dev-server-core"
 import { historyApiFallbackMiddleware } from "@web/dev-server-core/dist/middleware/historyApiFallbackMiddleware"
 
 import { Builder, Runner } from "./publication"
@@ -18,24 +17,14 @@ import { defaultShouldMinify } from "minify-html-literals"
 import { minify } from "terser"
 import { page } from "./page"
 import { ensureAndWriteFile } from "./util"
+import { devLogger } from "../../cli/cli"
 
 let server: { stop: () => void } // Simple typing for non-exposed DevServer type
-
-// Dummy logger for reordered server middleware
-const logger: Logger = {
-  debug (...messages) {},
-  error (...messages) {},
-  group () {},
-  groupEnd () {},
-  log (...messages) {},
-  logSyntaxError () {},
-  warn (...messages) {}
-}
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
 export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
-  const spa: SinglePageAppConfig = spec.publication?.spa
+  const spa: SinglePageAppConfig = spec?.publication?.spa
   const port = spa?.run?.port || 8400
   console.log(`Starting MetaliQ SPA server on port ${port}`)
 
@@ -47,7 +36,7 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
     watch: true,
     middleware: [
       // Manually adding historyApiFallback instead of setting appIndex so it runs prior to index page middleware
-      historyApiFallbackMiddleware("/index.html", "/", logger),
+      historyApiFallbackMiddleware("/index.html", "/", devLogger),
       async (ctx, next) => {
         if (ctx.path === "/bin/index.js") {
           ctx.body = indexJs(specName, simplePath)

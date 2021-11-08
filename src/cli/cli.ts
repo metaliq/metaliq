@@ -4,12 +4,25 @@ import { promisify } from "util"
 
 import { Command } from "commander"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
+import { DevServerConfig, startDevServer } from "@web/dev-server"
 
 import { MetaSpec } from "../meta"
 import { spa } from "../policies/publication/spa"
+import { Logger } from "@web/dev-server-core"
 
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
+
+// Dummy logger for reordered server middleware
+export const devLogger: Logger = {
+  debug (...messages) {},
+  error (...messages) {},
+  group () {},
+  groupEnd () {},
+  log (...messages) {},
+  logSyntaxError () {},
+  warn (...messages) {}
+}
 
 type BaseOptions = {
   file?: string
@@ -18,6 +31,11 @@ type BaseOptions = {
 type BuildOptions = BaseOptions
 
 type RunOptions = BaseOptions
+
+type ServeOptions = {
+  port?: string
+  index?: string
+}
 
 const program = new Command()
 program
@@ -36,6 +54,13 @@ program
   .option("-f --file <file>", "File location within source dir, with or without .ts extension", "specs")
   .description("Run the build for the given spec (defaults to appSpec)")
   .action(build)
+
+program
+  .command("serve [location]")
+  .option("-i --index <index>", "Alternate to index.html")
+  .option("-p --port <port>", "Port to serve on", "8888")
+  .description("Start a static server for the given location (useful for checking prod builds)")
+  .action(serve)
 
 program.parse()
 
@@ -73,11 +98,9 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   })
 
   const simplePath = optionsSimplePath(options)
-  console.log(`Loading MetaliQ specification ${simplePath} > ${specName}`)
   const spec = await importSpec(specName)
-  console.log(`Loaded specification ${spec.label}`)
 
-  const pubTarget = spec.publication?.target || spa
+  const pubTarget = spec?.publication?.target || spa
   if (!pubTarget?.runner) {
     console.log("Missing publication target runtime")
   } else {
@@ -87,19 +110,43 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
 }
 
 async function build (specName: string = "appSpec", options: BuildOptions = {}) {
+  console.log("Starting MetaliQ project build")
   const simplePath = optionsSimplePath(options)
-  console.log(`Building MetaliQ specification ${simplePath} > ${specName}`)
-  console.log(`Working dir ${process.cwd()}`)
   await pExec("tsc")
   const spec = await importSpec(specName, simplePath)
   const pubTarget = spec.publication?.target || spa
   await pubTarget.builder({ specName, simplePath, spec })
+  console.log("Build completed")
+}
+
+async function serve (location: string = "", options: ServeOptions = {}) {
+  console.log(`Starting MetaliQ static file server for location ${location || "/"}`)
+  const devServerConfig: DevServerConfig = {
+    rootDir: join(process.cwd(), location),
+    port: +(options.port || 8888),
+    open: options.index || true,
+    appIndex: options.index ? join(location, options.index) : undefined
+  }
+
+  await startDevServer({
+    config: devServerConfig,
+    readCliArgs: false,
+    readFileConfig: false,
+    autoExitProcess: false
+  })
 }
 
 async function importSpec (name: string = "appSpec", path: string = "specs") {
-  const module = await import (join(process.cwd(), `bin/${path}.js`))
-  const spec: MetaSpec<any> = module[name]
-  return spec
+  console.log(`Loading MetaliQ specification ${path} > ${name}`)
+  try {
+    const module = await import (join(process.cwd(), `bin/${path}.js`))
+    const spec: MetaSpec<any> = module[name]
+    console.log(`Loaded specification ${spec.label}`)
+    return spec
+  } catch (e) {
+    console.log(`Couldn't find spec  ${path} > ${name}`)
+    return null
+  }
 }
 
 function optionsSimplePath (options: BaseOptions) {
