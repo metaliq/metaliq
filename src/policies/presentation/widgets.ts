@@ -54,6 +54,21 @@ export const validatedInput: MetaView<any> = meta => html`
   </label>
 `
 
+export const validatedCheckbox: MetaView<boolean> = meta => html`
+  <label class="mq-label">
+    <input type="checkbox"
+      disabled=${ifDefined(meta.$.state.disabled)}
+      class="mq-input ${classMap({
+        "mq-error-field": meta.$.state.error,
+        "mq-disabled": meta.$.state.disabled
+      })}"
+      value=${live(meta.$.value ?? "")}
+      @blur=${up(validateInput, meta)} />
+    ${meta.$.spec.label}
+    ${errorMsg(meta, "mt-2")}
+  </label>
+`
+
 const fieldViewForMeta = <T>(meta: Meta<T>) => (key: FieldKey<T>) => fieldView(key)(meta)
 
 export const errorMsg = (meta: Meta<any>, classes = "") => {
