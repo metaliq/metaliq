@@ -62,8 +62,8 @@ export const validatedCheckbox: MetaView<boolean> = meta => html`
         "mq-error-field": meta.$.state.error,
         "mq-disabled": meta.$.state.disabled
       })}"
-      value=${live(meta.$.value ?? "")}
-      @blur=${up(validateInput, meta)} />
+      ?checked=${live(!!meta.$.value)}
+      @change=${up(validateInput, meta)} />
     ${meta.$.spec.label}
     ${errorMsg(meta, "mt-2")}
   </label>
@@ -79,7 +79,8 @@ export const errorMsg = (meta: Meta<any>, classes = "") => {
 }
 
 function validateInput (meta: Meta<any>, event: Event) {
-  meta.$.value = (<HTMLInputElement>event.target).value
+  const target = <HTMLInputElement>event.target
+  meta.$.value = target.type === "checkbox" ? target.checked : target.value
   validate(meta)
 }
 
