@@ -26,7 +26,7 @@ module.exports = {
     "@typescript-eslint/consistent-type-assertions": "off",
     // Allow async methods without return type
     "@typescript-eslint/explicit-function-return-type": "off",
-    // Do not force types to be delcared as interfaces
+    // Do not force types to be declared as interfaces
     "@typescript-eslint/consistent-type-definitions": "off",
     // Allow non-async functions with promise return
     "@typescript-eslint/promise-function-async": "off",
@@ -40,8 +40,7 @@ module.exports = {
     "@typescript-eslint/no-extraneous-class": "off",
     // Prevent this check which reports obj[key].toString as being [object Object]
     "@typescript-eslint/no-base-to-string": "off",
-
-    // Specifically turned off for SuperState, as we use namespaced interface merging to work around lack of HKTs
+    // Specifically turned off for MetaliQ, as we use namespaced interface merging to work around lack of HKTs
     "@typescript-eslint/no-namespace": "off"
   }
 }
