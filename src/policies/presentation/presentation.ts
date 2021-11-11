@@ -24,8 +24,8 @@ export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
 
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
-  if (!meta.$.parent && meta.$.spec.view && !meta.$.spec.review) {
-    meta.$.spec.review = renderPage
+  if (!meta.$.parent && meta.$.spec.view) {
+    meta.$.spec.review = meta.$.spec.review || renderPage
     Object.assign(window, { meta })
     document.title = meta.$.spec.label
   }
