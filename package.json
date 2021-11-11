@@ -1,6 +1,6 @@
 {
   "name": "metaliq",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
