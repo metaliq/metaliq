@@ -37,7 +37,7 @@ export type SinglePageAppConfig = {
       src?: string // Within project dir. Defaults to css/index.css. Set blank to do no style compileation
       dest?: string // Within destDir. Defaults to same as src.
     }
-    copy?: CopyEntry[]
+    copy?: CopyEntry[] // Files to copy into destination. If a folder called "res" exists, it will be copied by default.
   }
 
   /**

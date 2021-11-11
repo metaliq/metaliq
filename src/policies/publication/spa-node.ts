@@ -1,7 +1,7 @@
 import { dirname, join } from "path"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 import mime from "mime-types"
-import { copy, remove } from "fs-extra"
+import { copy, remove, pathExists } from "fs-extra"
 import CleanCSS from "clean-css"
 import { historyApiFallbackMiddleware } from "@web/dev-server-core/dist/middleware/historyApiFallbackMiddleware"
 
@@ -94,7 +94,10 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   }
 
   // Copy additional files
-  for (const entry of spa?.build?.copy || []) {
+  const copies = spa?.build?.copy || []
+  const hasRes = await pathExists("res")
+  if (hasRes && !copies.includes("res")) copies.push("res")
+  for (const entry of copies) {
     const { src, dest }: { src: string, dest?: string } = (typeof entry === "string")
       ? { src: entry, dest: entry }
       : { src: entry.src, dest: entry.dest || entry.src }
