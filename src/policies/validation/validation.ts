@@ -57,12 +57,15 @@ metaSetups.push(meta => {
 })
 
 /**
- * Validate any field or object state.
+ * Run the validation for the individual meta provided.
+ * Sets the `validated` state to true and the `error` state according to the validation result.
+ * Note: This is not recursive - use `validateAll` for that purpose.
  */
 export function validate (meta: Meta<any>) {
+  meta.$.state.validated = true
   const validator = meta.$.spec.validator
   if (typeof validator === "function") {
-    const result = meta.$.state.error = validator(meta)
+    const result = validator(meta)
     if (result === false) {
       meta.$.state.error = true
     } else if (typeof result === "string") {
@@ -70,22 +73,19 @@ export function validate (meta: Meta<any>) {
     } else {
       meta.$.state.error = false
     }
-    meta.$.state.validated = true
-    return meta.$.state.error
   }
-  return true
 }
 
 /**
  * Validate the entire object recursively.
- * Returns an array of the SuperStates that are in an error state,
+ * Returns an array of the Metas that are in an error state,
  * from which a cumulative error presentation may be constructed.
  * If revalidate parameter is set to true, only previously validated items are validated
  */
 export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = false) {
   const result: Array<Meta<any>> = []
-  const error = (!revalidate || meta.$.state.validated) && validate(meta)
-  if (error) result.push(meta)
+  if (!revalidate || meta.$.state.validated) validate(meta)
+  if (meta.$.state.error) result.push(meta)
   const keys = fieldKeys(meta.$.spec)
   for (const key of keys) {
     const sub = meta[key]
