@@ -1,6 +1,6 @@
 {
   "name": "metaliq",
-  "version": "0.4.10",
+  "version": "0.4.11",
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
@@ -9,7 +9,10 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "install": "tsc"
+    "install": "npm run local-or-peer-tsc",
+    "local-or-peer-tsc": "( call npm run local-or-peer-tsc:win ) || npm run local-or-peer-tsc:nix",
+    "local-or-peer-tsc:win": "if exist node_modules\\typescript tsc else (node ..\\..\\typescript\\bin\\tsc)",
+    "local-or-peer-tsc:nix": "test ./node_modules/typescript && tsc || node ../../typescript/bin/tsc"
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
