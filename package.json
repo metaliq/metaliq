@@ -1,11 +1,11 @@
 {
   "name": "metaliq",
-  "version": "0.4.12",
+  "version": "0.4.13",
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
   "bin": {
-    "metaliq": "bin/cli.js"
+    "metaliq": "bin/cli.cjs"
   },
   "scripts": {
     "dev": "tsc --watch",

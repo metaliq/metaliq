@@ -13,6 +13,8 @@ import { Logger } from "@web/dev-server-core"
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
 
+const tscPath = join(".", "node_modules", ".bin", "tsc")
+
 // Dummy logger for reordered server middleware
 export const devLogger: Logger = {
   debug (...messages) {},
@@ -63,8 +65,6 @@ program
   .action(serve)
 
 program.parse()
-
-const tscPath = join(".", "node_modules", ".bin", "tsc")
 
 async function run (specName: string = "appSpec", options: RunOptions = {}) {
   // Initial project compilation with watch
