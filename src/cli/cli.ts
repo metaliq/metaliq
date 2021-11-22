@@ -70,7 +70,7 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   // Initial project compilation with watch
   await new Promise((resolve, reject) => {
     let completed = false
-    const tscProcess = spawn(tscPath, ["--watch"])
+    const tscProcess = spawn(tscPath, ["--watch"], { shell: true, windowsHide: true })
     tscProcess.stdout.on("data", data => {
       const msg = data.toString()
       if (msg.match(/0 errors/)) {
