@@ -64,11 +64,13 @@ program
 
 program.parse()
 
+const tscPath = join(".", "node_modules", ".bin", "tsc")
+
 async function run (specName: string = "appSpec", options: RunOptions = {}) {
   // Initial project compilation with watch
   await new Promise((resolve, reject) => {
     let completed = false
-    const tscProcess = spawn("./node_modules/.bin/tsc", ["--watch"])
+    const tscProcess = spawn(tscPath, ["--watch"])
     tscProcess.stdout.on("data", data => {
       const msg = data.toString()
       if (msg.match(/0 errors/)) {
@@ -112,7 +114,7 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
 async function build (specName: string = "appSpec", options: BuildOptions = {}) {
   console.log("Starting MetaliQ project build")
   const simplePath = optionsSimplePath(options)
-  await pExec("./node_modules/.bin/tsc")
+  await pExec(tscPath)
   const spec = await importSpec(specName, simplePath)
   const pubTarget = spec.publication?.target || spa
   await pubTarget.builder({ specName, simplePath, spec })
