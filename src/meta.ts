@@ -2,7 +2,7 @@ import { Policy } from "./policy"
 import { MaybeReturn } from "./util/util"
 
 /**
- * Meta-structure of Type in optional Parent with optional Update processes.
+ * Meta-structure of Type in optional Parent.
  */
 export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
 
@@ -41,7 +41,7 @@ export type Meta$<T, P = any> = {
 }
 
 /**
- * Specification for a given Type, optional Parent and set of Update processes.
+ * Specification for a given Type and optional Parent.
  */
 export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
   fields?: {
@@ -237,10 +237,10 @@ export const v = <T>(meta: Meta<T>): T => meta.$.value
 /**
  * Shortcut from a value object to the containing meta object.
  */
-export const m = <T>(value: T): Meta<T> => (<unknown>value as { $: { meta: Meta<T> } })?.$?.meta
+export const m = <T>(value: T): Meta<T> => (<unknown>value as Meta$<T>)?.$?.meta
 
 /**
- * Convenience type for defining methods that take an underlying data property.
+ * Works better than keyof T where you know that T is not an array.
  */
 export type FieldKey<T> = Extract<keyof T, string>
 

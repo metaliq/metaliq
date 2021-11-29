@@ -32,7 +32,7 @@ metaSetups.push(meta => {
 
 /**
  * Make a channel call.
- * If the channel is registered the message will be sent along with the
+ * If the channel is registered the message will be delivered to it.
  */
 export function call<T, P, M, R> (proc: MetaProc<T, P, M, R>, message: M) {
   const meta = policy.channelMap.get(proc) as Meta<T, P>

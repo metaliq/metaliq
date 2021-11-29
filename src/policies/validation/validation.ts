@@ -33,7 +33,7 @@ declare module "../../policy" {
  * a boolean value of `true` indicating valid or `false` indicating an error without a message.
  * Note that a boolean result from a Validator is reversed for the value of `error` on the state properties.
  * i.e. a Validator result of `false` (no error) produces a `props.error` value of `true`.
- * This allows for validation functions of the format `condition === expected || message`.
+ * This allows for validation functions of the form `condition === expected || message`.
  */
 export type Validator<T, P = any> = (meta: Meta<T, P>) => ValidationResult
 export type ValidationResult = string | boolean
