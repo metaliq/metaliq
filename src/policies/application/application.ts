@@ -1,4 +1,4 @@
-import { fieldKeys, Meta, metafy, MetaProc, MetaSpec } from "../../meta"
+import { Meta, metafy, MetaProc, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -88,13 +88,5 @@ async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
     ? await (spec.init as InitFunction<T>)()
     : spec.init ?? {} as T
 
-  // Recursively allocate the values of any nested initialisations
-  for (const key of fieldKeys(spec)) {
-    const fieldSpec = spec.fields[key]
-    if (fieldSpec.init) {
-      const fieldData = await initSpecValue(fieldSpec)
-      data[key] = fieldData
-    }
-  }
   return data
 }
