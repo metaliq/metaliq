@@ -26,7 +26,7 @@ export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
 export type Meta$<T, P = any> = {
   $: {
     // Link to the containing meta object - useful for backlinks from values
-    meta?: Meta$<T>
+    meta?: Meta<T>
     // Ancestry within object graph (if applicable)
     parent?: Meta<P>
     key?: FieldKey<P>

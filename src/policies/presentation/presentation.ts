@@ -1,13 +1,15 @@
 import { render, TemplateResult } from "lit"
-import { Meta, metaSetups } from "../../meta"
+import { m, Meta, metaSetups } from "../../meta"
 
-export interface PresentationSpec<T, P> {
-  view?: MetaView<T, P>
+export interface PresentationSpec<T> {
+  view?: View<T> | MetaView<T>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends PresentationSpec<T, P> {}
+    interface Specification<T, P> extends PresentationSpec<T> {
+      this?: Specification<T, P>
+    }
   }
 }
 
@@ -21,6 +23,9 @@ export type MetaView<T, P = any> = (meta: Meta<T, P>) => ViewResult
 
 export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
   meta => view(meta.$.value)
+
+export const viewMeta = <T, P = any> (metaView: MetaView<T, P>): View<T> =>
+  value => metaView(m(value).$.meta as Meta<T, P>)
 
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
@@ -41,5 +46,5 @@ export type Widget<T, P = any> = (...params: any[]) => MetaView<T, P>
  * produces a global-state single page app.
  */
 export const renderPage = (meta: Meta<any>) => {
-  render(meta.$.spec.view(meta), document.body)
+  render(meta.$.spec.view(meta.$.value), document.body)
 }

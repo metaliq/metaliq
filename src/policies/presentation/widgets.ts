@@ -3,11 +3,18 @@ import { live } from "lit/directives/live.js"
 import { ifDefined } from "lit/directives/if-defined.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { FieldKey, fieldKeys, Meta } from "../../meta"
+import { FieldKey, fieldKeys, m, Meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
+
+export const metaForm = <T>(value: T) => {
+  const meta = m(value) as Meta<T>
+  return fieldKeys(meta.$.spec).map(fieldViewForMeta(meta))
+}
+
+const fieldViewForMeta = <T>(meta: Meta<T>) => (key: FieldKey<T>) => fieldView(key)(meta)
 
 export const namedFieldViews = <T>(fields: Array<FieldKey<T>>): MetaView<T> =>
   meta => form(
@@ -29,13 +36,13 @@ export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | MetaView<T>>): 
 
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   meta => {
-    const fieldValue = meta[fieldKey]
-    if (Array.isArray(fieldValue)) {
-      const view = fieldValue.$.spec.items?.view || validatedInput
-      return fieldValue.map(view)
+    const fieldMeta = meta[fieldKey]
+    if (Array.isArray(fieldMeta)) {
+      const view = fieldMeta.$.spec.items?.view || validatedInput
+      return fieldMeta.map(view)
     } else {
-      const view = fieldValue.$.spec.view || validatedInput
-      return view(fieldValue)
+      const view = <unknown>fieldMeta.$.spec.view as MetaView<T> || validatedInput
+      return view(fieldMeta)
     }
   }
 
@@ -69,8 +76,6 @@ export const validatedCheckbox: MetaView<boolean> = meta => html`
   </label>
 `
 
-const fieldViewForMeta = <T>(meta: Meta<T>) => (key: FieldKey<T>) => fieldView(key)(meta)
-
 export const errorMsg = (meta: Meta<any>, classes = "") => {
   const error = meta.$.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
@@ -97,6 +102,10 @@ const form = (content: ViewResult) => html`
   <div class="mq-form">
     ${content}
   </div>
+`
+
+export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
+  <div class="mq-form-page">${content(meta)}</div>
 `
 
 export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
@@ -129,10 +138,6 @@ export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
       <div class="border-t border-gray-200"></div>
     </div>
   </div>
-`
-
-export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
-  <div class="mq-form-page">${content(meta)}</div>
 `
 
 export const button = <T>(click: Update<Meta<T>>): MetaView<T> => meta => html`
