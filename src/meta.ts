@@ -26,7 +26,7 @@ export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
 export type Meta$<T, P = any> = {
   $: {
     // Link to the containing meta object - useful for backlinks from values
-    meta?: Meta<T>
+    meta?: Meta$<T>
     // Ancestry within object graph (if applicable)
     parent?: Meta<P>
     key?: FieldKey<P>
@@ -44,11 +44,11 @@ export type Meta$<T, P = any> = {
  * Specification for a given Type and optional Parent.
  */
 export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
-  fields?: {
-    [K in FieldKey<T>]?: MetaSpec<T[K], T>
-  }
+  fields?: T extends any[]
+    ? never
+    : { [K in FieldKey<T>]?: MetaSpec<T[K], T> }
   items?: T extends Array<infer I>
-    ? I extends unknown ? MetaSpec<any> : MetaSpec<I>
+    ? MetaSpec<I>
     : never
 }
 
@@ -72,25 +72,33 @@ function setupMeta (meta: Meta<any>) {
  * with the given root meta name which defaults to "Meta".
  */
 function metaPath (meta: Meta$<any>, root = "Meta"): string {
+  let path = meta.$.key ?? root
+  let parent = meta.$.parent
+  while (parent) {
+    path = `${parent.$.key ?? root}.${path}`
+    parent = parent.$.parent
+  }
+  return `${path}`
+}
+
+function metaToString (meta: Meta$<any>): string {
   const value = meta.$.value
-  if (["object", "undefined"].includes(typeof value)) {
-    let path = meta.$.key ?? root
-    let parent = meta.$.parent
-    while (parent) {
-      path = `${parent.$.key ?? root}.${path}`
-      parent = parent.$.parent
-    }
-    return `${path}`
+  if (typeof value === "undefined") {
+    return ""
+  } else if (Array.isArray(value)) {
+    return "" // Should be in MetaArrayProto instead
+  } else if (typeof value === "object") {
+    return metaPath(meta)
   } else if (typeof value === "boolean") {
-    return value ? "true" : "" // Allow coercion of falsy values
+    return value ? "true" : "false"
   } else {
-    return value?.toString() || root
+    return value?.toString() || ""
   }
 }
 
 const MetaProto = {
   toString () {
-    return metaPath(this)
+    return metaToString(this)
   }
 }
 
@@ -133,7 +141,7 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, m$)
 
   // Assign the meta into its parent if provided
-  if (parent && key) Object.assign(parent, { [key]: meta })
+  if (parent && key && !(parent[key] instanceof MetaArrayProto)) Object.assign(parent, { [key]: meta })
 
   // Descend through children creating further meta objects
   if (spec.items) {
@@ -188,10 +196,12 @@ export function commit<T> (meta: Meta<T>) {
 }
 
 /**
- * Reverts the meta to its underlying data value, or a new underlying data value if provided.
+ * (Re)sets the Meta's data value, to any provided value else the original underlying data.
  */
-export function revert<T> (meta: Meta<T>, value?: T) {
-  metafy(meta.$.spec, value || meta.$.value, meta.$.parent, meta.$.key, meta)
+export function set<T> (meta: Meta<T>, value?: T) {
+  metafy(meta.$.spec,
+    typeof value === "undefined" ? meta.$.value : value,
+    meta.$.parent, meta.$.key, meta)
 }
 
 /**
@@ -221,12 +231,12 @@ export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (m
 /**
  * Shortcut to get the embedded value from the meta object.
  */
-export const v = <T>(meta: Meta<T>): T => meta.$.value
+export const v = <T>(meta: Meta$<T>): T => meta?.$?.value
 
 /**
  * Shortcut from a value object to the containing meta object.
  */
-export const m = <T>(value: T): Meta<T> => (<unknown>value as Meta$<T>)?.$?.meta
+export const m = <T>(value: T): Meta$<T> => (<unknown>value as Meta$<T>)?.$?.meta
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -257,7 +267,7 @@ export type MetaProc<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?
  */
 export const metaProc = <T, M = any, R = any> (proc: Process<T, M, R>): MetaProc<T, any, M, R> => (meta, message) => {
   const result = proc(v(meta), message)
-  revert(meta)
+  set(meta)
   return result
 }
 
