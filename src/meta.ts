@@ -102,66 +102,58 @@ class MetaArrayProto extends Array {
 
 /**
  * Create a Meta object with the given spec, value and optional parent and key.
+ * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>
+  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: Meta<T>
 ): Meta<T, P> {
+  // Establish the correct form of prototype for this meta
+  proto = proto || (
+    spec.items
+      ? new MetaArrayProto()
+      : Object.create(MetaProto)
+  )
+
   // Create extended meta information object with value embedded in $.value
-  const m$ = meta$(spec, value, parent, key)
-  const proto = Object.create(MetaProto)
+  const m$: Meta$<T, P> = {
+    $: {
+      spec,
+      value,
+      parent,
+      key,
+      state: (m(value)?.$?.state || parent?.[key]?.$?.state || {}) as Policy.State<T, P>
+    }
+  }
   const meta: Meta<T, P> = <unknown>Object.assign(proto, m$) as Meta<T, P>
+
   // Assign the meta object to itself - useful for backlinks from values
   meta.$.meta = meta
 
-  // Descend through spec keys creating further meta objects
-  const fields = fieldKeys(spec)
-  for (const fieldKey of fields) {
-    const fieldValue = value?.[fieldKey]
-    metaset(meta, fieldKey, fieldValue)
+  // Create backlink from value object to meta object to enable moving to and fro
+  if (value && typeof value === "object") Object.assign(value, m$)
+
+  // Assign the meta into its parent if provided
+  if (parent && key) Object.assign(parent, { [key]: meta })
+
+  // Descend through children creating further meta objects
+  if (spec.items) {
+    const valueArr = <unknown>value as any[] || []
+    const metaArr = <unknown>meta as MetaArray<any, P>
+    metaArr.length = 0 // Remove any items from supplied prototype
+    for (const item of valueArr) {
+      metaArr.push(metafy(spec.items, item, parent, key))
+    }
+  } else {
+    for (const fieldKey of fieldKeys(spec)) {
+      const fieldValue = value?.[fieldKey]
+      const fieldSpec = meta.$.spec.fields[fieldKey]
+      if (fieldSpec) metafy(fieldSpec, fieldValue, meta, fieldKey)
+    }
   }
 
   setupMeta(meta)
 
-  // Create backlink from value object to meta object to enable moving to and fro
-  if (value && typeof value === "object") {
-    Object.assign(value, m$)
-  }
-
   return meta
-}
-
-/**
- * Create a Meta$ for the given spec, value and optional parent and key.
- */
-export function meta$ <T, P> (
-  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>
-): Meta$<T, P> {
-  return {
-    $: {
-      parent,
-      key,
-      spec,
-      state: (m(value)?.$?.state || parent?.[key]?.$?.state || {}) as Policy.State<T, P>,
-      value
-    }
-  }
-}
-
-/**
- * Metafy the given raw value and assign to the given parent Meta at the given key.
- */
-export function metaset <P, K extends FieldKey<P>> (
-  parent: Meta<P>, key: K, value: P[K]
-) {
-  const fieldSpec = parent.$.spec.fields[key] as MetaSpec<P[K], P>
-  if (Array.isArray(value) && fieldSpec.items) {
-    const arr$ = meta$(fieldSpec, value, parent, key)
-    const arr = value.map(val => metafy(fieldSpec.items, val, parent, key))
-    const metaArr = Object.assign(new MetaArrayProto(), arr, arr$)
-    Object.assign(parent, { [key]: metaArr })
-  } else {
-    Object.assign(parent, { [key]: metafy(fieldSpec, value, parent, key) })
-  }
 }
 
 /**
@@ -170,50 +162,36 @@ export function metaset <P, K extends FieldKey<P>> (
  * but if any of the nested sub-values have been populated then the higher level value
  * is initialised to an object with the sub-values assigned to it.
  */
-export function commitMeta<T> (meta: Meta<T>) {
-  const keys = fieldKeys(meta.$.spec)
-  for (const key of keys) {
-    const sub = meta[key]
-    if (Array.isArray(sub)) {
-      const subArr = sub as MetaArray<any>
-      console.warn(`Meta array of length ${subArr.length} not committed`) // TODO: Commit meta arrays back to underlying value
-    } else {
-      const subMeta = sub as Meta<any>
-      commitMeta(subMeta)
-      if (v(meta) === null && v(subMeta) !== null) {
-        meta.$.value = <T>{} // Initialise previously null meta value when descendant values present
-      }
-      if (v(meta) !== null && typeof v(subMeta) !== "object") {
-        meta.$.value[key] = v(subMeta) as T[FieldKey<T>]
-      }
+export function commit<T> (meta: Meta<T>) {
+  if (meta.$.spec.items) {
+    const value = <unknown>meta.$.value as any[] || []
+    Object.assign(meta.$, { value }) // Initialise value array if empty
+
+    const metaArr = <unknown>meta as MetaArray<any>
+    for (const metaItem of metaArr) {
+      commit(metaItem)
+      value.push(metaItem.$.value)
     }
+  } else {
+    const keys = fieldKeys(meta.$.spec)
+    for (const key of keys) {
+      const metaField = meta[key] as Meta<any>
+      commit(metaField)
+    }
+  }
+
+  // Commit primitive value
+  if (meta.$.parent && typeof meta.$.value !== "object") {
+    meta.$.parent.$.value = meta.$.parent.$.value || {} // Create parent value if was previously null
+    meta.$.parent.$.value[meta.$.key] = meta.$.value
   }
 }
 
 /**
- * Applies the given data value recursively to the meta-object's primitive field sub-values.
- * This function is useful for applying an externally sourced value to a meta object
- * prior to then committing that value.
- * Calling this function followed by a commit would set both the transient and embedded state of the meta.
+ * Reverts the meta to its underlying data value, or a new underlying data value if provided.
  */
-export function applyToMeta<T> (meta: Meta<T>, value: T) {
-  if (!meta.$.spec) return
-  if (meta.$.spec.fields) { // Object value - recurse
-    if (!value) return
-    const keys = fieldKeys(meta.$.spec)
-    for (const key of keys) {
-      const sub = meta[key]
-      if (Array.isArray(value[key])) {
-        const subArr = sub as MetaArray<any>
-        console.warn(`Array of length ${subArr.length} not applied to meta`) // TODO: Commit meta arrays back to underlying value
-      } else {
-        const subMeta = sub as Meta<any>
-        applyToMeta(subMeta, value[key])
-      }
-    }
-  } else {
-    meta.$.value = value
-  }
+export function revert<T> (meta: Meta<T>, value?: T) {
+  metafy(meta.$.spec, value || meta.$.value, meta.$.parent, meta.$.key, meta)
 }
 
 /**
@@ -227,6 +205,17 @@ export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
     const fieldMeta = <unknown>meta[key] as Meta<T[FieldKey<T>]>
     applySpec(fieldMeta, fieldSpec)
   }
+}
+
+/**
+ * Get a value that is specified as either a literal or MetaProcess in the spec.
+ * For an example of such a property see `mandatory` flag in `ValidationSpec`.
+ */
+export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (meta, specKey) => {
+  const specProp = meta.$.spec[specKey]
+  return typeof specProp === "function"
+    ? specProp(meta)
+    : specProp
 }
 
 /**
@@ -268,7 +257,7 @@ export type MetaProc<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?
  */
 export const metaProc = <T, M = any, R = any> (proc: Process<T, M, R>): MetaProc<T, any, M, R> => (meta, message) => {
   const result = proc(v(meta), message)
-  applyToMeta(meta, v(meta))
+  revert(meta)
   return result
 }
 
@@ -284,24 +273,4 @@ export const metaProcMap = <T, MM extends ProcessMap<T>> (procMap: MM): MetaProc
   const result: MetaProcMap<T> = {}
   Object.keys(procMap).forEach(key => Object.assign(result, { [key]: metaProc(procMap[key]) }))
   return result as MetaProcMap<T, MM>
-}
-
-/**
- * Replace the given meta within its parent with a new one made from the given value.
- */
-export function replaceMeta <T, P = any> (meta: Meta<T, P>, value: T) {
-  const parent = meta.$.parent
-  const key = meta.$.key
-  Object.assign(parent, { [key]: metafy(meta.$.spec, value, parent, key) })
-}
-
-/**
- * Get a value that is specified as either a literal or MetaProcess in the spec.
- * For an example of such a property see `mandatory` flag in `ValidationSpec`.
- */
-export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (meta, specKey) => {
-  const specProp = meta.$.spec[specKey]
-  return typeof specProp === "function"
-    ? specProp(meta)
-    : specProp
 }
