@@ -41,7 +41,7 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
 
 export const validatedInput: MetaView<any> = meta => html`
   <label class="mq-label">
-    ${meta.$.spec.label}
+    ${meta.$.spec.label || meta.$.key}
     <input type="text"
       disabled=${ifDefined(meta.$.state.disabled)}
       class="mq-input ${classMap({
