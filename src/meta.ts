@@ -134,7 +134,7 @@ export function metafy <T, P = any> (
   meta.$.meta = meta
 
   // Create backlink from value object to meta object to enable moving to and fro
-  if (value && typeof value === "object") Object.assign(value, m$)
+  if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
   if (parent && key && !(parent[key] instanceof MetaArrayProto)) Object.assign(parent, { [key]: meta })

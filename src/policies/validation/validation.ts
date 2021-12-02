@@ -1,4 +1,4 @@
-import { fieldKeys, specValue, Meta, MetaArray, MetaProc, metaSetups } from "../../meta"
+import { fieldKeys, specValue, Meta, MetaArray, MetaProc, metaSetups, m$ } from "../../meta"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
@@ -101,4 +101,12 @@ export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = 
   }
   meta.$.state.allErrors = result
   return result
+}
+
+export function validateValue (value: any) {
+  validate(m$(value).meta)
+}
+
+export function validateAllValues (value: any, revalidate: boolean = false) {
+  return validateAll(m$(value).meta)
 }

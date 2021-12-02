@@ -41,5 +41,5 @@ export type Widget<T, P = any> = (...params: any[]) => MetaView<T, P>
  * produces a global-state single page app.
  */
 export const renderPage = (meta: Meta<any>) => {
-  render(meta.$.spec.view(meta.$.value), document.body)
+  render(meta.$.spec.view(meta), document.body)
 }

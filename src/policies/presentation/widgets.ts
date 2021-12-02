@@ -3,7 +3,7 @@ import { live } from "lit/directives/live.js"
 import { ifDefined } from "lit/directives/if-defined.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { FieldKey, fieldKeys, Meta } from "../../meta"
+import { commit, FieldKey, fieldKeys, Meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
@@ -25,28 +25,34 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
     }
   }
 
-export const input = (type: string = "text"): MetaView<any> => meta => html`
-  <input type=${type}
+export type InputOptions = {
+  type?: "text" | "checkbox" | "number" | "tel"
+  commit?: boolean // immediately commit values to underlying value object
+  unvalidated?: boolean // don't perform validation
+}
+
+export const input = (options: InputOptions = {}): MetaView<any> => meta => html`
+  <input type=${options.type || "text"}
     disabled=${ifDefined(meta.$.state.disabled)}
     class="mq-input ${classMap({
       "mq-error-field": meta.$.state.error,
       "mq-disabled": meta.$.state.disabled
     })}"
     value=${live(meta.$.value ?? "")}
-    @blur=${up(onInput, meta)} />
+    @blur=${up(onInput(options), meta)} />
 `
 
 export const validatedInput: MetaView<any> = meta => html`
   <label class="mq-label">
     ${meta.$.spec.label || meta.$.key}
-    ${input("text")(meta)}
+    ${input()(meta)}
     ${errorMsg(meta, "mt-2")}
   </label>
 `
 
 export const validatedCheckbox: MetaView<boolean> = meta => html`
   <label class="mq-label">
-    ${input("checkbox")(meta)}
+    ${input({ type: "checkbox" })(meta)}
     ${meta.$.spec.label}
     ${errorMsg(meta, "mt-2")}
   </label>
@@ -59,11 +65,17 @@ export const errorMsg = (meta: Meta<any>, classes = "") => {
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
 }
 
-function onInput (meta: Meta<any>, event: Event) {
-  const target = <HTMLInputElement>event.target
-  meta.$.value = target.type === "checkbox" ? target.checked : target.value
-  validate(meta)
-}
+const onInput = ({ unvalidated, commit: doCommit, type }: InputOptions) =>
+  (meta: Meta<any>, event: Event) => {
+    const target = <HTMLInputElement>event.target
+    meta.$.value = target.type === "checkbox"
+      ? target.checked
+      : type === "number"
+        ? parseFloat(target.value)
+        : target.value
+    if (!unvalidated) validate(meta)
+    if (doCommit && meta.$.parent) commit(meta.$.parent)
+  }
 
 export const errorsBlock: MetaView<any> = meta => html`
   <div class="text-red-500">
