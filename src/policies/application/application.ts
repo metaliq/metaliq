@@ -80,6 +80,8 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
     await bootstrapper(meta)
   }
 
+  await review()
+
   return meta
 }
 
