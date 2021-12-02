@@ -4,7 +4,7 @@ import { MaybeReturn } from "./util/util"
 /**
  * Meta-structure of Type in optional Parent.
  */
-export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
+export type Meta<T, P = any> = MetaFields<T> & { $: Meta$<T, P> }
 
 /**
  * Mapped fields part of the meta-structure of an object type.
@@ -17,27 +17,25 @@ export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
   ? MetaArray<I, T>
   : Meta<T[K], T>
 
-export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
+export type MetaArray<T, P = any> = Array<Meta<T, P>> & { $: Meta$<T[], P> }
 
 /**
  * Dollar property containing additional info.
  * This is the full meta-structure for non-object types.
  */
 export type Meta$<T, P = any> = {
-  $: {
-    // Link to the containing meta object - useful for backlinks from values
-    meta?: Meta<T>
-    // Ancestry within object graph (if applicable)
-    parent?: Meta<P>
-    key?: FieldKey<P>
+  // Link to the containing meta object - useful for backlinks from values
+  meta?: Meta<T>
+  // Ancestry within object graph (if applicable)
+  parent?: Meta<P>
+  key?: FieldKey<P>
 
-    // Specification and State
-    spec: MetaSpec<T, P>
-    state: Policy.State<T, P>
+  // Specification and State
+  spec: MetaSpec<T, P>
+  state: Policy.State<T, P>
 
-    // Underlying value getter and setter
-    value?: T
-  }
+  // Underlying value getter and setter
+  value?: T
 }
 
 /**
@@ -71,7 +69,7 @@ function setupMeta (meta: Meta<any>) {
  * Return a path string for the given meta,
  * with the given root meta name which defaults to "Meta".
  */
-function metaPath (meta: Meta$<any>, root = "Meta"): string {
+function metaPath (meta: { $: Meta$<any> }, root = "Meta"): string {
   let path = meta.$.key ?? root
   let parent = meta.$.parent
   while (parent) {
@@ -81,7 +79,7 @@ function metaPath (meta: Meta$<any>, root = "Meta"): string {
   return `${path}`
 }
 
-function metaToString (meta: Meta$<any>): string {
+function metaToString (meta: Meta<any>): string {
   const value = meta.$.value
   if (typeof value === "undefined") {
     return ""
@@ -104,7 +102,7 @@ const MetaProto = {
 
 class MetaArrayProto extends Array {
   toString () {
-    return metaPath(<unknown> this as Meta$<any>)
+    return metaPath(<unknown> this as { $: Meta$<any> })
   }
 }
 
@@ -122,17 +120,15 @@ export function metafy <T, P = any> (
       : Object.create(MetaProto)
   )
 
-  // Create extended meta information object with value embedded in $.value
-  const m$: Meta$<T, P> = {
-    $: {
-      spec,
-      value,
-      parent,
-      key,
-      state: (m(value)?.$?.state || parent?.[key]?.$?.state || {}) as Policy.State<T, P>
-    }
+  // Create contextual meta information object
+  const $: Meta$<T, P> = {
+    spec,
+    value,
+    parent,
+    key,
+    state: (m$(value)?.state || parent?.[key]?.$?.state || {}) as Policy.State<T, P>
   }
-  const meta: Meta<T, P> = <unknown>Object.assign(proto, m$) as Meta<T, P>
+  const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
   // Assign the meta object to itself - useful for backlinks from values
   meta.$.meta = meta
@@ -229,14 +225,9 @@ export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (m
 }
 
 /**
- * Shortcut to get the embedded value from the meta object.
- */
-export const v = <T>(meta: Meta$<T>): T => meta?.$?.value
-
-/**
  * Shortcut from a value object to the containing meta object.
  */
-export const m = <T>(value: T): Meta$<T> => (<unknown>value as Meta$<T>)?.$?.meta
+export const m$ = <T>(value: T): Meta$<T> => (<unknown>value as { $: Meta$<T> })?.$
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -266,7 +257,7 @@ export type MetaProc<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?
  * Return a meta process function for the given underlying process.
  */
 export const metaProc = <T, M = any, R = any> (proc: Process<T, M, R>): MetaProc<T, any, M, R> => (meta, message) => {
-  const result = proc(v(meta), message)
+  const result = proc(meta.$.value, message)
   set(meta)
   return result
 }

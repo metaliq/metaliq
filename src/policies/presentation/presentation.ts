@@ -1,15 +1,13 @@
 import { render, TemplateResult } from "lit"
-import { m, Meta, metaSetups } from "../../meta"
+import { Meta, metaSetups } from "../../meta"
 
-export interface PresentationSpec<T> {
-  view?: View<T> | MetaView<T>
+export interface PresentationSpec<T, P> {
+  view?: MetaView<T, P>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends PresentationSpec<T> {
-      this?: Specification<T, P>
-    }
+    interface Specification<T, P> extends PresentationSpec<T, P> { }
   }
 }
 
@@ -23,9 +21,6 @@ export type MetaView<T, P = any> = (meta: Meta<T, P>) => ViewResult
 
 export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
   meta => view(meta.$.value)
-
-export const viewMeta = <T, P = any> (metaView: MetaView<T, P>): View<T> =>
-  value => metaView(m(value).$.meta as Meta<T, P>)
 
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded

@@ -3,36 +3,15 @@ import { live } from "lit/directives/live.js"
 import { ifDefined } from "lit/directives/if-defined.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { FieldKey, fieldKeys, m, Meta } from "../../meta"
+import { FieldKey, fieldKeys, Meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
 
-export const metaForm = <T>(value: T) => {
-  const meta = m(value) as Meta<T>
-  return fieldKeys(meta.$.spec).map(fieldViewForMeta(meta))
-}
-
-const fieldViewForMeta = <T>(meta: Meta<T>) => (key: FieldKey<T>) => fieldView(key)(meta)
-
-export const namedFieldViews = <T>(fields: Array<FieldKey<T>>): MetaView<T> =>
-  meta => form(
-    fields.map(fieldViewForMeta(meta))
-  )
-
-export const allFieldViews: MetaView<any> = meta => form(
-  fieldKeys(meta.$.spec).map(fieldViewForMeta(meta))
+export const metaForm: MetaView<any> = <T>(meta: Meta<T>) => form(
+  fieldKeys(meta.$.spec).map(key => fieldView(key)(meta))
 )
-
-export const mixedForm = <T, P = any>(items: Array<FieldKey<T> | MetaView<T>>): MetaView<T, P> =>
-  meta => form(
-    items.map(item => {
-      if (typeof item === "string") {
-        return fieldView(item)(meta)
-      } else return (item)(meta)
-    })
-  )
 
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   meta => {
@@ -46,31 +25,28 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
     }
   }
 
+export const input = (type: string = "text"): MetaView<any> => meta => html`
+  <input type=${type}
+    disabled=${ifDefined(meta.$.state.disabled)}
+    class="mq-input ${classMap({
+      "mq-error-field": meta.$.state.error,
+      "mq-disabled": meta.$.state.disabled
+    })}"
+    value=${live(meta.$.value ?? "")}
+    @blur=${up(onInput, meta)} />
+`
+
 export const validatedInput: MetaView<any> = meta => html`
   <label class="mq-label">
     ${meta.$.spec.label || meta.$.key}
-    <input type="text"
-      disabled=${ifDefined(meta.$.state.disabled)}
-      class="mq-input ${classMap({
-        "mq-error-field": meta.$.state.error,
-        "mq-disabled": meta.$.state.disabled
-      })}"
-      value=${live(meta.$.value ?? "")}
-      @blur=${up(validateInput, meta)} />
+    ${input("text")(meta)}
     ${errorMsg(meta, "mt-2")}
   </label>
 `
 
 export const validatedCheckbox: MetaView<boolean> = meta => html`
   <label class="mq-label">
-    <input type="checkbox"
-      disabled=${ifDefined(meta.$.state.disabled)}
-      class="mq-input ${classMap({
-        "mq-error-field": meta.$.state.error,
-        "mq-disabled": meta.$.state.disabled
-      })}"
-      ?checked=${live(!!meta.$.value)}
-      @change=${up(validateInput, meta)} />
+    ${input("checkbox")(meta)}
     ${meta.$.spec.label}
     ${errorMsg(meta, "mt-2")}
   </label>
@@ -83,7 +59,7 @@ export const errorMsg = (meta: Meta<any>, classes = "") => {
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
 }
 
-function validateInput (meta: Meta<any>, event: Event) {
+function onInput (meta: Meta<any>, event: Event) {
   const target = <HTMLInputElement>event.target
   meta.$.value = target.type === "checkbox" ? target.checked : target.value
   validate(meta)
