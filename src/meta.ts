@@ -4,7 +4,7 @@ import { MaybeReturn } from "./util/util"
 /**
  * Meta-structure of Type in optional Parent.
  */
-export type Meta<T, P = any> = MetaFields<T> & { $: Meta$<T, P> }
+export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
 
 /**
  * Mapped fields part of the meta-structure of an object type.
@@ -17,15 +17,18 @@ export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
   ? MetaArray<I, T>
   : Meta<T[K], T>
 
-export type MetaArray<T, P = any> = Array<Meta<T, P>> & { $: Meta$<T[], P> }
+export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
+
+export type Meta$<T, P = any> = { $: MetaInfo<T, P> }
 
 /**
  * Dollar property containing additional info.
  * This is the full meta-structure for non-object types.
  */
-export type Meta$<T, P = any> = {
-  // Link to the containing meta object - useful for backlinks from values
-  meta?: Meta<T>
+export type MetaInfo<T, P = any> = {
+  // Link to the meta object or array containing this $ property - useful for backlinks from values
+  meta?: Meta$<T, P>
+
   // Ancestry within object graph (if applicable)
   parent?: Meta<P>
   key?: FieldKey<P>
@@ -69,7 +72,7 @@ function setupMeta (meta: Meta<any>) {
  * Return a path string for the given meta,
  * with the given root meta name which defaults to "Meta".
  */
-function metaPath (meta: { $: Meta$<any> }, root = "Meta"): string {
+function metaPath (meta: Meta$<any>, root = "Meta"): string {
   let path = meta.$.key ?? root
   let parent = meta.$.parent
   while (parent) {
@@ -102,7 +105,7 @@ const MetaProto = {
 
 class MetaArrayProto extends Array {
   toString () {
-    return metaPath(<unknown> this as { $: Meta$<any> })
+    return metaPath(<unknown> this as MetaArray<any>)
   }
 }
 
@@ -121,7 +124,7 @@ export function metafy <T, P = any> (
   )
 
   // Create contextual meta information object
-  const $: Meta$<T, P> = {
+  const $: MetaInfo<T, P> = {
     spec,
     value,
     parent,
@@ -225,9 +228,9 @@ export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (m
 }
 
 /**
- * Shortcut from a value object to the containing meta object.
+ * Shortcut from a value object to the $ meta info.
  */
-export const m$ = <T>(value: T): Meta$<T> => (<unknown>value as { $: Meta$<T> })?.$
+export const m$ = <T>(value: T): MetaInfo<T> => (<unknown>value as Meta$<T>)?.$
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -274,4 +277,27 @@ export const metaProcMap = <T, MM extends ProcessMap<T>> (procMap: MM): MetaProc
   const result: MetaProcMap<T> = {}
   Object.keys(procMap).forEach(key => Object.assign(result, { [key]: metaProc(procMap[key]) }))
   return result as MetaProcMap<T, MM>
+}
+
+/**
+ * Basic calculation (deduction or derived value) on a value.
+ * By convention, this should be a pure function which modifies nothing.
+ */
+export type Calc <T, R = any> = (value: T) => R
+
+export type MetaCalc <T, P = any, R = any> = (meta: Meta$<T, P>) => R
+
+/**
+ * Return a MetaCalc for the given Calc.
+ */
+export const metaCalc = <T, R = any> (calc: Calc<T, R>): MetaCalc<T, any, R> => (meta: Meta$<T>): R => calc(meta.$.value)
+
+/**
+ * Single level function currying. Can be a useful pattern.
+ * Convert a curried calc (that takes a value of W and returns a function that takes a value of T and returns R)
+ * into a function that takes a Meta of W and returns a function that takes a Meta of T and returns R.
+ * TODO: Extend this out to provide multi-level currying - not as common but may be handy.
+ */
+export const metaCurry = <W, T, R = any> (fn: Calc<W, Calc<T, R>>, w: Meta$<W>): MetaCalc<T, any, R> => {
+  return metaCalc(metaCalc(fn)(w))
 }

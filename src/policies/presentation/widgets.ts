@@ -3,7 +3,7 @@ import { live } from "lit/directives/live.js"
 import { ifDefined } from "lit/directives/if-defined.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, Meta } from "../../meta"
+import { commit, FieldKey, fieldKeys, Meta, MetaArray } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
@@ -17,7 +17,7 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   meta => {
     const fieldMeta = meta[fieldKey]
     if (Array.isArray(fieldMeta)) {
-      const view = fieldMeta.$.spec.items?.view || validatedInput
+      const view = (<MetaArray<any>>fieldMeta).$.spec.items?.view || validatedInput
       return fieldMeta.map(view)
     } else {
       const view = <unknown>fieldMeta.$.spec.view as MetaView<T> || validatedInput

@@ -104,9 +104,9 @@ export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = 
 }
 
 export function validateValue (value: any) {
-  validate(m$(value).meta)
+  validate(<Meta<any>>m$(value).meta)
 }
 
 export function validateAllValues (value: any, revalidate: boolean = false) {
-  return validateAll(m$(value).meta)
+  return validateAll(<Meta<any>>m$(value).meta)
 }
