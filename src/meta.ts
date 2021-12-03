@@ -19,6 +19,9 @@ export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
 
 export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
 
+/**
+ * An object (generally a Meta or MetaArray) with a $ property of type MetaInfo.
+ */
 export type Meta$<T, P = any> = { $: MetaInfo<T, P> }
 
 /**
@@ -26,18 +29,36 @@ export type Meta$<T, P = any> = { $: MetaInfo<T, P> }
  * This is the full meta-structure for non-object types.
  */
 export type MetaInfo<T, P = any> = {
-  // Link to the meta object or array containing this $ property - useful for backlinks from values
+  /**
+   * Link to the meta object or array containing this $ property.
+   * Useful for backlinks from object values.
+   * Note that for MetaArrays this will need to be cast.
+   */
   meta?: Meta$<T, P>
 
-  // Ancestry within object graph (if applicable)
+  /**
+   * Ancestry within meta graph (if applicable)
+   */
   parent?: Meta<P>
+
+  /**
+   * Key within parent meta (if applicable).
+   */
   key?: FieldKey<P>
 
-  // Specification and State
+  /**
+   * The specification upon which this Meta was based.
+   */
   spec: MetaSpec<T, P>
+
+  /**
+   * The runtime Meta state.
+   */
   state: Policy.State<T, P>
 
-  // Underlying value getter and setter
+  /**
+   * The underlying data value.
+   */
   value?: T
 }
 
@@ -233,9 +254,19 @@ export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (m
 export const m$ = <T>(value: T): MetaInfo<T> => (<unknown>value as Meta$<T>)?.$
 
 /**
+ * Typed shortcut from a value object to its associated meta.
+ */
+export const meta = <T>(value: T): Meta<T> => (m$(value).meta as Meta<T>)
+
+/**
+ * Typed shortcut from a value array to its associated meta array.
+ */
+export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value).meta as MetaArray<T>)
+
+/**
  * Works better than keyof T where you know that T is not an array.
  */
-export type FieldKey<T> = Extract<keyof T, string>
+export type FieldKey<T> = Exclude<Extract<keyof T, string>, "__typename">
 
 /**
  * Return the keys of a field spec.
@@ -285,6 +316,9 @@ export const metaProcMap = <T, MM extends ProcessMap<T>> (procMap: MM): MetaProc
  */
 export type Calc <T, R = any> = (value: T) => R
 
+/**
+ * A calculation (deduction or derived value) on a meta object or array.
+ */
 export type MetaCalc <T, P = any, R = any> = (meta: Meta$<T, P>) => R
 
 /**
