@@ -125,7 +125,7 @@ const savePersonMeta: MetaProcess<Person> = metaProc(savePerson)
 
 ### Linking back from values to Metas
 
-As mentioned above, all value objects are assigned a `$` reference to the Meta's `$` property when a Meta is initialised (or reverted) to that value. In this way, you can go from meta to value with `meta.$.value` and back again with `value.$.meta`.
+As mentioned above, all value objects are assigned a `$` reference to the Meta's `$` property when a Meta is initialised (or reset) to that value. In this way, you can go from meta to value with `meta.$.value` and back again with `value.$.meta`.
 
 This can be useful in various cases, when you are mainly interested in working with the plain value but have some need for a piece of information from the Meta. However, there are a few caveats to consider.
 
@@ -168,10 +168,8 @@ In the example of a wizard page change, the process first validates the *from* p
 
 We have seen how individual objects and primitive values are reflected in the Meta graph. Arrays are quite similar in how they are handled. A `MetaSpec` that is based on an array type rather than an individual object type can have all the same policy-defined terms, but instead of the property `fields` it has the property `items`. This itself is a `MetaSpec` that becomes the specification for each individual item in the array. Note that if the `items` key of a MetaSpec is not specified then the underlying array's values will not have associated entries in the Meta graph. 
 
-At runtime, the Meta object of an array has the same `$` key as other Meta objects, with the same internal references including `$.value` which points to the underlying array with its original values. The Meta array is itself also an array of Meta objects of those original values, each of which is connected to its original value via its `$.value` property. Note that the array item Meta objects have the same `$.parent` as the array Meta itself. So, for example, if a parent object of type `Submission` had a field `contacts` of type `Contact`, then the type for both the  `contacts` field specification and the `items` property within that specification would be `MetaSpec<Contact, Submission>`. 
+At runtime, the Meta object of an array has the same `$` key as other Meta objects, with the same internal references including `$.value` which points to the underlying array with its original values. The Meta array is itself also an array of Meta objects of those original values, each of which is connected to its original value via its `$.value` property. Note that the array item Meta objects have the same `$.parent` as the array Meta itself. So, for example, if a parent object of type `Submission` had a field `contacts` of type `Contact`, the type for the  `contacts` field specification would be `MetaSpec<Contact[], Submission>` and the `items` property within that specification would be `MetaSpec<Contact, Submission>`. 
 
 If `reset` is called on a Meta array (or a Meta containing it) then the original array values are applied back into the Meta graph, overwriting any transient updates.
 
-If `commit` is called on a Meta array, the original array is mutated to match any updates in the transient Meta array. If the array members are of an Object type then each item is matched based on object identity (===) between the original value and the `$.value` of the Meta array item. Any items that were removed in the transient Meta array are removed in the underlying array. Remaining items are reordered as per their order in the Meta array, and new items are inserted wherever they have been created in the Meta array.
-
-The above commit behaviour is also applied if the array members are of a primitive type but due to JavaScript's copy-on-assign behaviour for primitives the effect is the same as a straightforward overwrite of the original array values. 
+If `commit` is called on a Meta array, the original array is mutated to match any updates in the transient Meta array. Any items that were removed in the transient Meta array are removed in the underlying array. Other items are reordered as per the order of their associated Metas in the Meta array, and new items are inserted wherever they have been created in the Meta array.
