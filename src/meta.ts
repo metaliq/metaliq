@@ -220,9 +220,9 @@ export function commit<T> (meta: Meta<T>) {
 }
 
 /**
- * (Re)sets the Meta's data value, to any provided value else the original underlying data.
+ * Resets the Meta's data value, to any provided value else the original underlying data.
  */
-export function set<T> (meta: Meta<T>, value?: T) {
+export function reset<T> (meta: Meta<T>, value?: T) {
   metafy(meta.$.spec,
     typeof value === "undefined" ? meta.$.value : value,
     meta.$.parent, meta.$.key, meta)
@@ -296,7 +296,7 @@ export type MetaProc<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?
  */
 export const metaProc = <T, M = any, R = any> (proc: Process<T, M, R>): MetaProc<T, any, M, R> => (meta, message) => {
   const result = proc(meta.$.value, message)
-  set(meta)
+  reset(meta)
   return result
 }
 
