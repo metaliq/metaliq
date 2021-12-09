@@ -192,10 +192,14 @@ export function metafy <T, P = any> (
  */
 export function commit<T> (meta: Meta<T>) {
   if (meta.$.spec.items) {
-    const value = <unknown>meta.$.value as any[] || []
-    Object.assign(meta.$, { value }) // Initialise value array if empty
-
     const metaArr = <unknown>meta as MetaArray<any>
+
+    // Initialise value array if empty
+    const value = <unknown>meta.$.value as any[] || []
+    Object.assign(meta.$, { value })
+
+    // Replace previous values with (maybe the same) current ones
+    value.length = 0
     for (const metaItem of metaArr) {
       commit(metaItem)
       value.push(metaItem.$.value)
