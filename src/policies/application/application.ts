@@ -1,4 +1,4 @@
-import { Meta, metafy, MetaProc, MetaSpec } from "../../meta"
+import { Meta, metafy, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -54,8 +54,6 @@ export type InitFunction<T> = (() => T) | (() => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 export type Review = (meta: Meta<any>) => any
 
-export const bootstrappers: Array<MetaProc<any>> = []
-
 export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   let spec: MetaSpec<T>
   let meta: Meta<T>
@@ -75,10 +73,6 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   const log = spec.log || false
   const local = spec.local || false
   await startUp({ review, log, local })
-
-  for (const bootstrapper of bootstrappers) {
-    await bootstrapper(meta)
-  }
 
   await review()
 

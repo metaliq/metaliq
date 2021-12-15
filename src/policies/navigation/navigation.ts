@@ -1,15 +1,15 @@
-import { Route, Router } from "./router"
-import { Meta, metaProc, MetaProc, metaSetups, Process } from "../../meta"
+import { Route, RouteHandler, Router } from "./router"
+import { MetaFn, metaSetups } from "../../meta"
 import { up } from "@metaliq/up"
-import { bootstrappers } from "../application/application"
 
 export { route } from "./router"
 
 export interface NavigationSpec<T, P = any> {
   /**
    * Route processing for this spec.
+   *
    */
-  routes?: Array<RouteProc<T, P>>
+  routes?: Array<MetaRoute<T, P, any, any>>
   /**
    * An initial path from the application base URL for this spec.
    */
@@ -23,43 +23,24 @@ declare module "../../policy" {
 }
 
 /**
- * Type for the items in the `routes` specification property.
- * Links a defined route with an associated update.
+ * Function which takes a meta and returns a route handler.
  */
-export type RouteProc<T, P = any> = [Route<any>, Process<T, P>]
+export type MetaRouteHandler<T, P, RP extends object, RQ> = MetaFn<T, P, RouteHandler<RP, RQ>>
 
 /**
- * Internal policy state.
+ * Tuple associating a route and its meta route handler.
  */
-type NavigationPolicy = {
-  // Internal registry of specified routes against their metas.
-  routeMetas: Array<RouteMetaProcMeta<any>>
-}
-type RouteMetaProcMeta<T, P = any> = [Route<any>, MetaProc<T, P>, Meta<T, P>]
-const policy: NavigationPolicy = { routeMetas: [] }
+export type MetaRoute<T, P, RP extends object, RQ> = [Route<RP, RQ>, MetaRouteHandler<T, P, RP, RQ>]
 
 metaSetups.push(meta => {
   const spec = meta.$.spec
-  if (spec.routes) {
-    for (const [route, proc] of meta.$.spec.routes || []) {
-      policy.routeMetas.push([route, metaProc(proc), meta])
+  if (spec.routes && !meta.$.parent) {
+    // If this is the top-level meta and has routes specified then initialise navigation
+    if (spec.path && typeof history !== "undefined") history.pushState(null, null, spec.path)
+    for (const [route, metaHandler] of spec.routes || []) {
+      route.on = metaHandler(meta)
     }
+    const router = new Router(spec.routes.map(([route]) => route), () => { up()() }).start()
+    router.catch(console.error)
   }
 })
-
-bootstrappers.push(async (meta: Meta<any>) => {
-  const spec = meta.$.spec
-  if (spec.path && typeof history !== "undefined") history.pushState(null, null, spec.path)
-  if (spec.routes) {
-    await initNav()
-  }
-})
-
-export async function initNav () {
-  for (const [route, proc, meta] of policy.routeMetas) {
-    route.on = (p, q) => proc(meta, { ...p, ...q })
-  }
-
-  const noop = () => {}
-  await new Router(policy.routeMetas.map(([route]) => route), up(noop)).start()
-}

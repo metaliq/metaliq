@@ -1,10 +1,10 @@
-import { fieldKeys, specValue, Meta, MetaArray, MetaProc, metaSetups } from "../../meta"
+import { fieldKeys, Meta, MetaArray, MetaFn, metaSetups, specValue } from "../../meta"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
-  mandatory?: boolean | MetaProc<T, P, boolean>
-  disabled?: boolean | MetaProc<T, P, boolean>
-  hidden?: boolean | MetaProc<T, P, boolean>
+  mandatory?: boolean | MetaFn<T, P, boolean>
+  disabled?: boolean | MetaFn<T, P, boolean>
+  hidden?: boolean | MetaFn<T, P, boolean>
 }
 
 export interface ValidationState {

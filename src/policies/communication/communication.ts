@@ -1,4 +1,4 @@
-import { Meta, MetaProc, metaSetups } from "../../meta"
+import { Meta, MetaFn, metaSetups } from "../../meta"
 
 export interface CommunicationSpec<T, P> {
   /**
@@ -7,7 +7,7 @@ export interface CommunicationSpec<T, P> {
    * Designed primarily for use by singleton receivers (e.g. message logging or display).
    * Multicasting would need to be handled internally within the data payload, e.g. by ID.
    */
-  channels?: Array<MetaProc<T, P>>
+  channels?: Array<MetaFn<T, P>>
 }
 
 declare module "../../policy" {
@@ -20,7 +20,7 @@ declare module "../../policy" {
  * Internal policy register.
  */
 type CommunicationPolicy = {
-  channelMap: Map<MetaProc<any>, Meta<any>>
+  channelMap: Map<MetaFn<any>, Meta<any>>
 }
 const policy: CommunicationPolicy = { channelMap: new Map() }
 
@@ -33,8 +33,15 @@ metaSetups.push(meta => {
 /**
  * Make a channel call.
  * If the channel is registered the message will be delivered to it.
+ * This is a curried function, so that it is easy to:
+ * (a) Create a partially applied function that will call the channel and
+ * (b) Use call (either directly or via partial application) from `up`.
+ * E.g.:
+ * ```
+ * const showModal
+ *
  */
-export function call<T, P, M, R> (proc: MetaProc<T, P, M, R>, message: M) {
-  const meta = policy.channelMap.get(proc) as Meta<T, P>
-  if (meta) return proc(meta, message)
+export const call = <T, P, R> (channel: MetaFn<T, P, R>): R => {
+  const meta = policy.channelMap.get(channel) as Meta<T, P>
+  if (meta) return channel(meta)
 }

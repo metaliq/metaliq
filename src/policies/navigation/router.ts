@@ -2,12 +2,16 @@ import { match, compile, MatchFunction, PathFunction } from "path-to-regexp"
 
 export type ParamsGetter<T> = ((data: any) => T)
 export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => void
-export type RouteHandler<P, Q = any> = (data: any, routeParams: P, queryParams?: Q) => any
+export type RouteHandler<P, Q = any> = (routeParams: P, queryParams?: Q) => any
 
 /**
- * An object related to a given route pattern, with its associated functions.
+ * An route related to a given pattern, which has the embedded URL parameters P,
+ * and potentially also takes optional query terms Q.
+ * Routes maintain association with their handler (the `on` function)
+ * and provide various functions including `go`, which navigates to the route
+ * with the given URL parameters and query terms.
  */
-export type Route<P extends object, Q extends object = any> = {
+export type Route<P extends object, Q = any> = {
   pattern: string
   on?: RouteHandler<P, Q> // Optionally initialised on creation or added later
   match: MatchFunction<P> // Matcher for the route's given pattern

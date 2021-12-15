@@ -135,7 +135,7 @@ class MetaArrayProto extends Array {
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: Meta<T>
+  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: Meta$<T>
 ): Meta<T, P> {
   // Establish the correct form of prototype for this meta
   proto = proto || (
@@ -222,7 +222,7 @@ export function commit<T> (meta: Meta<T>) {
 /**
  * Resets the Meta's data value, to any provided value else the original underlying data.
  */
-export function reset<T> (meta: Meta<T>, value?: T) {
+export function reset<T> (meta: Meta$<T>, value?: T) {
   metafy(meta.$.spec,
     typeof value === "undefined" ? meta.$.value : value,
     meta.$.parent, meta.$.key, meta)
@@ -242,14 +242,18 @@ export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
 }
 
 /**
- * Get a value that is specified as either a literal or MetaProcess in the spec.
+ * Get a value that is specified as either a literal or MetaFn in the spec.
  * For an example of such a property see `mandatory` flag in `ValidationSpec`.
+ * // TODO: Consider removing and having a specialised version where needed.
+ * Could produce confusing results if used with a valid function property, such as validator.
  */
-export const specValue: MetaProc<any, any, keyof Policy.Specification<any>> = (meta, specKey) => {
+export const specValue = <T>(meta: Meta<T>, specKey: keyof Policy.Specification<T>) => {
   const specProp = meta.$.spec[specKey]
-  return typeof specProp === "function"
-    ? specProp(meta)
-    : specProp
+  if (typeof specProp === "function") {
+    return (<MetaFn<T>>specProp)(meta)
+  } else {
+    return specProp
+  }
 }
 
 /**
@@ -279,63 +283,30 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
- * A processing function that takes a reference to a data structure
- * and an optional message and potentially returns a result.
- * By convention, the provided data value may be mutated, but no other side effect should be produced.
- * So this is neither a "pure" function or a completely "impure" one - it is a data transformation process.
+ * Basic function on an underlying data value.
+ * Could be a pure function to provide a derived value,
+ * or could return a process function that takes further values,
+ * in which case the convention is that it may mutate the provided value
+ * but no other side effect should be produced.
  */
-export type Process<T, M = any, R = any> = (data: T, message?: M) => R
+export type Fn<T, R = any> = (value: T) => R
 
 /**
- * A process function for a meta type.
+ * A function on a meta object or array.
  */
-export type MetaProc<T, P = any, M = any, R = any> = (meta: Meta<T, P>, message?: M) => R
+export type MetaFn<T, P = any, R = any> = (meta: Meta$<T, P>) => R
 
 /**
- * Return a meta process function for the given underlying process.
+ * Return a MetaFn for the given Fn.
  */
-export const metaProc = <T, M = any, R = any> (proc: Process<T, M, R>): MetaProc<T, any, M, R> => (meta, message) => {
-  const result = proc(meta.$.value, message)
-  reset(meta)
-  return result
-}
-
-/**
- * Convenience types and function for converting from a map of procs to the equivalent map of metaprocs.
- * Can be useful for defining an interface for a meta system component
- * and supplying a map of functions for the underlying data.
- */
-export type ProcessMap<T> = { [index: string]: Process<T> }
-export type MetaProcMap<T, MM extends ProcessMap<T> = {}> = { [K in keyof MM]: MetaProc<T> }
-
-export const metaProcMap = <T, MM extends ProcessMap<T>> (procMap: MM): MetaProcMap<T, MM> => {
-  const result: MetaProcMap<T> = {}
-  Object.keys(procMap).forEach(key => Object.assign(result, { [key]: metaProc(procMap[key]) }))
-  return result as MetaProcMap<T, MM>
-}
-
-/**
- * Basic calculation (deduction or derived value) on a value.
- * By convention, this should be a pure function which modifies nothing.
- */
-export type Calc <T, R = any> = (value: T) => R
-
-/**
- * A calculation (deduction or derived value) on a meta object or array.
- */
-export type MetaCalc <T, P = any, R = any> = (meta: Meta$<T, P>) => R
-
-/**
- * Return a MetaCalc for the given Calc.
- */
-export const metaCalc = <T, R = any> (calc: Calc<T, R>): MetaCalc<T, any, R> => (meta: Meta$<T>): R => calc(meta.$.value)
+export const metaFn = <T, R = any> (calc: Fn<T, R>): MetaFn<T, any, R> => (meta: Meta$<T>): R => calc(meta.$.value)
 
 /**
  * Single level function currying. Can be a useful pattern.
  * Convert a curried calc (that takes a value of W and returns a function that takes a value of T and returns R)
  * into a function that takes a Meta of W and returns a function that takes a Meta of T and returns R.
- * TODO: Extend this out to provide multi-level currying - not as common but may be handy.
+ * TODO: Move this to a util library and extend out to provide multi-level currying - not as common but may be handy.
  */
-export const metaCurry = <W, T, R = any> (fn: Calc<W, Calc<T, R>>, w: Meta$<W>): MetaCalc<T, any, R> => {
-  return metaCalc(metaCalc(fn)(w))
+export const metaCurry = <W, T, R = any> (fn: Fn<W, Fn<T, R>>, w: Meta$<W>): MetaFn<T, any, R> => {
+  return metaFn(metaFn(fn)(w))
 }
