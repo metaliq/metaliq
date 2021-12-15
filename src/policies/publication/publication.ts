@@ -40,6 +40,14 @@ export type PublicationTarget = {
   runner?: Runner
 
   /**
+   * Cleaner function, run prior to build.
+   * When performing a multi-spec build, all cleaners are run first, followed by all builders.
+   * This allows for multiple specifications to provide separate content
+   * to a common target directory which has been emptied or removed as part of the clean process.
+   */
+  cleaner?: Cleaner
+
+  /**
    * Build function.
    */
   builder?: Builder
@@ -71,3 +79,6 @@ export type Builder = (context: PublicationContext) => Promise<BuildResult>
 
 export type RunResult = boolean
 export type Runner = (context: PublicationContext) => Promise<RunResult>
+
+export type CleanResult = boolean
+export type Cleaner = (context: PublicationContext) => Promise<CleanResult>

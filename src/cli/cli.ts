@@ -9,6 +9,7 @@ import { DevServerConfig, startDevServer } from "@web/dev-server"
 import { MetaSpec } from "../meta"
 import { spa } from "../policies/publication/spa"
 import { Logger } from "@web/dev-server-core"
+import { PublicationContext, PublicationTarget } from "../policies/publication/publication"
 
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
@@ -52,8 +53,8 @@ program
   .action(run)
 
 program
-  .command("build [specName]")
-  .option("-f --file <file>", "File location within source dir, with or without .ts extension", "specs")
+  .command("build [specNames...]")
+  .option("-f --file <file>", "Spec file location within source dir, with or without .ts extension", "specs")
   .description("Run the build for the given spec (defaults to appSpec)")
   .action(build)
 
@@ -68,6 +69,7 @@ program.parse()
 
 async function run (specName: string = "appSpec", options: RunOptions = {}) {
   // Initial project compilation with watch
+  // Compile first in order to be able to import from bin
   await new Promise((resolve, reject) => {
     let completed = false
     const tscProcess = spawn(tscPath, ["--watch"], { shell: true, windowsHide: true })
@@ -100,24 +102,60 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   })
 
   const simplePath = optionsSimplePath(options)
-  const spec = await importSpec(specName)
+  const spec = await importSpec(specName, simplePath)
+  if (!spec) {
+    return console.error(`Specification not found: ${simplePath}.ts > ${specName}`)
+  }
 
   const pubTarget = spec?.publication?.target || spa
   if (!pubTarget?.runner) {
-    console.log("Missing publication target runtime")
-  } else {
-    console.log(`Running specification with publication target ${pubTarget.name}`)
-    await pubTarget.runner({ specName, simplePath, spec })
+    console.log("Specified publication target has no runner")
   }
+
+  console.log(`Running specification ${specName} with publication target ${pubTarget.name}`)
+  await pubTarget.runner({ specName, simplePath, spec })
 }
 
-async function build (specName: string = "appSpec", options: BuildOptions = {}) {
-  console.log("Starting MetaliQ project build")
-  const simplePath = optionsSimplePath(options)
+async function build (specNames: string[], options: BuildOptions = {}) {
+  if (specNames.length === 0) specNames.push("appSpec")
+  console.log(`Starting MetaliQ build for ${specNames.join(", ")}`)
+
   await pExec(tscPath)
-  const spec = await importSpec(specName, simplePath)
-  const pubTarget = spec.publication?.target || spa
-  await pubTarget.builder({ specName, simplePath, spec })
+
+  type BuildBundle = { specName: string, target: PublicationTarget, context: PublicationContext }
+  const bundles: BuildBundle[] = []
+
+  // Assemble all targets
+  const simplePath = optionsSimplePath(options)
+  for (const specName of specNames) {
+    const spec = await importSpec(specName, simplePath)
+    if (!spec) {
+      return console.error(`Specification not found: ${simplePath} > ${specName}`)
+    }
+    bundles.push({
+      specName,
+      target: spec.publication?.target || spa,
+      context: { specName, simplePath, spec }
+    })
+  }
+
+  // Clean all targets
+  for (const { target, context } of bundles) {
+    if (target.cleaner) {
+      await target.cleaner(context)
+    }
+  }
+
+  // Build all targets
+  for (const { specName, target, context } of bundles) {
+    if (target.builder) {
+      console.log(`Building specification ${specName}`)
+      await target.builder(context)
+    } else {
+      return console.error(`Specification ${specName} publication target ${target.name} for  has no builder`)
+    }
+  }
+
   console.log("Build completed")
 }
 
@@ -143,10 +181,13 @@ async function importSpec (name: string = "appSpec", path: string = "specs") {
   try {
     const module = await import (join(process.cwd(), `bin/${path}.js`))
     const spec: MetaSpec<any> = module[name]
-    console.log(`Loaded specification ${spec.label}`)
     return spec
   } catch (e) {
-    console.log(`Couldn't find spec  ${path} > ${name}`)
+    console.error([
+      `Problem importing spec ${path} > ${name}`,
+      e.stack,
+      e.message
+    ].join("\n"))
     return null
   }
 }

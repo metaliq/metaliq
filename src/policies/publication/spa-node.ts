@@ -5,7 +5,7 @@ import { copy, remove, pathExists } from "fs-extra"
 import CleanCSS from "clean-css"
 import { historyApiFallbackMiddleware } from "@web/dev-server-core/dist/middleware/historyApiFallbackMiddleware"
 
-import { Builder, Runner } from "./publication"
+import { Builder, Cleaner, Runner } from "./publication"
 import { SinglePageAppConfig } from "./spa"
 import dedent from "ts-dedent"
 import { rollup } from "rollup"
@@ -61,6 +61,15 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
   return true
 }
 
+export const spaCleaner: Cleaner = async ({ spec }) => {
+  const spa: SinglePageAppConfig = spec.publication?.spa
+  const destDir = spa?.build?.destDir || "www"
+
+  // Clean previous build
+  await remove(destDir)
+  return true
+}
+
 export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   const spa: SinglePageAppConfig = spec.publication?.spa
 
@@ -70,9 +79,6 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   const jsDest = spa?.build?.js?.dest || jsSrc
   const { src: cssSrc } = spa?.build?.css || { src: "css/index.css" }
   const cssDest = spa?.build?.css?.dest || cssSrc
-
-  // Clean previous build
-  await remove(destDir)
 
   // Produce HTML
   const html = indexHtml(spa, jsDest, cssDest)

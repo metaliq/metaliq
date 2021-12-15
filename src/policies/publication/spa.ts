@@ -1,5 +1,5 @@
 import { PageInfo } from "./page"
-import { Builder, PublicationTarget, Runner } from "./publication"
+import { Builder, Cleaner, PublicationTarget, Runner } from "./publication"
 
 declare module "./publication" {
   namespace Publication {
@@ -58,6 +58,14 @@ export const spa: PublicationTarget = {
   async builder (context) {
     const { spaBuilder }: { spaBuilder: Builder } = await import (nodeModule)
     return await spaBuilder(context)
+  },
+
+  /**
+   * A wrapper around a dynamically imported cleaner, in order that Node packages are not linked in a browser context
+   */
+  async cleaner (context) {
+    const { spaCleaner }: { spaCleaner: Cleaner } = await import (nodeModule)
+    return await spaCleaner(context)
   },
 
   /**
