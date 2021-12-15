@@ -212,10 +212,20 @@ export function commit<T> (meta: Meta<T>) {
     }
   }
 
-  // Commit primitive value
-  if (meta.$.parent && typeof meta.$.value !== "object") {
-    meta.$.parent.$.value = meta.$.parent.$.value || {} // Create parent value if was previously null
-    meta.$.parent.$.value[meta.$.key] = meta.$.value
+  // Commit meta for primitive value
+  const primitives = ["string", "number", "boolean", "bigint"]
+  if (primitives.includes(typeof meta.$.value)) {
+    // Assign value and ensure parent value chain exists
+    const setParentValue = <T, P>(child: Meta<T, P>) => {
+      const { parent, key, value } = child.$
+      if (!parent) return
+      parent.$.value = parent.$.value || {} as P
+      parent.$.value[key] = <unknown>value as P[FieldKey<P>]
+      if (!parent.$.parent?.$.value?.[parent.$.key]) {
+        setParentValue(parent)
+      }
+    }
+    setParentValue(meta)
   }
 }
 
