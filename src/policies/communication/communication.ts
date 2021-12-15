@@ -30,6 +30,8 @@ metaSetups.push(meta => {
   }
 })
 
+export type ChannelCall<M> = (msg: M) => any
+
 /**
  * Make a channel call.
  * If the channel is registered the message will be delivered to it.
@@ -41,7 +43,7 @@ metaSetups.push(meta => {
  * const showModal
  *
  */
-export const call = <T, P, R> (channel: MetaFn<T, P, R>): R => {
+export const call = <T, P, M> (channel: MetaFn<T, P, ChannelCall<M>>) => (msg: M) => {
   const meta = policy.channelMap.get(channel) as Meta<T, P>
-  if (meta) return channel(meta)
+  if (meta) return channel(meta)(msg)
 }
