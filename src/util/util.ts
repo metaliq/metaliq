@@ -1,10 +1,33 @@
 import { parse, stringify } from "flatted"
 
-export type Maybe<T> = T | null
+// TYPESCRIPT UTILITIES
 
+/**
+ * Return type for a function that returns either the given type or null.
+ */
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type MaybeReturn <T> = T | void
 
+/**
+ * Method to get the defined keys for an enum - excludes the auto-generated reverse mapping keys.
+ * Provides a useful pattern for iterating over known keys of a given object with a common type,
+ * by creating an enum of those keys and obtaining a list of them with this function, enabling code like:
+ * ```
+ * enum Day { mon, tue, wed, thu, fri, sat, sun }
+ * const dayList = enumKeys(Day)
+ * dayList.map(d => dailySupplies[d])
+ * ```
+ * In this example d will have the specific type of `dailySupplies.mon` etc.
+ * despite `dailySupplies` potentially having other (non-day) keys.
+ */
+export const enumKeys = <T extends object>(obj: T): Array<keyof T> =>
+  Object.keys(obj).filter(k => parseInt(k).toString() !== k) as Array<keyof T>
+
+// ARRAY FUNCTIONS
+
+/**
+ * Return a function to sort by the given key(s).
+ */
 export function sortBy<T> (keyOrKeys: keyof T | Array<keyof T>) {
   const keys: Array<keyof T> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
   return (a: T, b: T) => {
@@ -18,6 +41,39 @@ export function sortBy<T> (keyOrKeys: keyof T | Array<keyof T>) {
   }
 }
 
+/**
+ * Remove the given item from the given arary and return it.
+ */
+export function remove<T> (array: T[], item: T) {
+  if (array.includes(item)) {
+    array.splice(array.indexOf(item), 1)
+    return item
+  } else return null
+}
+
+/**
+ * Push the given item to the given array and return it.
+ */
+export function pushTo<T> (array: T[], item: T) {
+  array.push(item)
+  return item
+}
+
+/**
+ * Is this the first item in the array?
+ */
+export const isFirst = (item: any, array: any[]) => item === array[0]
+
+/**
+ * Is this the last item in the array?
+ */
+export const isLast = (item: any, array: any[]) => item === array.slice(-1)[0]
+
+// OBJECT FUNCTIONS
+
+/**
+ * Create a new object with the given keys from the original.
+ */
 export function extractKeys<T> (obj: T, ...keys: Array<keyof T>): Partial<T> {
   const result: Partial<T> = {}
   for (const key of keys) {
@@ -26,20 +82,9 @@ export function extractKeys<T> (obj: T, ...keys: Array<keyof T>): Partial<T> {
   return result
 }
 
-export const capitalize = (str: string) => str.substr(0, 1).toUpperCase() + str.substr(1)
-
-export const isAre = (num: number) => num === 1 ? "is" : "are"
-
-export const plural = (num: number) => num === 1 ? "" : "s"
-
-// Return true if the given term is present in any of the given target strings.
-// Case insensitive.
-export const textSearch = (term: string, ...targets: string[]) => {
-  const target = targets.join(" ")
-  return target.toLowerCase().search(term.toLowerCase()) >= 0
-}
-
-// Make a dereferenced copy of obj, with the option of either excluding or including certain fields.
+/**
+ * Make a dereferenced copy of obj, with the option of either excluding or including certain fields.
+ */
 export function copy<T> (obj: T, { exclude, include }: { exclude?: string[], include?: string[] } = {}): T {
   const flatted = exclude
     ? stringify(obj, (k: string, v: any) => exclude.includes(k) ? undefined : v)
@@ -47,24 +92,9 @@ export function copy<T> (obj: T, { exclude, include }: { exclude?: string[], inc
   return parse(flatted)
 }
 
-export const enumLabel = (value: string) => value.split("_").map(capitalize).join(" ")
-
-export function remove<T> (array: T[], item: T) {
-  if (array.includes(item)) {
-    array.splice(array.indexOf(item), 1)
-    return true
-  } else return false
-}
-
-export function pushTo<T> (array: T[], item: T) {
-  array.push(item)
-  return item
-}
-
-// Return the given value or a fallback value (which defaults to "") if it is null or undefined
-export const valOr = (input: any, or: any = "") => (typeof input === "undefined" || input === null) ? or : input
-
-// Return the given value if is is defined, or if it is an object then at least one of its direct children is defined
+/**
+ * Return the given value if is is defined, or if it is an object then at least one of its direct children is defined
+ */
 export const hasSomeVal = <T extends object>(obj: T, excludeKeys: string[] = []) => {
   if (typeof obj !== "undefined" && typeof obj !== "object") return obj
   for (const key in obj) {
@@ -74,28 +104,6 @@ export const hasSomeVal = <T extends object>(obj: T, excludeKeys: string[] = [])
     }
   }
 }
-
-export function getKeyOf<T extends object> (obj: T, value: any) {
-  for (const key in obj) {
-    if (obj[key] === value) return key
-  }
-}
-
-// Initialise any null / undefined members of the given object property names to an empty object
-export const initObjProps = <T extends object>(obj: T, keys: Array<keyof T>) => {
-  for (const key of keys) {
-    obj[key] = obj[key] || <any>{}
-  }
-}
-
-export const isFirst = (item: any, array: any[]) => item === array[0]
-export const isLast = (item: any, array: any[]) => item === array.slice(-1)[0]
-
-/**
- * Method to get the defined keys for an enum - excludes the auto-generated reverse mapping keys
- */
-export const enumKeys = <T extends object>(obj: T): Array<keyof T> =>
-  Object.keys(obj).filter(k => parseInt(k).toString() !== k) as Array<keyof T>
 
 /**
  * Filter the object to a subset of values based on a predicate applied to each value.
@@ -109,6 +117,50 @@ export const filterObject = <T, K extends keyof T>(obj: T, predicate: (k: K, v: 
 }
 
 /**
+ * Find the key of the given value in an object.
+ * Where a given value exists multiple times in an object the first entry is returned.
+ */
+export function getKeyOf<T extends object> (obj: T, value: any) {
+  for (const key in obj) {
+    if (obj[key] === value) return key
+  }
+}
+
+/**
+ * Initialise any null / undefined members of the given object property names to an empty object
+ */
+export const initObjProps = <T extends object>(obj: T, keys: Array<keyof T>) => {
+  for (const key of keys) {
+    obj[key] = obj[key] || <any>{}
+  }
+}
+
+// TEXT FUNCTIONS
+
+export const capitalize = (str: string) => str.substr(0, 1).toUpperCase() + str.substr(1)
+
+/**
+ * English language form of the verb "to be" appropriate for the plurality of the subject.
+ */
+export const isAre = (num: number) => num === 1 ? "is" : "are"
+
+/**
+ * Naive english language pluralizer.
+ */
+export const plural = (num: number) => num === 1 ? "" : "s"
+
+/**
+ * Return true if the given term is present in any of the given target strings.
+ * Case insensitive.
+ */
+export const textSearch = (term: string, ...targets: string[]) => {
+  const target = targets.join(" ")
+  return target.toLowerCase().search(term.toLowerCase()) >= 0
+}
+
+// GRAPHQL UTILITIES
+
+/**
  * Helper method for making GraphQL inputs from value objects.
  * Excludes keys $, __typename and any additional keys provided.
  */
@@ -120,6 +172,11 @@ export function inputObject <V extends object, I> (object: V, excludeKeys: strin
   return parse(flatted) as I
 }
 
+// MISCELLANEOUS UTILITIES
+
+/**
+ * Simple wait function, useful in simulating and mocking async operations.
+ */
 export function wait (delay: number = 1000) {
   return new Promise(resolve => {
     setTimeout(resolve, delay)
