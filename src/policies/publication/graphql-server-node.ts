@@ -60,7 +60,7 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
 
 export const cleaner: Cleaner = async ({ spec }) => {
   const gql: GraphQLServerConfig = spec.publication?.graphQLServer
-  const destDir = gql?.build?.destDir || "prod/functions"
+  const destDir = gql?.build?.destDir || "prod/api"
 
   // Clean previous build
   await remove(destDir)
