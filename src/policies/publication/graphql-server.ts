@@ -48,7 +48,7 @@ export type GraphQLServerConfig = {
    * Details for the production build.
    */
   build?: {
-    destDir?: string // Defaults to prod/server
+    destDir?: string // Defaults to prod/api
   }
 }
 

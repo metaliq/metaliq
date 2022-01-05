@@ -1,23 +1,17 @@
 import { dirname, join } from "path"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 import mime from "mime-types"
-import { copy, remove, pathExists } from "fs-extra"
+import { copy, pathExists, remove } from "fs-extra"
 import CleanCSS from "clean-css"
 import { historyApiFallbackMiddleware } from "@web/dev-server-core/dist/middleware/historyApiFallbackMiddleware"
 
 import { Builder, Cleaner, Runner } from "./publication"
 import { SinglePageAppConfig } from "./spa"
-import dedent from "ts-dedent"
-import { rollup } from "rollup"
-import ignore from "rollup-plugin-ignore"
-import nodeResolve from "@rollup/plugin-node-resolve"
-import commonjs from "@rollup/plugin-commonjs"
-import minifyHTMLLiterals from "rollup-plugin-minify-html-literals"
-import { defaultShouldMinify } from "minify-html-literals"
-import { minify } from "terser"
 import { page } from "./page"
 import { ensureAndWriteFile } from "./util"
 import { devLogger } from "../../cli/cli"
+import { makeProdJs } from "./prod-js"
+import dedent from "ts-dedent"
 
 let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
@@ -86,7 +80,10 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
 
   // Produce JS
   await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath))
-  const js = await makeProdJs(jsSrc)
+  const js = await makeProdJs({
+    src: jsSrc,
+    exclude: ["electron", "./spa-node"]
+  })
   await remove(jsSrc)
   await ensureAndWriteFile(join(destDir, jsDest), js)
 
@@ -135,37 +132,4 @@ const indexHtml = (spaConfig: SinglePageAppConfig, jsPath: string, cssPath?: str
     scripts,
     styles
   })
-}
-
-/**
- * Provide an optimised bundle for the given entry point.
- * Includes module bundling and minification of JS and embedded lit HTML templates.
- */
-const makeProdJs = async (src: string) => {
-  // Bundle all JS modules
-  const bundler = await rollup({
-    input: src,
-    plugins: [
-      ignore(["electron", "./spa-node"], { commonjsBugFix: true }),
-      nodeResolve(),
-      commonjs(),
-      minifyHTMLLiterals({
-        options: {
-          shouldMinify (template) {
-            return defaultShouldMinify(template) || template.tag === "svg"
-          }
-        }
-      })
-    ]
-  })
-  const bundledJs = await bundler.generate({ format: "esm" })
-
-  // Minify JS, including embedded HTML and SVG template literals
-  const minJsResult = await minify(bundledJs.output[0].code, {
-    output: {
-      comments: false
-    }
-  })
-
-  return minJsResult.code
 }
