@@ -37,26 +37,28 @@ export const input = (options: InputOptions = {}): MetaView<any> => meta => html
   <input type=${options.type || "text"}
     disabled=${ifDefined(meta.$.state.disabled)}
     class="mq-input ${classMap({
+      [`mq-${options.type || "text"}-input`]: true,
       "mq-error-field": meta.$.state.error,
       "mq-disabled": meta.$.state.disabled
     })}"
     value=${live(meta.$.value ?? "")}
-    @blur=${options.type !== "checkbox" ? up(onInput(options), meta) : () => {}}
+    @focus=${up(onFocus, meta)}
+    @blur=${up(onBlur(options), meta)}
     @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
     .checked=${options.type === "checkbox" && meta.$.value}
   />
 `
 
 export const validatedInput: MetaView<any> = meta => html`
-  <label class="mq-label">
-    ${meta.$.spec.label || meta.$.key}
+  <label class="mq-field ${classMap({ "mq-active": meta.$.state.active, "mq-populated": meta.$.value })}">
+    <span class="mq-input-label ">${meta.$.spec.label || meta.$.key}</span>
     ${input()(meta)}
     ${errorMsg(meta, "mq-field-error")}
   </label>
 `
 
 export const validatedCheckbox: MetaView<boolean> = meta => html`
-  <label class="mq-label">
+  <label class="mq-field">
     ${input({ type: "checkbox" })(meta)}
     ${meta.$.spec.label}
     ${errorMsg(meta, "mq-field-error")}
@@ -68,6 +70,15 @@ export const errorMsg = (meta: Meta<any>, classes = "") => {
   const errorMsg = typeof error === "string" ? error : "Invalid value"
   classes = `mq-error-msg ${classes}`
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
+}
+
+export function onFocus (meta: Meta<any>) {
+  meta.$.state.active = true
+}
+
+const onBlur = (options: InputOptions) => (meta: Meta<any>, event: Event) => {
+  meta.$.state.active = false
+  if (options.type !== "checkbox") onInput(options)(meta, event)
 }
 
 const onInput = ({ unvalidated, commit: doCommit, type }: InputOptions) =>

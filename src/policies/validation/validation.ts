@@ -14,6 +14,7 @@ export interface ValidationState {
   mandatory?: boolean
   disabled?: boolean
   hidden?: boolean
+  active?: boolean
 }
 
 declare module "../../policy" {
