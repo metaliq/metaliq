@@ -48,7 +48,7 @@ export const validatedInput: MetaView<any> = meta => html`
   <label class="mq-label">
     ${meta.$.spec.label || meta.$.key}
     ${input()(meta)}
-    ${errorMsg(meta, "mt-2")}
+    ${errorMsg(meta, "mq-field-error")}
   </label>
 `
 
@@ -56,7 +56,7 @@ export const validatedCheckbox: MetaView<boolean> = meta => html`
   <label class="mq-label">
     ${input({ type: "checkbox" })(meta)}
     ${meta.$.spec.label}
-    ${errorMsg(meta, "mt-2")}
+    ${errorMsg(meta, "mq-field-error")}
   </label>
 `
 
