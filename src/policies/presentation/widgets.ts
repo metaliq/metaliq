@@ -10,7 +10,9 @@ import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
 
 export const metaForm: MetaView<any> = <T>(meta: Meta<T>) => form(
-  fieldKeys(meta.$.spec).map(key => fieldView(key)(meta))
+  fieldKeys(meta.$.spec)
+    .filter(key => !meta[key].$.state.hidden)
+    .map(key => fieldView(key)(meta))
 )
 
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
@@ -39,7 +41,8 @@ export const input = (options: InputOptions = {}): MetaView<any> => meta => html
       "mq-disabled": meta.$.state.disabled
     })}"
     value=${live(meta.$.value ?? "")}
-    @blur=${up(onInput(options), meta)}
+    @blur=${options.type !== "checkbox" ? up(onInput(options), meta) : () => {}}
+    @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
     .checked=${options.type === "checkbox" && meta.$.value}
   />
 `

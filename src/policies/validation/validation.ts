@@ -43,6 +43,8 @@ export type ValidationResult = string | boolean
  */
 export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
+const hiddenFnMetas: Array<Meta<any>> = []
+
 metaSetups.push(meta => {
   if (meta.$.spec.validator) {
     return {
@@ -53,6 +55,9 @@ metaSetups.push(meta => {
       disabled: specValue(meta, "disabled"),
       hidden: specValue(meta, "hidden")
     }
+  }
+  if (typeof meta.$.spec.hidden === "function") {
+    hiddenFnMetas.push(meta)
   }
 })
 
@@ -73,6 +78,10 @@ export function validate (meta: Meta<any>) {
     } else {
       meta.$.state.error = false
     }
+  }
+  for (const hiddenFnMeta of hiddenFnMetas) {
+    const hiddenFn = hiddenFnMeta.$.spec.hidden as MetaFn<any>
+    hiddenFnMeta.$.state.hidden = hiddenFn(hiddenFnMeta)
   }
 }
 

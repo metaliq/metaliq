@@ -27,7 +27,7 @@ metaSetups.push(meta => {
   if (!meta.$.parent && meta.$.spec.view) {
     meta.$.spec.review = meta.$.spec.review || renderPage
     Object.assign(window, { meta })
-    document.title = meta.$.spec.label
+    document.title = meta.$.spec.label ?? ""
   }
 })
 
