@@ -39,7 +39,9 @@ export const input = (options: InputOptions = {}): MetaView<any> => meta => html
       "mq-disabled": meta.$.state.disabled
     })}"
     value=${live(meta.$.value ?? "")}
-    @blur=${up(onInput(options), meta)} />
+    @blur=${up(onInput(options), meta)}
+    .checked=${options.type === "checkbox" && meta.$.value}
+  />
 `
 
 export const validatedInput: MetaView<any> = meta => html`
