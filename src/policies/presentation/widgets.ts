@@ -9,12 +9,18 @@ import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { Condition } from "../deduction/deduction"
 
+/**
+ * A MetaView for an object type that displays all its child fields.
+ */
 export const metaForm: MetaView<any> = <T>(meta: Meta<T>) => form(
   fieldKeys(meta.$.spec)
     .filter(key => !meta[key].$.state.hidden)
     .map(key => fieldView(key)(meta))
 )
 
+/**
+ * Return a MetaView for a type that displays the view of a particular field given its key.
+ */
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
   meta => {
     const fieldMeta = meta[fieldKey]
@@ -26,6 +32,16 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> =>
       return view(fieldMeta)
     }
   }
+
+/**
+ * Return a MetaView for a type that combines multiple other MetaViews for that type into a single MetaView.
+ */
+export const multiView = <T>(...views: Array<MetaView<T>>): MetaView<T> => meta => views.map(view => view(meta))
+
+/**
+ * Return a view that consists of the given text or HTML template.
+ */
+export const content = (textOrHtml: ViewResult): MetaView<any> => meta => textOrHtml
 
 export type InputOptions = {
   type?: "text" | "checkbox" | "number" | "tel"
