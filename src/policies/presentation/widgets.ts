@@ -11,11 +11,13 @@ import { Condition } from "../deduction/deduction"
 /**
  * A MetaView for an object type that displays all its child fields.
  */
-export const metaForm: MetaView<any> = <T>(meta: Meta<T>) => form(
-  fieldKeys(meta.$.spec)
-    .filter(key => !meta[key].$.state.hidden)
-    .map(key => fieldView(key)(meta))
-)
+export const metaForm = (classes: string = ""): MetaView<any> => <T>(meta: Meta<T>) => html`
+  <div class="mq-form ${classes}">
+    ${fieldKeys(meta.$.spec)
+      .filter(key => !meta[key].$.state.hidden)
+      .map(key => fieldView(key)(meta))}
+  </div>
+`
 
 /**
  * Return a MetaView for a type that displays the view of a particular field given its key.
@@ -162,12 +164,6 @@ export const errorsBlock: MetaView<any> = meta => html`
 
 export const button = <T>(click: Update<Meta<T>>): MetaView<T> => meta => html`
   <button @click=${up(click, meta)}>Click</button> 
-`
-
-const form = (content: ViewResult) => html`
-  <div class="mq-form">
-    ${content}
-  </div>
 `
 
 export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
