@@ -22,7 +22,8 @@ export const makeProdJs = async ({ src, exclude = [], external = [], format = "e
   // Bundle all JS modules
   const bundler = await rollup({
     input: src,
-    output: { format },
+    treeshake: "smallest",
+    external,
     plugins: [
       ignore(exclude, { commonjsBugFix: true }),
       nodeResolve(),
@@ -37,7 +38,9 @@ export const makeProdJs = async ({ src, exclude = [], external = [], format = "e
       })
     ]
   })
-  const bundledJs = await bundler.generate({ format: "esm" })
+  const bundledJs = await bundler.generate({
+    format
+  })
 
   // Minify JS, including embedded HTML and SVG template literals
   const minJsResult = await minify(bundledJs.output[0].code, {

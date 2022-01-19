@@ -79,10 +79,10 @@ export const builder: Builder = async ({ spec, simplePath, specName }) => {
   const js = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
-    external: ["apollo-server-cloud-functions", "firebase-functions"],
+    external: ["apollo-server-cloud-functions", "firebase-functions", "node-fetch"],
     format: "commonjs"
   })
-  await remove(jsSrc)
+  // await remove(jsSrc)
   await ensureAndWriteFile(join(destDir, "index.js"), js)
 
   // Add package.json
@@ -140,6 +140,9 @@ const schemaJs = (schema: string) => dedent`
 const indexJs = (specName: string, specPath: string) => dedent`
   import { typeDefs } from "./schema.js"
   import { ${specName} } from "./${specPath}.js"
+  import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
+  
+  installWindowOnGlobal() // Shim to prevent import error in lit
   
   const { ApolloServer } = require("apollo-server-cloud-functions")
   const functions = require("firebase-functions")
@@ -169,10 +172,13 @@ const packageJson = {
   },
   main: "index.js",
   dependencies: {
+    "@lit-labs/ssr": "^1.0.0",
     "apollo-server-cloud-functions": "^3.6.1",
     "firebase-admin": "^9.8.0",
     "firebase-functions": "^3.14.1",
-    graphql: "^16.2.0"
+    graphql: "^16.2.0",
+    lit: "^2.0.0",
+    "node-fetch": "2"
   },
   devDependencies: {
     "firebase-functions-test": "^0.2.0"
