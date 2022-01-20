@@ -252,21 +252,6 @@ export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
 }
 
 /**
- * Get a value that is specified as either a literal or MetaFn in the spec.
- * For an example of such a property see `mandatory` flag in `ValidationSpec`.
- * // TODO: Consider removing and having a specialised version where needed.
- * Could produce confusing results if used with a valid function property, such as validator.
- */
-export const specValue = <T>(meta: Meta<T>, specKey: keyof Policy.Specification<T>) => {
-  const specProp = meta.$.spec[specKey]
-  if (typeof specProp === "function") {
-    return (<MetaFn<T>>specProp)(meta)
-  } else {
-    return specProp
-  }
-}
-
-/**
  * Shortcut from a value object to the $ meta info.
  */
 export const m$ = <T>(value: T): MetaInfo<T> => (<unknown>value as Meta$<T>)?.$

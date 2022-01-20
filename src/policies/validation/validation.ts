@@ -1,4 +1,5 @@
-import { fieldKeys, Meta, MetaArray, MetaFn, metaSetups, specValue } from "../../meta"
+import { fieldKeys, Meta, MetaArray, MetaFn, metaSetups } from "../../meta"
+import { Policy } from "../../policy"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
@@ -19,7 +20,8 @@ export interface ValidationState {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends ValidationSpec<T, P> {}
+    interface Specification<T, P> extends ValidationSpec<T, P> {
+    }
 
     interface State<T, P> extends ValidationState {
       this?: State<T, P>
@@ -49,25 +51,35 @@ const disabledFnMetas: Array<Meta<any>> = []
 const mandatoryFnMetas: Array<Meta<any>> = []
 
 metaSetups.push(meta => {
-  if (typeof meta.$.spec.hidden === "function") {
+  const state: Policy.State<any> = meta.$.spec.validator
+    ? { error: false, validated: false } // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
+    : {}
+
+  const hiddenSpec = meta.$.spec.hidden
+  if (typeof hiddenSpec === "function") {
     hiddenFnMetas.push(meta)
+  } else if (typeof hiddenSpec === "boolean") {
+    state.hidden = hiddenSpec
   }
-  if (typeof meta.$.spec.disabled === "function") {
+
+  const disabledSpec = meta.$.spec.disabled
+  if (typeof disabledSpec === "function") {
     disabledFnMetas.push(meta)
+  } else if (typeof disabledSpec === "boolean") {
+    state.disabled = disabledSpec
   }
-  if (typeof meta.$.spec.mandatory === "function") {
+
+  const mandatorySpec = meta.$.spec.mandatory
+  if (typeof mandatorySpec === "function") {
     mandatoryFnMetas.push(meta)
+  } else if (typeof mandatorySpec === "boolean") {
+    state.mandatory = mandatorySpec
   }
-  if (meta.$.spec.validator) {
-    return {
-      error: false, // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
-      validated: false,
-      // TODO: Update these potentially conditional values from the spec as appropriate, and apply them in validation
-      mandatory: specValue(meta, "mandatory"),
-      disabled: specValue(meta, "disabled"),
-      hidden: specValue(meta, "hidden")
-    }
-  }
+
+  // Perform top-level refresh on all dynamic flags
+  if (!meta.$.parent) refreshFlags()
+
+  return state
 })
 
 /**
@@ -90,6 +102,10 @@ export function validate (meta?: Meta<any>) {
       }
     }
   }
+  refreshFlags()
+}
+
+function refreshFlags () {
   for (const hiddenFnMeta of hiddenFnMetas) {
     const hiddenFn = hiddenFnMeta.$.spec.hidden as MetaFn<any>
     hiddenFnMeta.$.state.hidden = hiddenFn(hiddenFnMeta)
