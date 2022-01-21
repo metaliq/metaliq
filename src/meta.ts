@@ -150,7 +150,7 @@ export function metafy <T, P = any> (
     value,
     parent,
     key,
-    state: (m$(value)?.state || parent?.[key]?.$?.state || {}) as Policy.State<T, P>
+    state: <unknown>(parent?.[key]?.$?.state || {}) as Policy.State<T, P>
   }
   const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
@@ -175,7 +175,8 @@ export function metafy <T, P = any> (
     for (const fieldKey of fieldKeys(spec)) {
       const fieldValue = value?.[fieldKey]
       const fieldSpec = meta.$.spec.fields[fieldKey]
-      if (fieldSpec) metafy(fieldSpec, fieldValue, meta, fieldKey)
+      const fieldMeta = (meta[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
+      if (fieldSpec) metafy(fieldSpec, fieldValue, meta, fieldKey, fieldMeta)
     }
   }
 
