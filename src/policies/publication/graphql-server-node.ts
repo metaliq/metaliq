@@ -140,9 +140,6 @@ const schemaJs = (schema: string) => dedent`
 const indexJs = (specName: string, specPath: string) => dedent`
   import { typeDefs } from "./schema.js"
   import { ${specName} } from "./${specPath}.js"
-  import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
-  
-  installWindowOnGlobal() // Shim to prevent import error in lit
   
   const { ApolloServer } = require("apollo-server-cloud-functions")
   const functions = require("firebase-functions")

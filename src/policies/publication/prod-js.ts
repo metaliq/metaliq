@@ -22,7 +22,6 @@ export const makeProdJs = async ({ src, exclude = [], external = [], format = "e
   // Bundle all JS modules
   const bundler = await rollup({
     input: src,
-    treeshake: "smallest",
     external,
     plugins: [
       ignore(exclude, { commonjsBugFix: true }),
