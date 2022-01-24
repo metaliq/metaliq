@@ -2,19 +2,29 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, Meta, MetaArray } from "../../meta"
+import { commit, FieldKey, fieldKeys, Meta, MetaArray, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
-import { Condition } from "../deduction/deduction"
+import { review } from "../application/application"
+
+export type MetaFormOptions<T> = {
+  classes?: string
+  include?: Array<FieldKey<T>>
+  exclude?: Array<FieldKey<T>>
+}
 
 /**
  * A MetaView for an object type that displays all its child fields.
  */
-export const metaForm = (classes: string = ""): MetaView<any> => <T>(meta: Meta<T>) => html`
-  <div class="mq-form ${classes}">
+export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => meta => html`
+  <div class="mq-form ${options.classes || ""}">
     ${fieldKeys(meta.$.spec)
-      .filter(key => !meta[key].$.state.hidden)
+      .filter(key =>
+        (!options.include || options.include.includes(key)) &&
+        (!(options.exclude || []).includes(key)) &&
+        !meta[key].$.state.hidden
+      )
       .map(key => fieldView(key)(meta))}
   </div>
 `
@@ -26,9 +36,13 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
   const fieldMeta = meta[fieldKey]
   if (Array.isArray(fieldMeta)) {
     const view = (<MetaArray<any>>fieldMeta).$.spec.items?.view || inputField()
-    return fieldMeta.map(view)
+    return fieldMeta.map(itemMeta => {
+      review(itemMeta)
+      return view(itemMeta)
+    })
   } else {
     const view = (<unknown>fieldMeta.$.spec.view || inputField()) as MetaView<any>
+    review(fieldMeta)
     return view(fieldMeta)
   }
 }
@@ -49,7 +63,7 @@ export const content = (textOrHtml: ViewResult): MetaView<any> => meta => textOr
  * Optionally an `else` view can be specified to show if condition not met.
  */
 export const ifThen = <T, P = any> (
-  condition: Condition<T, P, boolean>,
+  condition: MetaFn<T, P, boolean>,
   thenView: MetaView<T>,
   elseView?: MetaView<T>
 ): MetaView<T, P> => meta => condition(meta) ? thenView(meta) : elseView?.(meta) ?? ""

@@ -37,7 +37,7 @@ const testPresentationSpec: TerminologySpec = {
   label: "Test"
 }
 
-const testAppSpec: ApplicationSpec<TestType> = {
+const testAppSpec: ApplicationSpec<TestType, any> = {
   init: {
     a: 1,
     b: 2

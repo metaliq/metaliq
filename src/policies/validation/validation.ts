@@ -1,5 +1,6 @@
 import { fieldKeys, Meta, MetaArray, MetaFn, metaSetups } from "../../meta"
 import { Policy } from "../../policy"
+import { addReview } from "../application/application"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
@@ -46,38 +47,31 @@ export type ValidationResult = string | boolean
  */
 export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
-const hiddenFnMetas: Array<Meta<any>> = []
-const disabledFnMetas: Array<Meta<any>> = []
-const mandatoryFnMetas: Array<Meta<any>> = []
-
-metaSetups.push(meta => {
-  const state: Policy.State<any> = meta.$.spec.validator
+metaSetups.push(<T>(meta: Meta<T>) => {
+  const state: Policy.State<T> = meta.$.spec.validator
     ? { error: false, validated: false } // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
     : {}
 
   const hiddenSpec = meta.$.spec.hidden
   if (typeof hiddenSpec === "function") {
-    hiddenFnMetas.push(meta)
+    addReview(meta, meta => { meta.$.state.hidden = hiddenSpec(meta) })
   } else if (typeof hiddenSpec === "boolean") {
     state.hidden = hiddenSpec
   }
 
   const disabledSpec = meta.$.spec.disabled
   if (typeof disabledSpec === "function") {
-    disabledFnMetas.push(meta)
+    addReview(meta, meta => { meta.$.state.disabled = disabledSpec(meta) })
   } else if (typeof disabledSpec === "boolean") {
     state.disabled = disabledSpec
   }
 
   const mandatorySpec = meta.$.spec.mandatory
   if (typeof mandatorySpec === "function") {
-    mandatoryFnMetas.push(meta)
+    addReview(meta, meta => { meta.$.state.mandatory = mandatorySpec(meta) })
   } else if (typeof mandatorySpec === "boolean") {
     state.mandatory = mandatorySpec
   }
-
-  // Perform top-level refresh on all dynamic flags
-  if (!meta.$.parent) refreshFlags()
 
   return state
 })
@@ -87,36 +81,18 @@ metaSetups.push(meta => {
  * Sets the `validated` state to true and the `error` state according to the validation result.
  * Note: This is not recursive - use `validateAll` for that purpose.
  */
-export function validate (meta?: Meta<any>) {
-  if (meta) {
-    meta.$.state.validated = true
-    const validator = meta.$.spec.validator
-    if (typeof validator === "function") {
-      const result = validator(meta)
-      if (result === false) {
-        meta.$.state.error = true
-      } else if (typeof result === "string") {
-        meta.$.state.error = result
-      } else {
-        meta.$.state.error = false
-      }
+export function validate (meta: Meta<any>) {
+  meta.$.state.validated = true
+  const validator = meta.$.spec.validator
+  if (typeof validator === "function") {
+    const result = validator(meta)
+    if (result === false) {
+      meta.$.state.error = true
+    } else if (typeof result === "string") {
+      meta.$.state.error = result
+    } else {
+      meta.$.state.error = false
     }
-  }
-  refreshFlags()
-}
-
-function refreshFlags () {
-  for (const hiddenFnMeta of hiddenFnMetas) {
-    const hiddenFn = hiddenFnMeta.$.spec.hidden as MetaFn<any>
-    hiddenFnMeta.$.state.hidden = hiddenFn(hiddenFnMeta)
-  }
-  for (const disabledFnMeta of disabledFnMetas) {
-    const disabledFn = disabledFnMeta.$.spec.disabled as MetaFn<any>
-    disabledFnMeta.$.state.disabled = disabledFn(disabledFnMeta)
-  }
-  for (const mandatoryFnMeta of mandatoryFnMetas) {
-    const mandatoryFn = mandatoryFnMeta.$.spec.mandatory as MetaFn<any>
-    mandatoryFnMeta.$.state.mandatory = mandatoryFn(mandatoryFnMeta)
   }
 }
 

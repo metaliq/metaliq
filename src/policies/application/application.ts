@@ -1,4 +1,4 @@
-import { Meta, metafy, MetaSpec } from "../../meta"
+import { Meta, MetaFn, metafy, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -6,7 +6,7 @@ import { LogFunction, startUp, Up } from "@metaliq/up"
  * This establishes an update and review mechanism.
  */
 
-export interface ApplicationSpec<T> {
+export interface ApplicationSpec<T, P> {
   /**
    * Initial value or a function to return the initial value.
    * Initialisers will be applied recursively within the spec,
@@ -23,7 +23,7 @@ export interface ApplicationSpec<T> {
   /**
    * Review function to be called after each update - passed as `review` to `up`.
    */
-  review?: Review
+  review?: MetaFn<T, P> | Array<MetaFn<T, P>>
 
   /**
    * Flag to create a localised context with state updates isolated from the rest of an application.
@@ -40,9 +40,7 @@ export interface ApplicationState<T> {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends ApplicationSpec<T> {
-      this?: Specification<T, P>
-    }
+    interface Specification<T, P> extends ApplicationSpec<T, P> {}
 
     interface State<T, P> extends ApplicationState<T>{
       this?: State<T, P>
@@ -52,7 +50,6 @@ declare module "../../policy" {
 
 export type InitFunction<T> = (() => T) | (() => Promise<T>)
 export type Init<T> = T | InitFunction<T>
-export type Review = (meta: Meta<any>) => any
 
 export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   let spec: MetaSpec<T>
@@ -67,16 +64,30 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
     meta = metafy(spec, value)
   }
 
-  const review = async () => {
-    await spec.review(meta)
-  }
   const log = spec.log || false
   const local = spec.local || false
-  await startUp({ review, log, local })
-
-  await review()
+  const start = await startUp({ review: () => { review(meta) }, log, local })
+  await start()() // Initial call to `up`
 
   return meta
+}
+
+export function review (meta: Meta<any>) {
+  const specReview = meta.$.spec.review
+  if (Array.isArray(specReview)) {
+    specReview.forEach(reviewFn => reviewFn(meta))
+  } else if (typeof specReview === "function") {
+    specReview(meta)
+  }
+}
+
+export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
+  if (!meta.$.spec.review) {
+    meta.$.spec.review = []
+  } else if (typeof meta.$.spec.review === "function") {
+    meta.$.spec.review = [meta.$.spec.review]
+  }
+  meta.$.spec.review.push(review)
 }
 
 async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {

@@ -137,6 +137,7 @@ class MetaArrayProto extends Array {
 export function metafy <T, P = any> (
   spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: Meta$<T>
 ): Meta<T, P> {
+  const hasProto = !!proto
   // Establish the correct form of prototype for this meta
   proto = proto || (
     spec.items
@@ -180,7 +181,7 @@ export function metafy <T, P = any> (
     }
   }
 
-  setupMeta(meta)
+  if (!hasProto) setupMeta(meta) // Only do initial meta setup if no previous meta provided
 
   return meta
 }
