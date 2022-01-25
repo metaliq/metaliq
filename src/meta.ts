@@ -162,7 +162,10 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
-  if (parent && key && !(parent[key] instanceof MetaArrayProto)) Object.assign(parent, { [key]: meta })
+  if (parent && key && !(parent[key] instanceof MetaArrayProto)) {
+    Object.assign(parent, { [key]: meta }) // (Re)attach this meta to its parent
+    Object.assign(parent.$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
+  }
 
   // Descend through children creating further meta objects
   if (spec.items) {
