@@ -1,6 +1,6 @@
 {
   "name": "metaliq",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
@@ -9,16 +9,13 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "install": "npm run local-or-peer-tsc",
-    "local-or-peer-tsc": "( call npm run local-or-peer-tsc:win ) || npm run local-or-peer-tsc:nix",
-    "local-or-peer-tsc:win": "if exist node_modules\\typescript tsc else (node ..\\..\\typescript\\bin\\tsc)",
-    "local-or-peer-tsc:nix": "test ./node_modules/typescript && tsc || node ../../typescript/bin/tsc"
+    "prepare": "tsc"
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
   "description": "MetaliQ - A framework for specification-based meta-programming",
   "devDependencies": {
-    "@metaliq/up": "^0.3.0",
+    "@metaliq/up": "^0.4.0",
     "@types/fs-extra": "^9.0.13",
     "@types/mime-types": "^2.1.1",
     "@types/node": "^16.10.3",
@@ -32,7 +29,7 @@
     "typescript": "^4.3.5"
   },
   "peerDependencies": {
-    "@metaliq/up": "^0.2.0",
+    "@metaliq/up": "^0.4.0",
     "lit": "^2.0.0"
   },
   "dependencies": {
