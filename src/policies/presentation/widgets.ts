@@ -22,8 +22,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => me
     ${fieldKeys(meta.$.spec)
       .filter(key =>
         (!options.include || options.include.includes(key)) &&
-        (!(options.exclude || []).includes(key)) &&
-        !meta[key].$.state.hidden
+        (!(options.exclude || []).includes(key))
       )
       .map(key => fieldView(key)(meta))}
   </div>
@@ -43,7 +42,7 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
   } else {
     const view = (<unknown>fieldMeta.$.spec.view || inputField()) as MetaView<any>
     review(fieldMeta)
-    return view(fieldMeta)
+    return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
   }
 }
 
