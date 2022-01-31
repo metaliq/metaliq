@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "module": "ES2020",
     "target": "es2020",
     "noImplicitAny": true,

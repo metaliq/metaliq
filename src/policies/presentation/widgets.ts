@@ -8,6 +8,8 @@ import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { review } from "../application/application"
 
+export { expander } from "./expander"
+
 export type MetaFormOptions<T> = {
   classes?: string
   include?: Array<FieldKey<T>>
@@ -40,9 +42,17 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
       return view(itemMeta)
     })
   } else {
-    const view = (<unknown>fieldMeta.$.spec.view || inputField()) as MetaView<any>
     review(fieldMeta)
-    return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
+    const view = (<unknown>fieldMeta.$.spec.view || inputField()) as MetaView<any>
+    if (typeof fieldMeta.$.spec.hidden === "function") {
+      return html`
+        <mq-expander>
+          ${fieldMeta.$.spec.hidden(fieldMeta) ? "" : view(fieldMeta)}
+        </mq-expander>
+      `
+    } else {
+      return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
+    }
   }
 }
 
@@ -87,7 +97,7 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => 
   <input type=${options.type || "text"}
     ?disabled=${meta.$.state.disabled}
     class="mq-input ${classMap({
-      [options.inputClass]: true,
+      [options.inputClass]: !!options.inputClass,
       "mq-error-field": meta.$.state.error,
       "mq-disabled": meta.$.state.disabled
     })}"
