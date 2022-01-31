@@ -1,12 +1,15 @@
 import { View } from "./presentation"
 import { html, LitElement } from "lit"
 import { Fn } from "../../meta"
-import { customElement, state } from "lit/decorators.js"
+import { customElement, state, property } from "lit/decorators.js"
 
 @customElement("mq-expander")
 export class Expander extends LitElement {
   @state()
   private _height = 0
+
+  @property({ reflect: true })
+  lastUpdated = new Date().getTime().toString()
 
   private observer: MutationObserver
 
@@ -15,7 +18,9 @@ export class Expander extends LitElement {
 
     const setHeight = () => {
       this._height = slot.assignedElements().reduce((t: number, e: Element) => t + e.clientHeight, 0)
-      console.log(`Changed slot, new height ${this._height}`)
+      setTimeout(() => {
+        this.lastUpdated = new Date().getTime().toString()
+      }, 325) // Delay to trigger mutation observer of any parent expander _after_ this one is complete.
     }
 
     setHeight()
