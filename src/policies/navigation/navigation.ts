@@ -36,7 +36,12 @@ metaSetups.push(meta => {
   const spec = meta.$.spec
   if (spec.routes && !meta.$.parent) {
     // If this is the top-level meta and has routes specified then initialise navigation
-    if (spec.path && typeof history !== "undefined") history.pushState(null, null, spec.path)
+    if (spec.path && typeof history !== "undefined" && typeof window !== "undefined" &&
+      (!window.location?.pathname || window.location.pathname === "/")
+    ) {
+      // Only use initially specified path if one isn't already in the browser location
+      history.pushState(null, null, spec.path)
+    }
     for (const [route, metaHandler] of spec.routes || []) {
       route.on = metaHandler(meta)
     }
