@@ -6,7 +6,10 @@ import { customElement, state, property } from "lit/decorators.js"
 @customElement("mq-expander")
 export class Expander extends LitElement {
   @state()
-  private _height = 0
+  private height = 0
+
+  @state()
+  private overflow = "hidden"
 
   @property({ reflect: true })
   lastUpdated = new Date().getTime().toString()
@@ -17,9 +20,11 @@ export class Expander extends LitElement {
     const slot = e.target as HTMLSlotElement
 
     const setHeight = () => {
-      this._height = slot.assignedElements().reduce((t: number, e: Element) => t + e.clientHeight, 0)
+      this.overflow = "hidden"
+      this.height = slot.assignedElements().reduce((t: number, e: Element) => t + e.clientHeight, 0)
       setTimeout(() => {
         this.lastUpdated = new Date().getTime().toString()
+        this.overflow = "visible"
       }, 325) // Delay to trigger mutation observer of any parent expander _after_ this one is complete.
     }
 
@@ -48,7 +53,7 @@ export class Expander extends LitElement {
 
   render () {
     return html`
-      <div style="height: ${this._height}px; transition: height 0.3s ease-in-out; overflow-y: hidden;">
+      <div style="height: ${this.height}px; transition: height 0.3s ease-in-out; overflow-y: ${this.overflow};">
         <slot @slotchange=${this.handleSlotChange}></slot>
       </div>
     `

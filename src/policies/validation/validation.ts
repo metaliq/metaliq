@@ -17,6 +17,7 @@ export interface ValidationState {
   disabled?: boolean
   hidden?: boolean
   active?: boolean
+  showing?: boolean // Support animated hide/show
 }
 
 declare module "../../policy" {

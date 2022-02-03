@@ -7,8 +7,10 @@ import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { review } from "../application/application"
+import { animatedHideShow } from "./animated-hide-show"
 
 export { expander } from "./expander"
+export { AnimatedHideShow } from "./animated-hide-show"
 
 export type MetaFormOptions<T> = {
   classes?: string
@@ -45,11 +47,7 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
     review(fieldMeta)
     const view = (<unknown>fieldMeta.$.spec.view || inputField()) as MetaView<any>
     if (typeof fieldMeta.$.spec.hidden === "function") {
-      return html`
-        <mq-expander>
-          ${fieldMeta.$.spec.hidden(fieldMeta) ? "" : view(fieldMeta)}
-        </mq-expander>
-      `
+      return animatedHideShow(view)(fieldMeta)
     } else {
       return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
     }
