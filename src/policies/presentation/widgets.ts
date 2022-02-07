@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, Meta, MetaArray, MetaFn } from "../../meta"
+import { commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
@@ -37,21 +37,36 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => me
  */
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
   const fieldMeta = meta[fieldKey]
-  if (Array.isArray(fieldMeta)) {
-    const view = (<MetaArray<any>>fieldMeta).$.spec.items?.view || inputField()
+  if (isMetaArray(fieldMeta)) {
+    const view = fieldMeta.$.spec.items?.view || defaultFieldView(fieldMeta[0])
     return fieldMeta.map(itemMeta => {
       review(itemMeta)
       return view(itemMeta)
     })
   } else {
     review(fieldMeta)
-    const view = (<unknown>fieldMeta.$.spec.view || inputField()) as MetaView<any>
+    const view = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
     if (typeof fieldMeta.$.spec.hidden === "function") {
       return animatedHideShow(view)(fieldMeta)
     } else {
       return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
     }
   }
+}
+
+/**
+ * Return a default view for a meta based upon its value type.
+ */
+export const defaultFieldView = <T> (meta: Meta<T>): MetaView<T> => {
+  if (!meta) { // Possible when used on empty array
+    return () => "Default view for non-existent meta"
+  } else if (typeof meta.$.value === "object") {
+    return metaForm()
+  } else if (typeof meta.$.value === "boolean") {
+    return <unknown>checkboxField() as MetaView<T>
+  } else if (typeof meta.$.value === "number") {
+    return inputField({ type: "number" })
+  } else return inputField()
 }
 
 /**
@@ -91,21 +106,37 @@ export type InputOptions<T> = {
  * Basic input element that uses some InputOptions.
  * To get full use of all options use `inputField`.
  */
-export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => html`
-  <input type=${options.type || "text"}
-    ?disabled=${meta.$.state.disabled}
-    class="mq-input ${classMap({
+export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => {
+  const disabled = isDisabled(meta)
+  return html`
+    <input type=${options.type || "text"}
+      ?disabled=${disabled}
+      class="mq-input ${classMap({
       [options.inputClass]: !!options.inputClass,
       "mq-error-field": meta.$.state.error,
-      "mq-disabled": meta.$.state.disabled
+      "mq-disabled": disabled
     })}"
-    value=${live(meta.$.value ?? "")}
-    @focus=${up(onFocus, meta)}
-    @blur=${up(onBlur(options), meta)}
-    @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
-    .checked=${options.type === "checkbox" && meta.$.value}
-  />
-`
+      value=${live(meta.$.value ?? "")}
+      @focus=${up(onFocus, meta)}
+      @blur=${up(onBlur(options), meta)}
+      @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
+      .checked=${options.type === "checkbox" && meta.$.value}
+    />
+  `
+}
+
+/**
+ * Return the first explicitly defined disabled state by searching on the meta
+ * and then ascending through its ancestors. If none is found, return false.
+ */
+export const isDisabled = (meta: Meta<any>): boolean => {
+  let check = meta
+  while (check) {
+    if (typeof check.$.state.disabled === "boolean") return check.$.state.disabled
+    check = check.$.parent
+  }
+  return false
+}
 
 /**
  * Configurable input field.

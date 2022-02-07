@@ -2,25 +2,35 @@ import { Policy } from "./policy"
 import { MaybeReturn } from "./util/util"
 
 /**
- * Meta-structure of Type in optional Parent.
+ * A Meta object with underlying value of type T,
+ * optionally within parent of type P.
  */
 export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
 
 /**
- * Mapped fields part of the meta-structure of an object type.
+ * The mapped fields component of a Meta object.
  */
 export type MetaFields<T> = {
   [K in FieldKey<T>]: MetaField<T, K>
 }
 
+/**
+ * An individual field within a Meta.
+ * Can be another Meta, or a MetaArray.
+ */
 export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
   ? MetaArray<I, T>
   : Meta<T[K], T>
 
+/**
+ * The meta information for an array field,
+ * along with a collection of Meta objects associated with its content.
+ */
 export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
 
 /**
- * An object (generally a Meta or MetaArray) with a $ property of type MetaInfo.
+ * An object that has a $ link to meta information.
+ * Both Meta and MetaArray implement this type.
  */
 export type Meta$<T, P = any> = { $: MetaInfo<T, P> }
 
@@ -270,6 +280,11 @@ export const meta = <T>(value: T): Meta<T> => (m$(value).meta as Meta<T>)
  * Typed shortcut from a value array to its associated meta array.
  */
 export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value).meta as MetaArray<T>)
+
+/**
+ * A type guard to narrow a meta field to either a Meta or a MetaArray.
+ */
+export const isMetaArray = (m: Meta<any> | MetaArray<any>): m is MetaArray<any> => Array.isArray(m)
 
 /**
  * Works better than keyof T where you know that T is not an array.
