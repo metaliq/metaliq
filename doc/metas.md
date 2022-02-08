@@ -106,11 +106,11 @@ const contactSpec: MetaSpec<Contact> = {
 }
 ```
 
-* metaProc
+* metaFn
 
-Similarly, with any general process function that takes a value of a straightforward data type, as well as potentially an additional message parameter, passing that process function to `metaProc` returns a `MetaProcess` that takes a Meta of that type along with the optional message.
+Similarly, with any general process function that takes a value of a straightforward data type, passing that process function to `metaFn` returns a `MetaFn` that takes a Meta of that type.
 
-This Process pattern is commonly used in MetaliQ policies, so metaProc is a good way of transforming framework-agnostic business logic code for use in MetaliQ specifications.
+This Process pattern is commonly used in MetaliQ policies, so metaFn is a good way of transforming framework-agnostic business logic code for use in MetaliQ specifications.
 
 ```ts
 // savePerson is a framework-agnostic piece of business logic
@@ -120,7 +120,7 @@ const savePerson = (person: Person) => {
 }
 
 // savePersonMeta could be used for example as a navigation route handler in a MetaliQ spec of type Person
-const savePersonMeta: MetaProcess<Person> = metaProc(savePerson)
+const savePersonMeta: MetaFn<Person> = metaFn(savePerson)
 ```
 
 ### Linking back from values to Metas

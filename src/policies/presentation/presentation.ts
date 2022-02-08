@@ -1,5 +1,6 @@
 import { render, TemplateResult } from "lit"
 import { Meta, metaSetups } from "../../meta"
+import { metaForm } from "./widgets"
 
 export interface PresentationSpec<T, P> {
   view?: MetaView<T, P>
@@ -24,10 +25,15 @@ export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
 
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
-  if (!meta.$.parent && meta.$.spec.view) {
-    meta.$.spec.review = meta.$.spec.review || renderPage
-    Object.assign(window, { meta })
-    document.title = meta.$.spec.label ?? ""
+  if (!meta.$.parent) {
+    if (!meta.$.spec.publication?.target) {
+      meta.$.spec.view = metaForm()
+    }
+    if (meta.$.spec.view) {
+      meta.$.spec.review = meta.$.spec.review || renderPage
+      Object.assign(window, { meta })
+      document.title = meta.$.spec.label ?? ""
+    }
   }
 })
 
