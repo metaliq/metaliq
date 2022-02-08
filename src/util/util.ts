@@ -1,4 +1,5 @@
 import { parse, stringify } from "flatted"
+import { FieldKey } from "../meta"
 
 // TYPESCRIPT UTILITIES
 
@@ -25,17 +26,22 @@ export const enumKeys = <T extends object>(obj: T): Array<keyof T> =>
 
 // ARRAY FUNCTIONS
 
+export type SortKey<T> = `${"-" | ""}${FieldKey<T>}`
+
 /**
  * Return a function to sort by the given key(s).
  */
-export function sortBy<T> (keyOrKeys: keyof T | Array<keyof T>) {
-  const keys: Array<keyof T> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
+export function sortBy<T> (keyOrKeys: SortKey<T> | Array<SortKey<T>>) {
+  const keys: Array<SortKey<T>> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
   return (a: T, b: T) => {
     if (a === null && b !== null) return -1
     if (b === null && a !== null) return 1
-    for (const key of keys) {
-      if (a[key] < b[key]) return -1
-      if (b[key] < a[key]) return 1
+    for (const sortKey of keys) {
+      const matches = sortKey.match(/^(-?)(.*)/)
+      const desc = matches[0] === "-"
+      const key = matches[1] as keyof T
+      if (a[key] < b[key]) return desc ? 1 : -1
+      if (b[key] < a[key]) return desc ? -1 : 1
     }
     return 0
   }
