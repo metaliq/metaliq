@@ -1,4 +1,4 @@
-import { html, LitElement } from "lit"
+import { html, LitElement, PropertyValues } from "lit"
 import { styleMap } from "lit/directives/style-map.js"
 import { customElement, state, property } from "lit/decorators.js"
 import { MetaView } from "./presentation"
@@ -19,7 +19,7 @@ export class AnimatedHideShow extends LitElement {
     this.height = `${(Array.from(this.children)).reduce((t, e) => t + e.clientHeight, 0)}px`
   }
 
-  shouldUpdate (changedProperties: Map<string, any>) {
+  shouldUpdate (changedProperties: PropertyValues<any>) {
     if (changedProperties.has("mqhidden")) {
       this.changing = true
       if (this.mqhidden) {
