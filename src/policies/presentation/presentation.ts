@@ -26,7 +26,7 @@ export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
   if (!meta.$.parent) {
-    if (!meta.$.spec.publication?.target) {
+    if (!meta.$.spec.publication?.target && !meta.$.spec.view) {
       meta.$.spec.view = metaForm()
     }
     if (meta.$.spec.view) {
