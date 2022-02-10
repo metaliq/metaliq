@@ -1,17 +1,15 @@
-import { dirname, join } from "path"
+import { dirname, join, extname } from "path"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 import mime from "mime-types"
 import { copy, pathExists, remove } from "fs-extra"
 import CleanCSS from "clean-css"
-import { historyApiFallbackMiddleware } from "@web/dev-server-core/dist/middleware/historyApiFallbackMiddleware"
 
 import { Builder, Cleaner, Runner } from "./publication"
 import { SinglePageAppConfig } from "./spa"
 import { page } from "./page"
 import { ensureAndWriteFile } from "./util"
-import { devLogger } from "../../cli/cli"
 import { makeProdJs } from "./prod-js"
-import dedent from "ts-dedent"
+import { dedent } from "ts-dedent"
 
 let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
@@ -29,8 +27,35 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
     open: true,
     watch: true,
     middleware: [
-      // Manually adding historyApiFallback instead of setting appIndex so it runs prior to index page middleware
-      historyApiFallbackMiddleware("/index.html", "/", devLogger),
+      (ctx, next) => {
+        // Manually adding local version of @web/dev-server-core/dist/middleware/historyApiFallbackMiddleware
+        // That module export is not expose in the `exports` of package.json for @web/dev-server-core
+        // And we can't "just" enable it by configuration because there's no built-in way to get it to run
+        // before the index page generation middleware
+        if (ctx.method !== "GET" || extname(ctx.path)) {
+          // not a GET, or a direct file request
+          return next()
+        }
+
+        if (!ctx.headers || typeof ctx.headers.accept !== "string") {
+          return next()
+        }
+
+        if (ctx.headers.accept.includes("application/json")) {
+          return next()
+        }
+
+        if (!(ctx.headers.accept.includes("text/html") || ctx.headers.accept.includes("*/*"))) {
+          return next()
+        }
+
+        if (!ctx.url.startsWith("/")) {
+          return next()
+        }
+
+        ctx.url = "/index.html"
+        return next()
+      },
       async (ctx, next) => {
         if (ctx.path === "/bin/index.js") {
           ctx.body = indexJs(specName, simplePath)

@@ -8,7 +8,6 @@ import { DevServerConfig, startDevServer } from "@web/dev-server"
 
 import { MetaSpec } from "../meta"
 import { spa } from "../policies/publication/spa"
-import { Logger } from "@web/dev-server-core"
 import { PublicationContext, PublicationTarget } from "../policies/publication/publication"
 
 const pExec = promisify(exec)
@@ -16,17 +15,6 @@ installWindowOnGlobal() // Shim to prevent import error in lit
 Object.assign(window, { navigator: { userAgent: "" } })
 
 const tscPath = join(".", "node_modules", ".bin", "tsc")
-
-// Dummy logger for reordered server middleware
-export const devLogger: Logger = {
-  debug (...messages) {},
-  error (...messages) {},
-  group () {},
-  groupEnd () {},
-  log (...messages) {},
-  logSyntaxError () {},
-  warn (...messages) {}
-}
 
 type BaseOptions = {
   file?: string
@@ -180,7 +168,7 @@ async function serve (location: string = "", options: ServeOptions = {}) {
 async function importSpec (name: string = "appSpec", path: string = "specs") {
   console.log(`Loading MetaliQ specification ${path} > ${name}`)
   try {
-    const module = await import (join(process.cwd(), `bin/${path}.js`))
+    const module = await import (join(process.cwd(), `bin/${path}`))
     const spec: MetaSpec<any> = module[name]
     return spec
   } catch (e) {

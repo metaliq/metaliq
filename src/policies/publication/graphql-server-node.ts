@@ -1,16 +1,16 @@
 import { createServer, Server } from "http"
-import { execute, subscribe } from "graphql"
 import { Builder, Cleaner, Runner } from "./publication"
 import { ApolloServer as ApolloServerExpress } from "apollo-server-express"
 import express from "express"
-import fs, { remove } from "fs-extra"
-import { makeExecutableSchema } from "@graphql-tools/schema"
+import fsExtra from "fs-extra"
 import { SinglePageAppConfig } from "./spa"
 import { GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "./util"
 import { join } from "path"
 import { makeProdJs } from "./prod-js"
-import dedent from "ts-dedent"
+import { dedent } from "ts-dedent"
+
+const { readFile, remove } = fsExtra
 
 let httpServer: Server
 let apolloServer: ApolloServerExpress
@@ -32,15 +32,12 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
 
   // Load the GraphQL schema and resolvers
   // TODO: Make schema location configurable
-  const typeDefs = await fs.readFile("./gql/schema.gql", "utf8")
-  const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers: spec.resolvers
-  })
+  const typeDefs = await readFile("./gql/schema.gql", "utf8")
 
   // Create the query / mutation service
   apolloServer = new ApolloServerExpress({
-    schema,
+    typeDefs,
+    resolvers: spec.resolvers,
     context: ({ req }) => {
       return {
         sessionToken: req.headers["session-token"]
@@ -73,14 +70,13 @@ export const builder: Builder = async ({ spec, simplePath, specName }) => {
 
   // Make production javascript
   // TODO: Make schema location configurable
-  const schema = await fs.readFile("./gql/schema.gql", "utf8")
+  const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema))
   await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath))
   const js = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
-    external: ["apollo-server-cloud-functions", "firebase-functions", "node-fetch"],
-    format: "commonjs"
+    external: ["apollo-server-cloud-functions", "firebase-functions", "node-fetch"]
   })
   // await remove(jsSrc)
   await ensureAndWriteFile(join(destDir, "index.js"), js)
@@ -119,8 +115,9 @@ export const startSubscriptionServer = (schema: any) => {
   subServer = SubscriptionServer.create({
     onConnect: (connectionParams: any, socket: any) => {
       return { sessionToken: connectionParams["session-token"] }
-    },
-    ...{ schema, execute, subscribe }
+    }
+    // NOTE: Disabled next line due to some import issues with execute and subscribed from graphql
+    // ...{ schema, execute, subscribe }
   }, {
     server: httpServer, path: apolloServer.graphqlPath
   })
@@ -130,7 +127,7 @@ export const startSubscriptionServer = (schema: any) => {
 }
 
 const schemaJs = (schema: string) => dedent`
-  const { gql } = require("apollo-server-cloud-functions")
+  import { gql } from "apollo-server-cloud-functions"
   
   export const typeDefs = gql\`
     ${schema}
@@ -141,17 +138,17 @@ const indexJs = (specName: string, specPath: string) => dedent`
   import { typeDefs } from "./schema.js"
   import { ${specName} } from "./${specPath}.js"
   
-  const { ApolloServer } = require("apollo-server-cloud-functions")
-  const functions = require("firebase-functions")
+  import { ApolloServer } from "apollo-server-cloud-functions"
+  import functions from "firebase-functions"
   
   const server = new ApolloServer({ 
     typeDefs, 
-    resolvers: ${specName}.resolvers, 
+    resolvers: ${specName}.resolvers,
     playground: true,
     introspection: true
   })
 
-  exports.graphql = functions.https.onRequest(server.createHandler())
+  export const graphql = functions.https.onRequest(server.createHandler())
 `
 
 const packageJson = {
@@ -167,6 +164,7 @@ const packageJson = {
   engines: {
     node: "14"
   },
+  type: "module",
   main: "index.js",
   dependencies: {
     "@lit-labs/ssr": "^1.0.0",
@@ -175,7 +173,7 @@ const packageJson = {
     "firebase-functions": "^3.14.1",
     graphql: "^16.2.0",
     lit: "^2.0.0",
-    "node-fetch": "2"
+    "node-fetch": "3"
   },
   devDependencies: {
     "firebase-functions-test": "^0.2.0"

@@ -3,9 +3,13 @@ import ignore from "rollup-plugin-ignore"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
 import pluginJson from "@rollup/plugin-json"
-import minifyHTMLLiterals from "rollup-plugin-minify-html-literals"
+import minifyHTMLLiteralsModule from "rollup-plugin-minify-html-literals"
 import { defaultShouldMinify } from "minify-html-literals"
 import { minify } from "terser"
+import { getCjsDefault } from "./util"
+
+// Workaround for named `default` export in rollup-plugin-minify-html-literals
+const minifyHTMLLiterals = getCjsDefault(minifyHTMLLiteralsModule)
 
 export type ProdJsOptions = {
   src: string
