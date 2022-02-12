@@ -13,7 +13,8 @@
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
-  "description": "MetaliQ - A framework for specification-based meta-programming",
+  "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
+  "repository": "https://github.com/metaliq/metaliq",
   "devDependencies": {
     "@metaliq/up": "^0.4.0",
     "@types/fs-extra": "^9.0.13",
