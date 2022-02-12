@@ -116,7 +116,7 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => 
       "mq-error-field": meta.$.state.error,
       "mq-disabled": disabled
     })}"
-      value=${live(meta.$.value ?? "")}
+      .value=${live(meta.$.value ?? "")}
       @focus=${up(onFocus, meta)}
       @blur=${up(onBlur(options), meta)}
       @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
