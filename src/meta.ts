@@ -233,7 +233,7 @@ export function commit<T> (meta: Meta<T>) {
     // Assign value and ensure parent value chain exists
     const setParentValue = <T, P>(child: Meta<T, P>) => {
       const { parent, key, value } = child.$
-      if (!parent) return
+      if (!parent || parent[key] instanceof MetaArrayProto) return
       parent.$.value = parent.$.value || {} as P
       parent.$.value[key] = <unknown>value as P[FieldKey<P>]
       if (!parent.$.parent?.$.value?.[parent.$.key]) {
