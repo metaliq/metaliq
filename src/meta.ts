@@ -150,7 +150,7 @@ export function metafy <T, P = any> (
   const hasProto = !!proto
   // Establish the correct form of prototype for this meta
   proto = proto || (
-    spec.items
+    spec.items || Array.isArray(value)
       ? new MetaArrayProto()
       : Object.create(MetaProto)
   )

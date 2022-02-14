@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaFn } from "../../meta"
+import { commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaArray, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
@@ -38,11 +38,9 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => me
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
   const fieldMeta = meta[fieldKey]
   if (isMetaArray(fieldMeta)) {
-    const view = fieldMeta.$.spec.items?.view || defaultFieldView(fieldMeta[0])
-    return fieldMeta.map(itemMeta => {
-      review(itemMeta)
-      return view(itemMeta)
-    })
+    fieldMeta.forEach(itemMeta => review(itemMeta))
+    const fieldView = fieldMeta.$.spec.view || repeatView
+    return fieldView(<unknown>fieldMeta as Meta<T[]>)
   } else {
     review(fieldMeta)
     const view = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
@@ -52,6 +50,14 @@ export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
       return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
     }
   }
+}
+
+export const repeatView: MetaView<any[]> = meta => {
+  const metaArr = <unknown>meta as MetaArray<any>
+  const itemView = meta.$.spec.items?.view || defaultFieldView(metaArr[0])
+  return metaArr.map(itemMeta => {
+    return itemView(itemMeta)
+  })
 }
 
 /**
