@@ -161,7 +161,7 @@ export function metafy <T, P = any> (
     value,
     parent,
     key,
-    state: <unknown>(parent?.[key]?.$?.state || {}) as Policy.State<T, P>
+    state: proto?.$?.state || {}
   }
   const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
