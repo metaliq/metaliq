@@ -93,6 +93,7 @@ let requiredLabelFn: MetaFn<any, any, string> = meta => `${meta.$.spec.label || 
  */
 export function validate (meta: Meta<any>) {
   meta.$.state.validated = true
+  delete meta.$.state.error
   if (meta.$.state.mandatory && !hasValue(meta)) {
     meta.$.state.error = requiredLabelFn(meta)
   } else {
