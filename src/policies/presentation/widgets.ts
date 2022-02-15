@@ -220,8 +220,16 @@ export const errorsBlock: MetaView<any> = meta => html`
   </div>
 `
 
-export const button = <T>(click: Update<Meta<T>>): MetaView<T> => meta => html`
-  <button @click=${up(click, meta)}>Click</button> 
+export type ButtonOptions<T> = {
+  label?: string
+  classes?: string
+  onClick?: Update<Meta<T>>
+}
+
+export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => meta => html`
+  <button class="mq-button ${options.classes ?? ""}" @click=${up(options.onClick, meta)}>
+    ${options.label ?? "Button"}
+  </button> 
 `
 
 export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
