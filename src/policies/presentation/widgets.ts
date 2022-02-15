@@ -105,10 +105,7 @@ export type InputOptions<T> = {
   unvalidated?: boolean // don't perform validation
   labelAfter?: boolean // Place the label after the input
   labelFn?: MetaView<T> // Custom label content function
-  fieldClass?: string // Additional class(es) for containing field
-  inputClass?: string // Additional class(es) for input element
-  labelClass?: string // Additional class(es) for label
-  errorClass?: string // Additional class(es) for error message
+  classes?: string // Additional class(es) for field container
 }
 
 /**
@@ -121,7 +118,7 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => 
     <input type=${options.type || "text"}
       ?disabled=${disabled}
       class="mq-input ${classMap({
-      [options.inputClass]: !!options.inputClass,
+      [options.classes]: !!options.classes,
       "mq-error-field": meta.$.state.error,
       "mq-disabled": disabled
     })}"
@@ -153,7 +150,6 @@ export const isDisabled = (meta: Meta<any>): boolean => {
  */
 export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => html`
   <label class="mq-field ${classMap({
-    [options.fieldClass]: true,
     [`mq-${options.type || "text"}-field`]: true,
     "mq-active": meta.$.state.active,
     "mq-populated": !!meta.$.value
@@ -171,7 +167,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => met
 export const fieldLabel = <T>(options: InputOptions<T>): MetaView<T> => meta =>
   typeof options.labelFn === "function"
     ? options.labelFn(meta)
-    : html`<span class="mq-input-label ${options.labelClass}">${meta.$.spec.label || meta.$.key}</span>`
+    : html`<span class="mq-input-label">${meta.$.spec.label || meta.$.key}</span>`
 
 /**
  * Input field with default options for a validated checkbox
