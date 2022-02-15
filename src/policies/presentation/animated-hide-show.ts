@@ -7,7 +7,7 @@ import { up } from "@metaliq/up"
 @customElement("mq-animated-hide-show")
 export class AnimatedHideShow extends LitElement {
   @property({ type: Boolean })
-  mqhidden = false // DON'T use `hidden` - it is a built-in HTML property that triggers display: none
+  mqHidden = false // DON'T use `hidden` - it is a built-in HTML property that triggers display: none
 
   @state()
   private changing = false
@@ -20,16 +20,16 @@ export class AnimatedHideShow extends LitElement {
   }
 
   shouldUpdate (changedProperties: PropertyValues<any>) {
-    if (changedProperties.has("mqhidden")) {
+    if (changedProperties.has("mqHidden")) {
       this.changing = true
-      if (this.mqhidden) {
+      if (this.mqHidden) {
         this.setHeight()
       } else {
         this.height = "0"
         this.dispatchEvent(new CustomEvent("show", { bubbles: false }))
       }
       setTimeout(() => {
-        if (!this.mqhidden) {
+        if (!this.mqHidden) {
           this.setHeight()
         } else {
           this.height = "0"
@@ -37,7 +37,7 @@ export class AnimatedHideShow extends LitElement {
         setTimeout(() => {
           this.height = "auto"
           this.changing = false
-          if (this.mqhidden) {
+          if (this.mqHidden) {
             this.dispatchEvent(new CustomEvent("hide", { bubbles: false }))
           }
         }, 325)
@@ -60,9 +60,9 @@ export class AnimatedHideShow extends LitElement {
 }
 
 export const animatedHideShow = <T> (view: MetaView<T>): MetaView<T> => meta => {
-  const hidden = (<Function>meta.$.spec.hidden)(meta)
+  const hidden = !!meta.$.state.hidden
   return html`
-    <mq-animated-hide-show ?mqhidden=${hidden} 
+    <mq-animated-hide-show ?mqHidden=${hidden} 
       @show=${up(() => {
         meta.$.state.showing = true
       })}

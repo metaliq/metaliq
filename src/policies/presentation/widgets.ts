@@ -38,13 +38,12 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => me
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
   const fieldMeta = meta[fieldKey]
   if (isMetaArray(fieldMeta)) {
-    fieldMeta.forEach(itemMeta => review(itemMeta))
-    let hidden = !!fieldMeta.$.spec.hidden
-    if (typeof fieldMeta.$.spec.hidden === "function") {
-      hidden = (<Function>fieldMeta.$.spec.hidden)(fieldMeta)
-    } if (hidden) return ""
-    const fieldView = fieldMeta.$.spec.view || repeatView
-    return fieldView(<unknown>fieldMeta as Meta<T[]>)
+    review(fieldMeta)
+    if (!fieldMeta.$.state.hidden) {
+      fieldMeta.forEach(itemMeta => review(itemMeta))
+      const fieldView = fieldMeta.$.spec.view || repeatView
+      return fieldView(<unknown>fieldMeta as Meta<T[]>)
+    } else return ""
   } else {
     review(fieldMeta)
     const view = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
