@@ -150,7 +150,9 @@ export const isDisabled = (meta: Meta<any>): boolean => {
  */
 export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => html`
   <label class="mq-field ${classMap({
+    [options.classes]: !!options.classes,
     [`mq-${options.type || "text"}-field`]: true,
+    "mq-mandatory": meta.$.state.mandatory,
     "mq-active": meta.$.state.active,
     "mq-populated": !!meta.$.value
   })}" >

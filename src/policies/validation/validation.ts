@@ -78,23 +78,41 @@ metaSetups.push(<T>(meta: Meta<T>) => {
 })
 
 /**
+ * Establish a function for mandatory field errors.
+ * See src for a basic example of an English language error.
+ */
+export function setRequiredLabel (fn: MetaFn<any, any, string>) {
+  requiredLabelFn = fn
+}
+let requiredLabelFn: MetaFn<any, any, string> = meta => `${meta.$.spec.label || "Field"} is required`
+
+/**
  * Run the validation for the individual meta provided.
  * Sets the `validated` state to true and the `error` state according to the validation result.
  * Note: This is not recursive - use `validateAll` for that purpose.
  */
 export function validate (meta: Meta<any>) {
   meta.$.state.validated = true
-  const validator = meta.$.spec.validator
-  if (typeof validator === "function") {
-    const result = validator(meta)
-    if (result === false) {
-      meta.$.state.error = true
-    } else if (typeof result === "string") {
-      meta.$.state.error = result
-    } else {
-      meta.$.state.error = false
+  if (meta.$.state.mandatory && !hasValue(meta)) {
+    meta.$.state.error = requiredLabelFn(meta)
+  } else {
+    const validator = meta.$.spec.validator
+    if (typeof validator === "function") {
+      const result = validator(meta)
+      if (result === false) {
+        meta.$.state.error = true
+      } else if (typeof result === "string") {
+        meta.$.state.error = result
+      } else {
+        meta.$.state.error = false
+      }
     }
   }
+}
+
+export function hasValue (meta: Meta<any>) {
+  const value = meta.$.value
+  return !(value === "" || (value ?? null) === null)
 }
 
 /**
