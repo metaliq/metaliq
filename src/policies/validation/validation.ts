@@ -1,6 +1,7 @@
 import { fieldKeys, Meta, MetaArray, MetaFn, metaSetups } from "../../meta"
 import { Policy } from "../../policy"
 import { addReview } from "../application/application"
+import { labelOrKey } from "../terminology/terminology"
 
 export interface ValidationSpec<T, P> {
   validator?: Validator<T, P>
@@ -84,7 +85,7 @@ metaSetups.push(<T>(meta: Meta<T>) => {
 export function setRequiredLabel (fn: MetaFn<any, any, string>) {
   requiredLabelFn = fn
 }
-let requiredLabelFn: MetaFn<any, any, string> = meta => `${meta.$.spec.label || "Field"} is required`
+let requiredLabelFn: MetaFn<any, any, string> = meta => `${labelOrKey(meta) || "Field"} is required`
 
 /**
  * Run the validation for the individual meta provided.

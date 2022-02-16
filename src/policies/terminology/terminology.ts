@@ -14,7 +14,7 @@ declare module "../../policy" {
 }
 
 /**
- * Return a display path string for the given meta within it's given ancestor.
+ * Return a full path string for the given meta within it's given ancestor.
  */
 export function labelPath (from: Meta<any>, to: Meta<any>) {
   const labels = [to.$.spec.label]
@@ -24,3 +24,5 @@ export function labelPath (from: Meta<any>, to: Meta<any>) {
   }
   return labels.join(" > ")
 }
+
+export const labelOrKey = (meta: Meta<any>) => meta.$.spec.label || meta.$.key

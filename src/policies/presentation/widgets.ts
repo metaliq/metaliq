@@ -4,7 +4,7 @@ import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
 import { commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaArray, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
-import { labelPath } from "../terminology/terminology"
+import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { review } from "../application/application"
 import { animatedHideShow } from "./animated-hide-show"
@@ -168,7 +168,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => met
 export const fieldLabel = <T>(options: InputOptions<T>): MetaView<T> => meta =>
   typeof options.labelFn === "function"
     ? options.labelFn(meta)
-    : html`<span class="mq-input-label">${meta.$.spec.label || meta.$.key}</span>`
+    : html`<span class="mq-input-label">${labelOrKey(meta)}</span>`
 
 /**
  * Input field with default options for a validated checkbox

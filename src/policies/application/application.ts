@@ -1,4 +1,4 @@
-import { Meta, MetaArray, MetaFn, metafy, MetaSpec } from "../../meta"
+import { Meta, MetaFn, metafy, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -72,10 +72,12 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   return meta
 }
 
-export function review (meta: Meta<any> | MetaArray<any>) {
+export function review <T> (meta: Meta<T>) {
   const specReview = meta.$.spec.review
   if (Array.isArray(specReview)) {
-    specReview.forEach(reviewFn => reviewFn(meta))
+    specReview.forEach(reviewFn => {
+      reviewFn(meta)
+    })
   } else if (typeof specReview === "function") {
     specReview(meta)
   }

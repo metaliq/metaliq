@@ -309,7 +309,7 @@ export type Fn<T, R = any> = (value: T) => R
 /**
  * A function on a meta object or array.
  */
-export type MetaFn<T, P = any, R = any> = (meta: Meta$<T, P>) => R
+export type MetaFn<T, P = any, R = any> = (meta: Meta<T, P>) => R
 
 /**
  * Return a MetaFn for the given Fn.
@@ -322,6 +322,6 @@ export const metaFn = <T, R = any> (calc: Fn<T, R>): MetaFn<T, any, R> => (meta:
  * into a function that takes a Meta of W and returns a function that takes a Meta of T and returns R.
  * TODO: Move this to a util library and extend out to provide multi-level currying - not as common but may be handy.
  */
-export const metaCurry = <W, T, R = any> (fn: Fn<W, Fn<T, R>>, w: Meta$<W>): MetaFn<T, any, R> => {
+export const metaCurry = <W, T, R = any> (fn: Fn<W, Fn<T, R>>, w: Meta<W>): MetaFn<T, any, R> => {
   return metaFn(metaFn(fn)(w))
 }
