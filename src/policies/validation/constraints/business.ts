@@ -45,6 +45,6 @@ export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") =>
 }
 
 export const isBsb: Constraint<string> = (msg?: string) => allOf(
-  matchRegex(/\d\d\d.?\d\d\d/, msg || "Not a valid BSB"),
+  matchRegex(/^\d\d\d.?\d\d\d$/, msg || "Not a valid BSB"),
   transform((value: string) => value.replace(/[^\d]/gmi, ""))
 )
