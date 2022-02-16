@@ -1,4 +1,5 @@
 import { Constraint } from "../validation"
+import { allOf, matchRegex, transform } from "./foundation"
 
 /** Emails **/
 
@@ -42,3 +43,8 @@ export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") =>
   }
   return true // No error, potentially reformatted
 }
+
+export const isBsb: Constraint<string> = (msg?: string) => allOf(
+  matchRegex(/\d\d\d.?\d\d\d/, msg || "Not a valid BSB"),
+  transform((value: string) => value.replace(/[^\d]/gmi, ""))
+)

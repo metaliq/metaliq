@@ -118,10 +118,9 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => 
     <input type=${options.type || "text"}
       ?disabled=${disabled}
       class="mq-input ${classMap({
-      [options.classes]: !!options.classes,
-      "mq-error-field": meta.$.state.error,
-      "mq-disabled": disabled
-    })}"
+        "mq-error-field": meta.$.state.error,
+        "mq-disabled": disabled
+      })}"
       .value=${live(meta.$.value ?? "")}
       @focus=${up(onFocus, meta)}
       @blur=${up(onBlur(options), meta)}

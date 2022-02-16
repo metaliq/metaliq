@@ -94,6 +94,7 @@ let requiredLabelFn: MetaFn<any, any, string> = meta => `${meta.$.spec.label || 
 export function validate (meta: Meta<any>) {
   meta.$.state.validated = true
   delete meta.$.state.error
+  if (meta.$.state.hidden) return
   if (meta.$.state.mandatory && !hasValue(meta)) {
     meta.$.state.error = requiredLabelFn(meta)
   } else {
@@ -129,13 +130,15 @@ export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = 
   const keys = fieldKeys(meta.$.spec)
   for (const key of keys) {
     const sub = meta[key]
-    let childErrors: Array<Meta<any>>
+    let childErrors: Array<Meta<any>> = []
     if (Array.isArray(sub)) {
       const subArr = sub as MetaArray<any>
       childErrors = subArr.flatMap(child => validateAll(child, revalidate))
     } else {
       const subMeta = sub as Meta<any>
-      childErrors = validateAll(subMeta, revalidate)
+      if (!subMeta.$.state.hidden) {
+        childErrors = validateAll(subMeta, revalidate)
+      }
     }
     result.splice(result.length, 0, ...childErrors)
   }
