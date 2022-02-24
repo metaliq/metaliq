@@ -168,7 +168,7 @@ async function serve (location: string = "", options: ServeOptions = {}) {
 async function importSpec (name: string = "appSpec", path: string = "specs") {
   console.log(`Loading MetaliQ specification ${path} > ${name}`)
   try {
-    const module = await import (join(process.cwd(), `bin/${path}`))
+    const module = await import ("file://" + join(process.cwd(), "bin", path))
     const spec: MetaSpec<any> = module[name]
     return spec
   } catch (e) {
