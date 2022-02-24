@@ -66,7 +66,7 @@ export const repeatView: MetaView<any[]> = meta => {
 /**
  * Return a default view for a meta based upon its value type.
  */
-export const defaultFieldView = <T> (meta: Meta<T>): MetaView<T> => {
+const defaultFieldView = <T> (meta: Meta<T>): MetaView<T> => {
   if (!meta) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
   } else if (typeof meta.$.value === "object") {
@@ -158,7 +158,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => met
     ${!options.labelAfter ? fieldLabel(options)(meta) : ""}
     ${input({ type: "text", ...options })(meta)}
     ${options.labelAfter ? fieldLabel(options)(meta) : ""}
-    ${errorMsg(meta, "mq-field-error")}
+    ${errorMsg({ classes: "mq-field-error" })(meta)}
   </label>
 `
 
@@ -183,12 +183,15 @@ export const checkboxField = (options: InputOptions<boolean> = {}): MetaView<boo
 /**
  * Error message for the given field.
  */
-export const errorMsg = (meta: Meta<any>, classes = "") => {
+export const errorMsg = ({ classes }: { classes: string }) => <T>(meta: Meta<T>) => {
   const error = meta.$.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
   classes = `mq-error-msg ${classes}`
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
 }
+
+export const fieldError = errorMsg({ classes: "mq-field-error" })
+export const pageError = errorMsg({ classes: "mq-page-error" })
 
 function onFocus (meta: Meta<any>) {
   meta.$.state.active = true
@@ -212,9 +215,9 @@ const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
   }
 
 export const errorsBlock: MetaView<any> = meta => html`
-  <div class="text-red-500">
-    ${meta.$.state.allErrors.map(errorMeta => html`
-      <div class="font-bold">${labelPath(meta, errorMeta)}</div>
+  <div class="mq-error-msg mq-page-error">
+    ${meta.$.state.allErrors?.map(errorMeta => html`
+      <div>${labelPath(meta, errorMeta)}</div>
       <div>${errorMeta.$.state.error}</div>
     `)}
   </div>
