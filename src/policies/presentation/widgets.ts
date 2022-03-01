@@ -183,15 +183,15 @@ export const checkboxField = (options: InputOptions<boolean> = {}): MetaView<boo
 /**
  * Error message for the given field.
  */
-export const errorMsg = ({ classes }: { classes: string }) => <T>(meta: Meta<T>) => {
+export const errorMsg = <T> (options: { classes?: string } = {}): MetaView<T> => meta => {
   const error = meta.$.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
-  classes = `mq-error-msg ${classes}`
+  const classes = `mq-error-msg ${options.classes ?? ""}`
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
 }
 
-export const fieldError = errorMsg({ classes: "mq-field-error" })
-export const pageError = errorMsg({ classes: "mq-page-error" })
+export const fieldError: MetaView<any> = errorMsg({ classes: "mq-field-error" })
+export const pageError: MetaView<any> = errorMsg({ classes: "mq-page-error" })
 
 function onFocus (meta: Meta<any>) {
   meta.$.state.active = true
