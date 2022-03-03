@@ -38,14 +38,14 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => me
 export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
   const fieldMeta = meta[fieldKey]
   if (isMetaArray(fieldMeta)) {
-    review(fieldMeta)
+    review(fieldMeta as Meta<unknown>)
     if (!fieldMeta.$.state.hidden) {
       fieldMeta.forEach(itemMeta => review(itemMeta))
       const fieldView = fieldMeta.$.spec.view || repeatView
       return fieldView(<unknown>fieldMeta as Meta<T[]>)
     } else return ""
   } else {
-    review(fieldMeta)
+    review(fieldMeta as Meta<unknown>)
     const view = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
     if (typeof fieldMeta.$.spec.hidden === "function") {
       return animatedHideShow(view)(fieldMeta)
@@ -158,7 +158,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => met
     ${!options.labelAfter ? fieldLabel(options)(meta) : ""}
     ${input({ type: "text", ...options })(meta)}
     ${options.labelAfter ? fieldLabel(options)(meta) : ""}
-    ${errorMsg({ classes: "mq-field-error" })(meta)}
+    ${errorMsg({ classes: "mq-field-error" })(meta as Meta<unknown>)}
   </label>
 `
 

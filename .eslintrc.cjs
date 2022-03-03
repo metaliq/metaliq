@@ -41,6 +41,8 @@ module.exports = {
     // Prevent this check which reports obj[key].toString as being [object Object]
     "@typescript-eslint/no-base-to-string": "off",
     // Specifically turned off for MetaliQ, as we use namespaced interface merging to work around lack of HKTs
-    "@typescript-eslint/no-namespace": "off"
+    "@typescript-eslint/no-namespace": "off",
+    // Allow more flexibility around ternary operator
+    "multiline-ternary": "off"
   }
 }
