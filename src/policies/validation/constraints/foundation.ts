@@ -15,7 +15,7 @@ export const sameAs = <T, P>(other: FieldKey<P>, msg?: string): Validator<T, P> 
   return meta.$.value === otherMeta.$.value || msg || `Does not match ${otherMeta.$.spec.label}`
 }
 
-export const transform = <T> (fn: Fn<T, T>): Validator<T> => meta => {
+export const transform = <T> (fn: Fn<T, any, T>): Validator<T> => meta => {
   meta.$.value = fn(meta.$.value)
   return true
 }

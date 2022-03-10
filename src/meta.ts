@@ -298,30 +298,49 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
- * Basic function on an underlying data value.
+ * Basic function on an underlying data value and optionally its parent.
  * Could be a pure function to provide a derived value,
  * or could return a process function that takes further values,
  * in which case the convention is that it may mutate the provided value
  * but no other side effect should be produced.
  */
-export type Fn<T, R = any> = (value: T) => R
+export type Fn<T, P = any, R = any> = (value: T, parent?: P) => R
 
 /**
- * A function on a meta object or array.
+ * A function on a meta object.
  */
 export type MetaFn<T, P = any, R = any> = (meta: Meta<T, P>) => R
 
 /**
- * Return a MetaFn for the given Fn.
+ * Return a MetaFn for the given Fn, that works on the Meta's uncommitted transient values.
  */
-export const metaFn = <T, R = any> (calc: Fn<T, R>): MetaFn<T, any, R> => (meta: Meta$<T>): R => calc(meta.$.value)
+export const metaFn = <T, P = any, R = any> (fn: Fn<T, P, R>): MetaFn<T, P, R> =>
+  (meta: Meta<T, P>): R =>
+    fn(metaProxy(meta), metaProxy(meta.$.parent))
 
 /**
- * Single level function currying. Can be a useful pattern.
- * Convert a curried calc (that takes a value of W and returns a function that takes a value of T and returns R)
- * into a function that takes a Meta of W and returns a function that takes a Meta of T and returns R.
- * TODO: Move this to a util library and extend out to provide multi-level currying - not as common but may be handy.
+ * Return a proxy for a given Meta object's uncommitted transient values.
  */
-export const metaCurry = <W, T, R = any> (fn: Fn<W, Fn<T, R>>, w: Meta<W>): MetaFn<T, any, R> => {
-  return metaFn(metaFn(fn)(w))
-}
+export const metaProxy = <T>(meta: Meta<T>): T => <unknown>(new Proxy(meta, {
+  get (target: Meta<T>, p: FieldKey<T>): any {
+    const value = target[p].$.value
+    if (value && typeof value === "object") {
+      return target[p]
+    } else {
+      return value
+    }
+  },
+
+  set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
+    const oldValue = target[p].$.value
+    if (oldValue && typeof oldValue === "object") {
+      // An attempt was made to reset an entire object.
+      // This is currently not supported.
+      // TODO: Perform a recursive set on meta object's inner primitive properties.
+      return false
+    } else {
+      target[p].$.value = newValue
+      return true
+    }
+  }
+})) as T

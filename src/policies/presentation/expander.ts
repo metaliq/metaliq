@@ -60,7 +60,7 @@ export class Expander extends LitElement {
   }
 }
 
-export const expander = <T> (expandedFn: Fn<T, boolean>) => (content: View<T>) => (data: T) => html`
+export const expander = <T> (expandedFn: Fn<T, any, boolean>) => (content: View<T>) => (data: T) => html`
   <mq-expander>
     ${expandedFn(data) ? content(data) : ""}
   </mq-expander>
