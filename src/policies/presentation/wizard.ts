@@ -4,6 +4,7 @@ import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
 import { up } from "@metaliq/up"
 import { MetaView } from "./presentation"
+import { label } from "../terminology/terminology"
 
 export interface WizardSpec<T, P> {
   wizard?: {
@@ -142,7 +143,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta
   wizard.$.state.step = stepNames[nextIndex]
   resetStepMetas()
 
-  window.history.pushState({}, nowStep.$.spec.label)
+  window.history.pushState({}, label(nowStep))
   window.onpopstate = (evt: PopStateEvent) => {
     up(changeStep({ stepName: stepNames[nowIndex] }), wizard)()
   }

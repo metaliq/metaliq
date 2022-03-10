@@ -5,6 +5,7 @@ import { up } from "@metaliq/up"
 
 import { changeStep } from "./wizard"
 import { pageError } from "./widgets"
+import { label } from "../terminology/terminology"
 
 export const wizardView = (wizard: Meta<any>) => [
   wizardTramline(wizard),
@@ -24,7 +25,7 @@ export const wizardTramline = (wizard: Meta<any>) => {
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${wizard[stepName].$.spec.label}</span>
+          <span class="mq-wizard-nav-label">${label(wizard[stepName] as Meta<any>)}</span>
         </div>
       `)}
     </div>

@@ -1,6 +1,7 @@
 import { render, TemplateResult } from "lit"
 import { Meta, metaSetups } from "../../meta"
 import { metaForm } from "./widgets"
+import { label } from "../terminology/terminology"
 
 export interface PresentationSpec<T, P> {
   view?: MetaView<T, P>
@@ -32,7 +33,7 @@ metaSetups.push(meta => {
     if (meta.$.spec.view) {
       meta.$.spec.review = meta.$.spec.review || renderPage
       Object.assign(window, { meta })
-      document.title = meta.$.spec.label ?? ""
+      document.title = label(meta)
     }
   }
 })

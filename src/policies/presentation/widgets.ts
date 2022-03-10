@@ -4,7 +4,7 @@ import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
 import { commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaArray, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
-import { labelOrKey, labelPath } from "../terminology/terminology"
+import { label, labelOrKey } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
 import { review } from "../application/application"
 import { animatedHideShow } from "./animated-hide-show"
@@ -104,7 +104,7 @@ export type InputOptions<T> = {
   commit?: boolean // immediately commit values to underlying value object
   unvalidated?: boolean // don't perform validation
   labelAfter?: boolean // Place the label after the input
-  labelFn?: MetaView<T> // Custom label content function
+  labelView?: MetaView<T> // Custom label content function
   classes?: string // Additional class(es) for field container
 }
 
@@ -166,8 +166,8 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => met
  * Label element for input field.
  */
 export const fieldLabel = <T>(options: InputOptions<T>): MetaView<T> => meta =>
-  typeof options.labelFn === "function"
-    ? options.labelFn(meta)
+  typeof options.labelView === "function"
+    ? options.labelView(meta)
     : html`<span class="mq-input-label">${labelOrKey(meta)}</span>`
 
 /**
@@ -217,7 +217,7 @@ const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
 export const errorsBlock: MetaView<any> = meta => html`
   <div class="mq-error-msg mq-page-error">
     ${meta.$.state.allErrors?.map(errorMeta => html`
-      <div>${labelPath(meta, errorMeta)}</div>
+      <div>${label(errorMeta)}</div>
       <div>${errorMeta.$.state.error}</div>
     `)}
   </div>
@@ -237,36 +237,4 @@ export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => meta =
 
 export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
   <div class="mq-form-page">${content(meta)}</div>
-`
-
-export const section = <T>(content: MetaView<T>): MetaView<T> => meta => html`
-  <div class="mx-4 mt-4 md:mt-0 first:mt-4 col-span-12">
-    <div class="md:grid md:grid-cols-3 md:gap-6">
-      <div class="md:col-span-1 p-4">
-        <div class="px-4 sm:px-0">
-          <h3 class="text-lg font-medium leading-6 text-gray-900">
-            ${meta.$.spec.label}
-          </h3>
-          <p class="mt-1 text-sm text-gray-600">
-            ${meta.$.spec.helpText}
-          </p>
-        </div>
-      </div>
-      <div class="mt-5 md:mt-0 md:col-span-2">
-        <form action="#" method="POST">
-          <div class="shadow sm:rounded-md sm:overflow-hidden">
-            <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
-              ${content(meta)}
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="hidden sm:block col-span-12" aria-hidden="true">
-    <div class="py-5">
-      <div class="border-t border-gray-200"></div>
-    </div>
-  </div>
 `

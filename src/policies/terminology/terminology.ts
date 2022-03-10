@@ -1,28 +1,16 @@
-import { Meta } from "../../meta"
+import { getSpecValue, Meta, MetaFn } from "../../meta"
 
-export interface TerminologySpec {
-  label?: string
-  helpText?: string
+export interface TerminologySpec<T, P> {
+  label?: string | MetaFn<T, P>
+  helpText?: string | MetaFn<T, P>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends TerminologySpec {
-      this?: Specification<T, P>
-    }
+    interface Specification<T, P> extends TerminologySpec<T, P> {}
   }
 }
 
-/**
- * Return a full path string for the given meta within it's given ancestor.
- */
-export function labelPath (from: Meta<any>, to: Meta<any>) {
-  const labels = [to.$.spec.label]
-  while (to.$.parent && to.$.parent !== from) {
-    to = to.$.parent
-    if (to.$.spec.label) labels.unshift(to.$.spec.label)
-  }
-  return labels.join(" > ")
-}
+export const label = getSpecValue("label")
 
-export const labelOrKey = (meta: Meta<any>) => meta.$.spec.label || meta.$.key
+export const labelOrKey = (meta: Meta<any>) => label(meta) || meta.$.key

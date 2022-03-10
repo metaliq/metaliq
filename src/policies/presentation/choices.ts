@@ -8,6 +8,7 @@ import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { fieldError } from "./widgets"
+import { label } from "../terminology/terminology"
 
 addScript("https://cdn.jsdelivr.net/npm/choices.js@10.0.0/public/assets/scripts/choices.min.js")
 
@@ -52,7 +53,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => meta =
       )
       return html`
         <select class="mq-input " id=${id} @change=${up(onSelect, meta)}>
-          <option value="">${meta.$.spec.label}</option>
+          <option value="">${label(meta)}</option>
         </select>
       `
     })}

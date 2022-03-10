@@ -315,32 +315,67 @@ export type MetaFn<T, P = any, R = any> = (meta: Meta<T, P>) => R
  * Return a MetaFn for the given Fn, that works on the Meta's uncommitted transient values.
  */
 export const metaFn = <T, P = any, R = any> (fn: Fn<T, P, R>): MetaFn<T, P, R> =>
-  (meta: Meta<T, P>): R =>
-    fn(metaProxy(meta), metaProxy(meta.$.parent))
+  (meta: Meta<T, P>): R => {
+    if (typeof meta.$.value === "object") {
+      return fn(metaProxy(meta), metaProxy(meta.$.parent))
+    } else {
+      return fn(meta.$.value)
+    }
+  }
 
 /**
- * Return a proxy for a given Meta object's uncommitted transient values.
+ * Return a proxy for a given Meta object's values.
+ * Will set or return uncommitted transient values where present (i.e. defined in the spec).
+ * Otherwise returns / sets the value on the underlying data object.
  */
 export const metaProxy = <T>(meta: Meta<T>): T => <unknown>(new Proxy(meta, {
   get (target: Meta<T>, p: FieldKey<T>): any {
-    const value = target[p].$.value
-    if (value && typeof value === "object") {
-      return target[p]
+    if (typeof target[p] === "object") {
+      const value = target[p].$.value
+      if (value && typeof value === "object") {
+        // Recurse to inner object
+        return target[p]
+      } else {
+        return value
+      }
     } else {
-      return value
+      // No spec for this field
+      return target.$.value[p]
     }
   },
 
   set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
-    const oldValue = target[p].$.value
-    if (oldValue && typeof oldValue === "object") {
-      // An attempt was made to reset an entire object.
-      // This is currently not supported.
-      // TODO: Perform a recursive set on meta object's inner primitive properties.
-      return false
+    if (typeof target[p] === "object") {
+      const oldValue = target[p].$.value
+      if (oldValue && typeof oldValue === "object") {
+        // An attempt was made to reset an entire object.
+        // This is currently not supported.
+        // TODO: Perform a recursive set on meta object's inner primitive properties.
+        return false
+      } else {
+        target[p].$.value = newValue
+        return true
+      }
     } else {
-      target[p].$.value = newValue
-      return true
+      // No spec for this field
+      target.$.value[p] = newValue
     }
   }
 })) as T
+
+type SpecKey = keyof Policy.Specification<any>
+type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
+type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
+
+/**
+ * Return the value of a spec term that is defined as being
+ * either a particular type or a MetaFn that returns that type.
+ */
+export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K) =>
+  (meta: Meta<any>): V => {
+    const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
+
+    const specValue = meta.$.spec[key]
+    if (isMetaFn(specValue)) return specValue(meta)
+    else return specValue as V
+  }

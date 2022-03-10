@@ -33,7 +33,7 @@ export const testProcs: TestProcs = {
   }
 }
 
-const testPresentationSpec: TerminologySpec = {
+const testPresentationSpec: TerminologySpec<any, any> = {
   label: "Test"
 }
 
