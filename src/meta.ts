@@ -329,12 +329,12 @@ export const metaFn = <T, P = any, R = any> (fn: Fn<T, P, R>): MetaFn<T, P, R> =
  * Otherwise returns / sets the value on the underlying data object.
  */
 export const metaProxy = <T>(meta: Meta<T>): T => <unknown>(new Proxy(meta, {
-  get (target: Meta<T>, p: FieldKey<T>): any {
+  get <K extends FieldKey<T>>(target: Meta<T>, p: K): any {
     if (typeof target[p] === "object") {
       const value = target[p].$.value
       if (value && typeof value === "object") {
         // Recurse to inner object
-        return target[p]
+        return metaProxy(<unknown>target[p] as Meta<T[K]>)
       } else {
         return value
       }
@@ -372,7 +372,7 @@ type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
  * either a particular type or a MetaFn that returns that type.
  */
 export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K) =>
-  (meta: Meta<any>): V => {
+  (meta: Meta$<any>): V => {
     const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
 
     const specValue = meta.$.spec[key]

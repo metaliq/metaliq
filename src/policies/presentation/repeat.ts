@@ -1,31 +1,37 @@
-import { MetaView } from "./presentation"
+import { ViewResult } from "./presentation"
 import { html } from "lit"
-import { MetaArray, metafy } from "../../meta"
+import { getSpecValue, Meta, MetaArray, MetaFn, metafy } from "../../meta"
 import { up } from "@metaliq/up"
 
-export type RepeatControlOptions<T> = {
-  addLabel?: string
-  removeLabel?: string
-  newItem?: T
+export interface RepeatSpec<T, P = any> {
+  addLabel?: string | MetaFn<T, P, string>
+  removeLabel?: string | MetaFn<T, P, string>
+  newItem?: T extends Array<infer I> ? I | MetaFn<T, P, I> : T
 }
 
-export const defaultRepeatOptions: RepeatControlOptions<any> = {
+declare module "../../policy" {
+  namespace Policy {
+    interface Specification<T, P> extends RepeatSpec<T, P> { }
+  }
+}
+
+export const defaultRepeatSpec: RepeatSpec<any> = {
   addLabel: "Add Item",
   removeLabel: "Remove Item",
   newItem: {}
 }
 
-export const repeatControls = <T>(options: RepeatControlOptions<T> = {}): MetaView<T[]> => meta => {
-  const mergedOptions: RepeatControlOptions<any> = { ...defaultRepeatOptions, ...options }
+export const repeatControls = <T, P>(meta: Meta<T[], P>): ViewResult => {
   const metaArr = <unknown>meta as MetaArray<any>
+
   return html`
     <div>
-      <button class="mq-button" @click=${up(addItem(mergedOptions), metaArr)}>${options.addLabel}</button>
+      <button class="mq-button" @click=${up(addItem, metaArr)}>${getSpecValue("addLabel")(meta)}</button>
     </div>
   `
 }
 
-export const addItem = <T>(options: RepeatControlOptions<T>) => (arr: MetaArray<T>) => {
-  const newMeta = metafy(arr.$.spec.items, options.newItem, arr.$.parent, arr.$.key)
+export const addItem = <T, P>(arr: MetaArray<T, P>) => {
+  const newMeta = metafy(arr.$.spec.items, getSpecValue("newItem")(arr) || {}, arr.$.parent, arr.$.key)
   arr.push(newMeta)
 }
