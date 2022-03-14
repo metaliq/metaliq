@@ -313,55 +313,69 @@ export type MetaFn<T, P = any, R = any> = (meta: Meta<T, P>) => R
 
 /**
  * Return a MetaFn for the given Fn, that works on the Meta's uncommitted transient values.
+ * For the meaning of `fallbackToUnderlying`, see the equivalent `metaProxy` parameter.
  */
-export const metaFn = <T, P = any, R = any> (fn: Fn<T, P, R>): MetaFn<T, P, R> =>
-  (meta: Meta<T, P>): R => {
-    if (typeof meta.$.value === "object") {
-      return fn(metaProxy(meta), metaProxy(meta.$.parent))
-    } else {
-      return fn(meta.$.value)
+export const metaFn = <T, P = any, R = any> (
+  fn: Fn<T, P, R>, fallbackToUnderlying: boolean = true
+): MetaFn<T, P, R> =>
+    meta => {
+      if (typeof meta.$.value === "object") {
+        return fn(
+          metaProxy(meta, fallbackToUnderlying),
+          metaProxy(meta.$.parent, fallbackToUnderlying)
+        )
+      } else {
+        return fn(meta.$.value)
+      }
     }
-  }
 
 /**
  * Return a proxy for a given Meta object's values.
  * Will set or return uncommitted transient values where present (i.e. defined in the spec).
- * Otherwise returns / sets the value on the underlying data object.
+ * If the fallbackToUnderlying option is left as true, any property access or manipulation
+ * on fields that are not included in the spec will fall back to getting or setting the underlying data value.
+ * This is the default in order to most widely facilitate workable meta derivations
+ * based on an object type that may not have all fields included in the spec.
  */
-export const metaProxy = <T>(meta: Meta<T>): T => <unknown>(new Proxy(meta, {
-  get <K extends FieldKey<T>>(target: Meta<T>, p: K): any {
-    if (typeof target[p] === "object") {
-      const value = target[p].$.value
-      if (value && typeof value === "object") {
-        // Recurse to inner object
-        return metaProxy(<unknown>target[p] as Meta<T[K]>)
+export const metaProxy = <T>(meta: Meta<T>, fallbackToUnderlying: boolean = true): T =>
+  <unknown>(new Proxy(meta, {
+    get <K extends FieldKey<T>>(target: Meta<T>, p: K): any {
+      if (typeof target[p] === "object") {
+        const value = target[p].$.value
+        if (value && typeof value === "object") {
+          // Recurse to inner object
+          return metaProxy(<unknown>target[p] as Meta<T[K]>)
+        } else {
+          return value
+        }
       } else {
-        return value
+        // No spec for this field
+        return target.$.value[p]
       }
-    } else {
-      // No spec for this field
-      return target.$.value[p]
-    }
-  },
+    },
 
-  set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
-    if (typeof target[p] === "object") {
-      const oldValue = target[p].$.value
-      if (oldValue && typeof oldValue === "object") {
-        // An attempt was made to reset an entire object.
-        // This is currently not supported.
-        // TODO: Perform a recursive set on meta object's inner primitive properties.
-        return false
+    set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
+      const isMeta = (obj: unknown): obj is Meta<unknown> => typeof obj === "object"
+      const targetMeta = target[p]
+
+      if (isMeta(targetMeta)) {
+        const oldValue = target[p].$.value
+        if (oldValue && typeof oldValue === "object" && typeof newValue === "object") {
+          const proxy = metaProxy(targetMeta)
+          for (const [key, value] of Object.entries(newValue)) {
+            (proxy as any)[key] = value
+          }
+        } else {
+          target[p].$.value = newValue
+        }
       } else {
-        target[p].$.value = newValue
-        return true
+        // No spec for this field
+        target.$.value[p] = newValue
       }
-    } else {
-      // No spec for this field
-      target.$.value[p] = newValue
+      return true
     }
   }
-})) as T
+  )) as T
 
 type SpecKey = keyof Policy.Specification<any>
 type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
