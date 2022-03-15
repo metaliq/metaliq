@@ -1,10 +1,12 @@
-import { commit, FieldKey, Meta, MetaFn, metaSetups, reset } from "../../meta"
+import { commit, FieldKey, isMetaFn, Meta, MetaFn, metaSetups, reset } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
 import { up } from "@metaliq/up"
 import { MetaView } from "./presentation"
 import { label } from "../terminology/terminology"
+
+export type StepLabel = string | boolean
 
 export interface WizardSpec<T, P> {
   wizard?: {
@@ -21,14 +23,14 @@ export interface WizardSpec<T, P> {
     onComplete?: MetaFn<T, P>
 
     /**
-     * Override the default label, or set to false to hide the button.
+     * Override the default label, or set to empty to hide the button.
      */
-    forwardsLabel?: string | boolean
+    forwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
 
     /**
-     * Override the default label, or set to false to hide the button.
+     * Override the default label, or set to empty to hide the button.
      */
-    backwardsLabel?: string | boolean
+    backwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
   }
 }
 
@@ -44,6 +46,20 @@ declare module "../../policy" {
       this?: State<T, P>
     }
   }
+}
+
+// Can't use getSpecValue as it is nested
+// TODO: EITHER make a nested version of getSpecValue OR switch to a review-and-state model
+export const forwardsLabel: MetaFn<any, any, StepLabel> = meta => {
+  const value = meta.$.spec.wizardStep?.forwardsLabel
+  if (isMetaFn(value)) return value(meta)
+  else return value
+}
+
+export const backwardsLabel: MetaFn<any, any, StepLabel> = meta => {
+  const value = meta.$.spec.wizardStep?.backwardsLabel
+  if (isMetaFn(value)) return value(meta)
+  else return value
 }
 
 export type StepDirection = "forwards" | "backwards"

@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js"
 import { fieldKeys, Meta } from "../../meta"
 import { up } from "@metaliq/up"
 
-import { changeStep } from "./wizard"
+import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "./widgets"
 import { label } from "../terminology/terminology"
 
@@ -34,6 +34,10 @@ export const wizardTramline = (wizard: Meta<any>) => {
 
 export const wizardStep = (wizard: Meta<any>) => {
   const currentStep = wizard[wizard.$.state.step] as Meta<any>
+  const labels = {
+    forwards: forwardsLabel(currentStep),
+    backwards: backwardsLabel(currentStep)
+  }
 
   return html`
     <div class="mq-wizard-step ${classMap({
@@ -53,16 +57,16 @@ export const wizardStep = (wizard: Meta<any>) => {
       </div>
       ${currentStep.$.spec.wizard ? "" : html`
         <div class="mq-wizard-buttons">
-          ${currentStep.$.spec.wizardStep?.backwardsLabel === false ? "" : html`
+          ${labels.backwards === false ? "" : html`
             <button class="mq-button"
               @click=${up(changeStep({ direction: "backwards" }), wizard)}>
-              ${currentStep.$.spec.wizardStep?.backwardsLabel || "Previous"}
+              ${labels.backwards || "Previous"}
             </button>
           `}
-          ${currentStep.$.spec.wizardStep?.forwardsLabel === false ? "" : html`
+          ${labels.forwards === false ? "" : html`
             <button class="mq-button mq-primary-button"
               @click=${up(changeStep({ direction: "forwards" }), wizard)}>
-              ${currentStep.$.spec.wizardStep?.forwardsLabel || "Next"}
+              ${labels.forwards || "Next"}
             </button>
           `}
         </div>

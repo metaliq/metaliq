@@ -330,6 +330,11 @@ export const metaFn = <T, P = any, R = any> (
     }
 
 /**
+ * A simple type guard for values that may or may not be a meta function.
+ */
+export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
+
+/**
  * Return a proxy for a given Meta object's values.
  * Will set or return uncommitted transient values where present (i.e. defined in the spec).
  * If the fallbackToUnderlying option is left as true, any property access or manipulation
@@ -387,8 +392,6 @@ type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
  */
 export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K) =>
   (meta: Meta$<any>): V => {
-    const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
-
     const specValue = meta.$.spec[key]
     if (isMetaFn(specValue)) return specValue(meta)
     else return specValue as V
