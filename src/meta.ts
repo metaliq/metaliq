@@ -322,7 +322,7 @@ export const metaFn = <T, P = any, R = any> (
       if (typeof meta.$.value === "object") {
         return fn(
           metaProxy(meta, fallbackToUnderlying),
-          metaProxy(meta.$.parent, fallbackToUnderlying)
+          meta.$.parent ? metaProxy(meta.$.parent, fallbackToUnderlying) : null
         )
       } else {
         return fn(meta.$.value)

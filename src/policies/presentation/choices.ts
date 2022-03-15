@@ -61,10 +61,10 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => meta =
   </label>
 `
 
-export const objectChoices = (object: object) => [
+export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
   ...Object.entries(object).map(([k, v]) => ({
     value: k,
-    label: v
+    label: keyAsLabel ? k : v
   }))
 ]
 
