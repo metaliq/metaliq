@@ -3,14 +3,12 @@ import { MetaView } from "./presentation"
 import { html } from "lit"
 import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
-import { addScript } from "./3pjs"
 import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { fieldError } from "./widgets"
 import { label } from "../terminology/terminology"
-
-addScript("https://cdn.jsdelivr.net/npm/choices.js@10.0.0/public/assets/scripts/choices.min.js")
+import { getModuleDefault } from "../../util/import"
 
 export type SelectorOptions = {
   classes?: string
@@ -19,11 +17,7 @@ export type SelectorOptions = {
   searchText?: string
 }
 
-declare global {
-  interface Window {
-    Choices: typeof ChoicesModule
-  }
-}
+const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
 export const selector = (options: SelectorOptions = {}): MetaView<any> => meta => html`
   <label class="mq-field mq-select-field ${classMap({
@@ -42,7 +36,6 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => meta =
       }
       setTimeout(
         () => {
-          // @ts-expect-error
           // eslint-disable-next-line no-new -- No need to hold reference to Choices
           new Choices(`#${id}`, {
             choices: options.choices,

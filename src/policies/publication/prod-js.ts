@@ -6,10 +6,10 @@ import pluginJson from "@rollup/plugin-json"
 import minifyHTMLLiteralsModule from "rollup-plugin-minify-html-literals"
 import { defaultShouldMinify } from "minify-html-literals"
 import { minify } from "terser"
-import { getCjsDefault } from "./util"
+import { getModuleDefault } from "../../util/import"
 
 // Workaround for named `default` export in rollup-plugin-minify-html-literals
-const minifyHTMLLiterals = getCjsDefault(minifyHTMLLiteralsModule)
+const minifyHTMLLiterals = getModuleDefault(minifyHTMLLiteralsModule)
 
 export type ProdJsOptions = {
   src: string

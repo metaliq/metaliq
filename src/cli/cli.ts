@@ -13,6 +13,7 @@ import { PublicationContext, PublicationTarget } from "../policies/publication/p
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
 Object.assign(window, { navigator: { userAgent: "" } })
+Object.assign(document, { documentElement: { style: {} } })
 
 const tscPath = join(".", "node_modules", ".bin", "tsc")
 
