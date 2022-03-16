@@ -319,14 +319,13 @@ export const metaFn = <T, P = any, R = any> (
   fn: Fn<T, P, R>, fallbackToUnderlying: boolean = true
 ): MetaFn<T, P, R> =>
     meta => {
-      if (typeof meta.$.value === "object") {
-        return fn(
-          metaProxy(meta, fallbackToUnderlying),
-          meta.$.parent ? metaProxy(meta.$.parent, fallbackToUnderlying) : null
-        )
-      } else {
-        return fn(meta.$.value)
-      }
+      const value = typeof meta.$.value === "object"
+        ? metaProxy(meta, fallbackToUnderlying)
+        : meta.$.value
+      const parentValue = meta.$.parent
+        ? metaProxy(meta.$.parent, fallbackToUnderlying)
+        : null
+      return fn(value, parentValue)
     }
 
 /**
