@@ -274,12 +274,12 @@ export const m$ = <T>(value: T): MetaInfo<T> => (<unknown>value as Meta$<T>)?.$
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T>(value: T): Meta<T> => (m$(value).meta as Meta<T>)
+export const meta = <T>(value: T): Meta<T> => (m$(value)?.meta as Meta<T>)
 
 /**
  * Typed shortcut from a value array to its associated meta array.
  */
-export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value).meta as MetaArray<T>)
+export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value)?.meta as MetaArray<T>)
 
 /**
  * A type guard to narrow a meta field to either a Meta or a MetaArray.
@@ -319,11 +319,11 @@ export const metaFn = <T, P = any, R = any> (
   fn: Fn<T, P, R>, fallbackToUnderlying: boolean = true
 ): MetaFn<T, P, R> =>
     meta => {
-      const value = typeof meta.$.value === "object"
+      const value = typeof meta?.$.value === "object"
         ? metaProxy(meta, fallbackToUnderlying)
-        : meta.$.value
-      const parentValue = meta.$.parent
-        ? metaProxy(meta.$.parent, fallbackToUnderlying)
+        : meta?.$.value
+      const parentValue = meta?.$.parent
+        ? metaProxy(meta?.$.parent, fallbackToUnderlying)
         : null
       return fn(value, parentValue)
     }

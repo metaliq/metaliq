@@ -23,7 +23,7 @@ export type MetaFormOptions<T> = {
  */
 export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => meta => html`
   <div class="mq-form ${options.classes || ""}">
-    ${fieldKeys(meta.$.spec)
+    ${fieldKeys(meta?.$.spec)
       .filter(key =>
         (!options.include || options.include.includes(key)) &&
         (!(options.exclude || []).includes(key))

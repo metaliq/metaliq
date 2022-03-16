@@ -22,7 +22,7 @@ export type View<T> = (model: T) => ViewResult
 export type MetaView<T, P = any> = (meta: Meta<T, P>) => ViewResult
 
 export const metaView = <T, P = any> (view: View<T>): MetaView<T, P> =>
-  meta => view(meta.$.value)
+  meta => view(meta?.$.value)
 
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
