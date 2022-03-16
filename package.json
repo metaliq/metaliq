@@ -1,6 +1,6 @@
 {
   "name": "metaliq",
-  "version": "0.19.3",
+  "version": "0.19.4",
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "prepare": "tsc",
+    "prepare": "rm -rf ./lib && tsc && mkdir ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
     "test": "mocha --experimental-specifier-resolution=node ./lib/test/"
   },
   "author": "tstewart@klaudhaus.com",
@@ -51,13 +51,13 @@
     "@web/dev-server": "^0.1.25",
     "apollo-server-cloud-functions": "^3.5.0",
     "apollo-server-express": "^3.5.0",
-    "choices.js": "^10.1.0",
+    "choices.js": "10.1.0",
     "clean-css": "^4.2.3",
     "commander": "^8.2.0",
     "express": "4.17.1",
     "firebase-admin": "^10.0.1",
     "firebase-functions": "^3.16.0",
-    "flatpickr": "^4.6.9",
+    "flatpickr": "4.6.9",
     "flatted": "^3.2.2",
     "fs-extra": "^10.0.0",
     "graphql": "^16.3.0",
