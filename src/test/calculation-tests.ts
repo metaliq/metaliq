@@ -2,12 +2,10 @@ import chai from "chai"
 import { describe, it } from "mocha"
 import { metaFn, MetaSpec } from "../meta"
 import { run } from "../policies/application/application"
-import { CalcFns, initCalculationPolicy } from "../policies/calculation/calculation"
+import { CalcFns, calcs } from "../policies/calculation/calculation"
 import { up } from "@metaliq/up"
 
 chai.should()
-
-initCalculationPolicy()
 
 describe("metaliq/policies/calculation", () => {
   describe("a basic calculation", () => {
@@ -39,7 +37,7 @@ describe("metaliq/policies/calculation", () => {
       const mContact = await run(contactSpec)
 
       // Using the ability to optionally type our calc results
-      const contactCalcs = mContact.$.state.calcs as ContactCalcs
+      const contactCalcs = <ContactCalcs>calcs(mContact)
 
       // Our IDE now knows that contactCalcResults has a property `fullName` of type string
       contactCalcs.fullName.should.be.a("string").equals("Tom Sawyer")
@@ -49,7 +47,7 @@ describe("metaliq/policies/calculation", () => {
       const mContact = await run(contactSpec)
 
       // Using the ability to optionally type our calc results
-      const contactCalcs = mContact.$.state.calcs as ContactCalcs
+      const contactCalcs = <ContactCalcs>calcs(mContact)
 
       // Our IDE now knows that contactCalcResults has a property `fullName` of type string
       contactCalcs.fullName.should.be.a("string").equals("Tom Sawyer")

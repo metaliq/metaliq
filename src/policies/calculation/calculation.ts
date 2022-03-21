@@ -1,4 +1,4 @@
-import { FieldKey, MetaFn, metaSetups } from "../../meta"
+import { FieldKey, Meta, MetaFn, metaSetups } from "../../meta"
 import { addReview } from "../application/application"
 
 /**
@@ -42,6 +42,4 @@ metaSetups.push(meta => {
   }
 })
 
-export function initCalculationPolicy () {
-  console.log("Calculation policy loaded")
-}
+export const calcs = (meta: Meta<any>) => meta?.$.state.calcs
