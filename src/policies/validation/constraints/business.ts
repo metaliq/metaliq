@@ -12,18 +12,18 @@ export const isEmail: Constraint<string> = () => value =>
 
 // TODO: Provide better internationalisation.
 // Developed to check Australian phone number format, with option to change or exclude country code.
-export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") => value => {
-  if (!value) return "Cannot be empty"
+export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") => (phone, mPhone) => {
+  if (!phone) return "Cannot be empty"
   const countryCodeEx = new RegExp(`^\\+${countryCode}`)
-  if (countryCode && !value.match(countryCodeEx)) {
-    if (value.match(/^0/)) {
-      value = (`+${countryCode}${value.substr(1)}`)
+  if (countryCode && !phone.match(countryCodeEx)) {
+    if (phone.match(/^0/)) {
+      phone = (`+${countryCode}${phone.substr(1)}`)
 
     } else {
       return "Missing country code"
     }
   }
-  const rest = value.substr(3).trim().replace(/ /g, "")
+  const rest = phone.substr(3).trim().replace(/ /g, "")
   if (!rest.match(/^\d*$/)) { // All digits
     return "Should only contain numbers and spaces"
   }
@@ -37,9 +37,9 @@ export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") =>
     return "Too few digits"
   }
   if (rest.match(/^4/)) { // Mobile number
-    value = `+${countryCode} ${rest.substr(0, 3)} ${rest.substr(3, 3)} ${rest.substr(6)}`
+    mPhone.$.value = `+${countryCode} ${rest.substr(0, 3)} ${rest.substr(3, 3)} ${rest.substr(6)}`
   } else { // Land line
-    value = `+${countryCode} ${rest.substr(0, 1)} ${rest.substr(1, 4)} ${rest.substr(5)}`
+    mPhone.$.value = `+${countryCode} ${rest.substr(0, 1)} ${rest.substr(1, 4)} ${rest.substr(5)}`
   }
   return true // No error, potentially reformatted
 }
