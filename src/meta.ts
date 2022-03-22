@@ -5,7 +5,7 @@ import { MaybeReturn } from "./util/util"
  * A Meta object with underlying value of type T,
  * optionally within parent of type P.
  */
-export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
+export type Meta<T, P = any, C = any> = MetaFields<T> & Meta$<T, P, C>
 
 /**
  * The mapped fields component of a Meta object.
@@ -32,13 +32,13 @@ export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
  * An object that has a $ link to meta information.
  * Both Meta and MetaArray implement this type.
  */
-export type Meta$<T, P = any> = { $: MetaInfo<T, P> }
+export type Meta$<T, P = any, C = any> = { $: MetaInfo<T, P, C> }
 
 /**
  * Dollar property containing additional info.
  * This is the full meta-structure for non-object types.
  */
-export type MetaInfo<T, P = any> = {
+export type MetaInfo<T, P = any, C = any> = {
   /**
    * Link to the meta object or array containing this $ property.
    * Useful for backlinks from object values.
@@ -70,18 +70,31 @@ export type MetaInfo<T, P = any> = {
    * The underlying data value.
    */
   value?: T
+
+  /**
+   * The values of calculated fields.
+   */
+  calcs: C
+}
+
+/**
+ * Type for calculated field functions for a Meta object.
+ */
+export type MetaCalcs<T, P = any, C = any> = {
+  [K in FieldKey<C>]: MetaFn<T, P, C, C[K]>
 }
 
 /**
  * Specification for a given Type and optional Parent.
  */
-export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
+export type MetaSpec<T, P = any, C = any> = Policy.Specification<T, P, C> & {
   fields?: T extends any[]
     ? never
     : { [K in FieldKey<T>]?: MetaSpec<T[K], T> }
   items?: T extends Array<infer I>
     ? MetaSpec<I>
     : never
+  calcs?: MetaCalcs<T, P, C>
 }
 
 /**
@@ -161,7 +174,8 @@ export function metafy <T, P = any> (
     value,
     parent,
     key,
-    state: proto?.$?.state || {}
+    state: proto?.$?.state || {},
+    calcs: {}
   }
   const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
@@ -269,12 +283,12 @@ export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
 /**
  * Shortcut from a value object to the $ meta info.
  */
-export const m$ = <T>(value: T): MetaInfo<T> => (<unknown>value as Meta$<T>)?.$
+export const m$ = <T>(value: T | Meta<T>): MetaInfo<T> => (<unknown>value as Meta$<T>)?.$
 
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T>(value: T): Meta<T> => (m$(value)?.meta as Meta<T>)
+export const meta = <T>(value: T | Meta<T>): Meta<T> => (m$(value)?.meta as Meta<T>)
 
 /**
  * Typed shortcut from a value array to its associated meta array.
@@ -285,6 +299,11 @@ export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value)?.meta as MetaA
  * A type guard to narrow a meta field to either a Meta or a MetaArray.
  */
 export const isMetaArray = (m: Meta<any> | MetaArray<any>): m is MetaArray<any> => Array.isArray(m)
+
+/**
+ * Shortcut to a proxy object for the parent.
+ */
+export const parent = <T extends object, P = any, C = any> (m: T | Meta<T, P, C>) => metaProxy((<Meta$<T, P, C>>m).$.parent)
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -298,35 +317,36 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
- * Basic function on an underlying data value and optionally its parent.
- * Could be a pure function to provide a derived value,
- * or could return a process function that takes further values,
- * in which case the convention is that it may mutate the provided value
- * but no other side effect should be produced.
+ * The primary pattern for defining a data function in MetaliQ.
+ * A MetaFn receives two parameters - a data value proxy and the meta itself.
+ * The proxy has the same type as the underlying data value and can generally
+ * be treated as if it is that value. However, in the case where a meta has
+ * uncommitted transient values, these values will be returned by the proxy.
+ * The second parameter is the full meta object, with all attached meta-information.
+ * If you need to get to the currently committed state of an underlying value object,
+ * then it can be accessed via meta.$.value.
  */
-export type Fn<T, P = any, R = any> = (value: T, parent?: P) => R
+export type MetaFn<T, P = any, C = any, R = any> = (value: T | MetaProxy<T, P, C>, meta?: Meta<T, P, C>) => R
+
+export type MetaProxy <T, P = any, C = any> = T extends object ? T & Meta$<T, P, C> : T
 
 /**
- * A function on a meta object.
+ * Shortcut to call a metaFn by passing just the Meta.
  */
-export type MetaFn<T, P = any, R = any> = (meta: Meta<T, P>) => R
-
-/**
- * Return a MetaFn for the given Fn, that works on the Meta's uncommitted transient values.
- * For the meaning of `fallbackToUnderlying`, see the equivalent `metaProxy` parameter.
- */
-export const metaFn = <T, P = any, R = any> (
-  fn: Fn<T, P, R>, fallbackToUnderlying: boolean = true
-): MetaFn<T, P, R> =>
-    meta => {
-      const value = typeof meta?.$.value === "object"
-        ? metaProxy(meta, fallbackToUnderlying)
-        : meta?.$.value
-      const parentValue = meta?.$.parent
-        ? metaProxy(meta?.$.parent, fallbackToUnderlying)
-        : null
-      return fn(value, parentValue)
+export const metaCall = <T, P = any, R = any, C = any> (
+  fn: MetaFn<T, P, C, R>
+) => (on: T | Meta<T, P, C>): R => {
+    if (typeof (on ?? false) !== "object") {
+      throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
     }
+    const m = meta(on)
+    const value = on !== m && on !== m.$.value
+      ? on as MetaProxy<T, P, C> // on is already a meta-proxy
+      : typeof (m?.$.value ?? false) === "object"
+        ? metaProxy(m, true)
+        : m?.$.value as MetaProxy<T, P, C>
+    return fn(value, m)
+  }
 
 /**
  * A simple type guard for values that may or may not be a meta function.
@@ -341,10 +361,12 @@ export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "
  * This is the default in order to most widely facilitate workable meta derivations
  * based on an object type that may not have all fields included in the spec.
  */
-export const metaProxy = <T>(meta: Meta<T>, fallbackToUnderlying: boolean = true): T =>
+export const metaProxy = <T>(meta: Meta<T>, fallbackToUnderlying: boolean = true): MetaProxy<T> =>
   <unknown>(new Proxy(meta, {
     get <K extends FieldKey<T>>(target: Meta<T>, p: K): any {
-      if (typeof target[p] === "object") {
+      if (p === "$") {
+        return target.$
+      } else if (typeof target[p] === "object") {
         const value = target[p].$.value
         if (value && typeof value === "object") {
           // Recurse to inner object
@@ -379,7 +401,7 @@ export const metaProxy = <T>(meta: Meta<T>, fallbackToUnderlying: boolean = true
       return true
     }
   }
-  )) as T
+  )) as MetaProxy<T>
 
 type SpecKey = keyof Policy.Specification<any>
 type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
@@ -392,6 +414,6 @@ type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
 export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K) =>
   (meta: Meta$<any>): V => {
     const specValue = meta.$.spec[key]
-    if (isMetaFn(specValue)) return specValue(meta)
+    if (isMetaFn(specValue)) return metaCall(specValue)(meta)
     else return specValue as V
   }

@@ -19,17 +19,17 @@ export type SelectorOptions = {
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
-export const selector = (options: SelectorOptions = {}): MetaView<any> => meta => html`
+export const selector = (options: SelectorOptions = {}): MetaView<any> => (value, meta) => html`
   <label class="mq-field mq-select-field ${classMap({
     [options.classes]: !!options.classes,
-    "mq-populated": !!meta.$.value
+    "mq-populated": !!value
   })}">
     ${guard([meta], () => {
       const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
-      if (meta.$.value) {
-        const selected = options.choices.find(c => c.value === meta.$.value)
+      if (value) {
+        const selected = options.choices.find(c => c.value === value)
         if (!selected) {
-          console.warn(`Invalid selector value for ${meta.$.key} : ${meta.$.value}`)
+          console.warn(`Invalid selector value for ${meta.$.key} : ${value}`)
         } else {
           selected.selected = true
         }
@@ -50,7 +50,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => meta =
         </select>
       `
     })}
-    ${fieldError(meta)}
+    ${fieldError(value, meta)}
   </label>
 `
 

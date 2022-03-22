@@ -9,8 +9,8 @@ export type GraphQLServerSpec<T> = {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends GraphQLServerSpec<T> {
-      this?: Specification<T, P>
+    interface Specification<T, P, C> extends GraphQLServerSpec<T> {
+      this?: Specification<T, P, C>
     }
   }
 }

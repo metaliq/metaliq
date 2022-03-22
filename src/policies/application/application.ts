@@ -1,4 +1,4 @@
-import { Meta, MetaFn, metafy, MetaSpec } from "../../meta"
+import { Meta, metaCall, MetaFn, metafy, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -6,7 +6,7 @@ import { LogFunction, startUp, Up } from "@metaliq/up"
  * This establishes an update and review mechanism.
  */
 
-export interface ApplicationSpec<T, P> {
+export interface ApplicationSpec<T, P = any, C = any> {
   /**
    * Initial value or a function to return the initial value.
    * Initialisers will be applied recursively within the spec,
@@ -23,7 +23,7 @@ export interface ApplicationSpec<T, P> {
   /**
    * Review function to be called after each update - passed as `review` to `up`.
    */
-  review?: MetaFn<T, P> | Array<MetaFn<T, P>>
+  review?: MetaFn<T, P, C> | Array<MetaFn<T, P, C>>
 
   /**
    * Flag to create a localised context with state updates isolated from the rest of an application.
@@ -40,10 +40,10 @@ export interface ApplicationState<T> {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends ApplicationSpec<T, P> {}
+    interface Specification<T, P, C> extends ApplicationSpec<T, P, C> {}
 
-    interface State<T, P> extends ApplicationState<T>{
-      this?: State<T, P>
+    interface State<T, P, C> extends ApplicationState<T>{
+      this?: State<T, P, C>
     }
   }
 }
@@ -76,10 +76,10 @@ export function review <T> (meta: Meta<T>) {
   const specReview = meta.$.spec.review
   if (Array.isArray(specReview)) {
     specReview.forEach(reviewFn => {
-      reviewFn(meta)
+      metaCall(reviewFn)(meta)
     })
   } else if (typeof specReview === "function") {
-    specReview(meta)
+    metaCall(specReview)(meta)
   }
 }
 

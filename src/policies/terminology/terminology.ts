@@ -1,13 +1,13 @@
 import { getSpecValue, Meta, MetaFn } from "../../meta"
 
-export interface TerminologySpec<T, P> {
-  label?: string | MetaFn<T, P>
-  helpText?: string | MetaFn<T, P>
+export interface TerminologySpec<T, P = any, C = any> {
+  label?: string | MetaFn<T, P, C>
+  helpText?: string | MetaFn<T, P, C>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends TerminologySpec<T, P> {}
+    interface Specification<T, P, C> extends TerminologySpec<T, P, C> {}
   }
 }
 

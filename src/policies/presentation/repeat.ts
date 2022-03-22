@@ -3,15 +3,15 @@ import { html } from "lit"
 import { getSpecValue, Meta, MetaArray, MetaFn, metafy } from "../../meta"
 import { up } from "@metaliq/up"
 
-export interface RepeatSpec<T, P = any> {
-  addLabel?: string | MetaFn<T, P, string>
-  removeLabel?: string | MetaFn<T, P, string>
-  newItem?: T extends Array<infer I> ? I | MetaFn<T, P, I> : T
+export interface RepeatSpec<T, P = any, C = any> {
+  addLabel?: string | MetaFn<T, P, C, string>
+  removeLabel?: string | MetaFn<T, P, C, string>
+  newItem?: T extends Array<infer I> ? I | MetaFn<T, P, C, I> : T
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends RepeatSpec<T, P> { }
+    interface Specification<T, P, C> extends RepeatSpec<T, P, C> { }
   }
 }
 
@@ -21,7 +21,7 @@ export const defaultRepeatSpec: RepeatSpec<any> = {
   newItem: {}
 }
 
-export const repeatControls = <T, P>(meta: Meta<T[], P>): ViewResult => {
+export const repeatControls = <T, P>(value: T[], meta: Meta<T[], P>): ViewResult => {
   const metaArr = <unknown>meta as MetaArray<any>
 
   return html`

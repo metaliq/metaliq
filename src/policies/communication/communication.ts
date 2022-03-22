@@ -1,4 +1,4 @@
-import { Meta, MetaFn, metaSetups } from "../../meta"
+import { Meta, metaCall, MetaFn, metaSetups } from "../../meta"
 
 export interface CommunicationSpec<T, P> {
   /**
@@ -43,7 +43,7 @@ export type ChannelCall<M> = (msg: M) => any
  * const showModal
  *
  */
-export const call = <T, P, M> (channel: MetaFn<T, P, ChannelCall<M>>) => (msg: M) => {
+export const call = <T, P, C, M> (channel: MetaFn<T, P, C, ChannelCall<M>>) => (msg: M) => {
   const meta = policy.channelMap.get(channel) as Meta<T, P>
-  if (meta) return channel(meta)(msg)
+  if (meta) return metaCall(channel)(meta)(msg)
 }

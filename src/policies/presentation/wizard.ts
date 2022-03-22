@@ -1,4 +1,4 @@
-import { commit, FieldKey, isMetaFn, Meta, MetaFn, metaSetups, reset } from "../../meta"
+import { commit, FieldKey, isMetaFn, Meta, metaCall, MetaFn, metaSetups, reset } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
@@ -8,7 +8,7 @@ import { label } from "../terminology/terminology"
 
 export type StepLabel = string | boolean
 
-export interface WizardSpec<T, P> {
+export interface WizardSpec<T, P = any, C = any> {
   wizard?: {
     /**
      * Set this to allow selection of any step at any time without validation.
@@ -20,17 +20,17 @@ export interface WizardSpec<T, P> {
      * A function to run on completion of the step.
      * If it returns boolean `false` then navigation will not proceed.
      */
-    onComplete?: MetaFn<T, P>
+    onComplete?: MetaFn<T, P, C>
 
     /**
      * Override the default label, or set to empty to hide the button.
      */
-    forwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
+    forwardsLabel?: StepLabel | MetaFn<T, P, C, StepLabel>
 
     /**
      * Override the default label, or set to empty to hide the button.
      */
-    backwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
+    backwardsLabel?: StepLabel | MetaFn<T, P, C, StepLabel>
   }
 }
 
@@ -41,25 +41,25 @@ export interface WizardState<T> {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends WizardSpec<T, P> {}
-    interface State<T, P> extends WizardState<T>{
-      this?: State<T, P>
+    interface Specification<T, P, C> extends WizardSpec<T, P, C> {}
+    interface State<T, P, C> extends WizardState<T>{
+      this?: State<T, P, C>
     }
   }
 }
 
 // Can't use getSpecValue as it is nested
 // TODO: EITHER make a nested version of getSpecValue OR switch to a review-and-state model
-export const forwardsLabel: MetaFn<any, any, StepLabel> = meta => {
-  const value = meta.$.spec.wizardStep?.forwardsLabel
-  if (isMetaFn(value)) return value(meta)
-  else return value
+export const forwardsLabel: MetaFn<any, any, any, StepLabel> = (value, meta) => {
+  const label = meta.$.spec.wizardStep?.forwardsLabel
+  if (isMetaFn(label)) return label(value, meta)
+  else return label
 }
 
-export const backwardsLabel: MetaFn<any, any, StepLabel> = meta => {
-  const value = meta.$.spec.wizardStep?.backwardsLabel
-  if (isMetaFn(value)) return value(meta)
-  else return value
+export const backwardsLabel: MetaFn<any, any, any, StepLabel> = (value, meta) => {
+  const label = meta.$.spec.wizardStep?.backwardsLabel
+  if (isMetaFn(label)) return label(value, meta)
+  else return label
 }
 
 export type StepDirection = "forwards" | "backwards"
@@ -153,7 +153,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta
   commit(nowStep)
   const onComplete = nowStep.$.spec.wizardStep?.onComplete
   if (typeof onComplete === "function") {
-    const completionResponse = await onComplete(nowStep)
+    const completionResponse = await metaCall(onComplete)(nowStep)
     if (completionResponse === false) return
   }
   wizard.$.state.step = stepNames[nextIndex]

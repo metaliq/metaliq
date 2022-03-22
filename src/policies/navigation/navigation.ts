@@ -1,15 +1,15 @@
 import { Route, RouteHandler, Router } from "./router"
-import { MetaFn, metaSetups } from "../../meta"
+import { metaCall, MetaFn, metaSetups } from "../../meta"
 import { up } from "@metaliq/up"
 
 export { route } from "./router"
 
-export interface NavigationSpec<T, P = any> {
+export interface NavigationSpec<T, P = any, C = any> {
   /**
    * Route processing for this spec.
    *
    */
-  routes?: Array<MetaRoute<T, P, any, any>>
+  routes?: Array<MetaRoute<T, P, C, any, any>>
   /**
    * An initial path from the application base URL for this spec.
    */
@@ -18,19 +18,19 @@ export interface NavigationSpec<T, P = any> {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends NavigationSpec<T, P> {}
+    interface Specification<T, P, C> extends NavigationSpec<T, P, C> {}
   }
 }
 
 /**
  * Function which takes a meta and returns a route handler.
  */
-export type MetaRouteHandler<T, P, RP extends object, RQ> = MetaFn<T, P, RouteHandler<RP, RQ>>
+export type MetaRouteHandler<T, P, C, RP extends object, RQ> = MetaFn<T, P, C, RouteHandler<RP, RQ>>
 
 /**
  * Tuple associating a route and its meta route handler.
  */
-export type MetaRoute<T, P, RP extends object, RQ> = [Route<RP, RQ>, MetaRouteHandler<T, P, RP, RQ>]
+export type MetaRoute<T, P, C, RP extends object, RQ> = [Route<RP, RQ>, MetaRouteHandler<T, P, C, RP, RQ>]
 
 metaSetups.push(meta => {
   const spec = meta.$.spec
@@ -43,7 +43,7 @@ metaSetups.push(meta => {
       history.pushState(null, null, spec.path)
     }
     for (const [route, metaHandler] of spec.routes || []) {
-      route.on = metaHandler(meta)
+      route.on = metaCall(metaHandler)(meta)
     }
     const router = new Router(spec.routes.map(([route]) => route), () => { up()() }).start()
     router.catch(console.error)

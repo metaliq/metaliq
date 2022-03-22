@@ -1,13 +1,13 @@
-import { fieldKeys, Meta, MetaArray, MetaFn, metaSetups } from "../../meta"
+import { fieldKeys, Meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
 import { Policy } from "../../policy"
 import { addReview } from "../application/application"
 import { labelOrKey } from "../terminology/terminology"
 
-export interface ValidationSpec<T, P> {
-  validator?: Validator<T, P>
-  mandatory?: boolean | MetaFn<T, P, boolean>
-  disabled?: boolean | MetaFn<T, P, boolean>
-  hidden?: boolean | MetaFn<T, P, boolean>
+export interface ValidationSpec<T, P = any, C = any> {
+  validator?: Validator<T, P, C>
+  mandatory?: boolean | MetaFn<T, P, C, boolean>
+  disabled?: boolean | MetaFn<T, P, C, boolean>
+  hidden?: boolean | MetaFn<T, P, C, boolean>
 }
 
 export interface ValidationState {
@@ -23,11 +23,11 @@ export interface ValidationState {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P> extends ValidationSpec<T, P> {
+    interface Specification<T, P, C> extends ValidationSpec<T, P, C> {
     }
 
-    interface State<T, P> extends ValidationState {
-      this?: State<T, P>
+    interface State<T, P, C> extends ValidationState {
+      this?: State<T, P, C>
     }
   }
 }
@@ -41,13 +41,13 @@ declare module "../../policy" {
  * i.e. a Validator result of `false` (no error) produces a `props.error` value of `true`.
  * This allows for validation functions of the form `condition === expected || message`.
  */
-export type Validator<T, P = any> = (meta: Meta<T, P>) => ValidationResult
+export type Validator<T, P = any, C = any> = MetaFn<T, P, C, ValidationResult>
 export type ValidationResult = string | boolean
 
 /**
  * A constraint takes any type of configuration parameter(s) and returns a validator function.
  */
-export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
+export type Constraint<T, P = any, C = any> = (...params: any[]) => Validator<T, P, C>
 
 metaSetups.push(<T>(meta: Meta<T>) => {
   const state: Policy.State<T> = meta.$.spec.validator
@@ -56,21 +56,21 @@ metaSetups.push(<T>(meta: Meta<T>) => {
 
   const hiddenSpec = meta.$.spec.hidden
   if (typeof hiddenSpec === "function") {
-    addReview(meta, meta => { meta.$.state.hidden = hiddenSpec(meta) })
+    addReview(meta, (value, meta) => { meta.$.state.hidden = hiddenSpec(value, meta) })
   } else if (typeof hiddenSpec === "boolean") {
     state.hidden = hiddenSpec
   }
 
   const disabledSpec = meta.$.spec.disabled
   if (typeof disabledSpec === "function") {
-    addReview(meta, meta => { meta.$.state.disabled = disabledSpec(meta) })
+    addReview(meta, (value, meta) => { meta.$.state.disabled = disabledSpec(value, meta) })
   } else if (typeof disabledSpec === "boolean") {
     state.disabled = disabledSpec
   }
 
   const mandatorySpec = meta.$.spec.mandatory
   if (typeof mandatorySpec === "function") {
-    addReview(meta, meta => { meta.$.state.mandatory = mandatorySpec(meta) })
+    addReview(meta, (value, meta) => { meta.$.state.mandatory = mandatorySpec(value, meta) })
   } else if (typeof mandatorySpec === "boolean") {
     state.mandatory = mandatorySpec
   }
@@ -82,10 +82,11 @@ metaSetups.push(<T>(meta: Meta<T>) => {
  * Establish a function for mandatory field errors.
  * See src for a basic example of an English language error.
  */
-export function setRequiredLabel (fn: MetaFn<any, any, string>) {
+export function setRequiredLabel (fn: MetaFn<any, any, any, string>) {
   requiredLabelFn = fn
 }
-let requiredLabelFn: MetaFn<any, any, string> = meta => `${labelOrKey(meta) || "Field"} is required`
+let requiredLabelFn: MetaFn<any, any, any, string> = (value, meta) =>
+  `${(meta ? labelOrKey(meta) : false) || "This field"} is required`
 
 /**
  * Run the validation for the individual meta provided.
@@ -97,11 +98,11 @@ export function validate (meta: Meta<any>) {
   delete meta.$.state.error
   if (meta.$.state.hidden) return
   if (meta.$.state.mandatory && !hasValue(meta)) {
-    meta.$.state.error = requiredLabelFn(meta)
+    meta.$.state.error = metaCall(requiredLabelFn)(meta)
   } else {
     const validator = meta.$.spec.validator
     if (typeof validator === "function") {
-      const result = validator(meta)
+      const result = metaCall(validator)(meta)
       if (result === false) {
         meta.$.state.error = true
       } else if (typeof result === "string") {

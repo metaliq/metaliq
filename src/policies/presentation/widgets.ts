@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaArray, MetaFn } from "../../meta"
+import { metaCall, commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaArray, MetaFn, meta } from "../../meta"
 import { validate } from "../validation/validation"
 import { label, labelOrKey } from "../terminology/terminology"
 import { MetaView, ViewResult } from "./presentation"
@@ -21,45 +21,48 @@ export type MetaFormOptions<T> = {
 /**
  * A MetaView for an object type that displays all its child fields.
  */
-export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => meta => html`
+export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (value, mValue?) => {
+  mValue = mValue || meta(value)
+  return html`
   <div class="mq-form ${options.classes || ""}">
-    ${fieldKeys(meta?.$.spec)
-      .filter(key =>
-        (!options.include || options.include.includes(key)) &&
-        (!(options.exclude || []).includes(key))
-      )
-      .map(key => fieldView(key)(meta))}
+    ${fieldKeys(mValue?.$.spec)
+    .filter(key =>
+      (!options.include || options.include.includes(key)) &&
+      (!(options.exclude || []).includes(key))
+    )
+    .map(key => fieldView(key)(value, mValue))}
   </div>
 `
+}
 
 /**
  * Return a MetaView for a type that displays the view of a particular field given its key.
  */
-export const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => meta => {
+const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => (value, meta) => {
   const fieldMeta = meta[fieldKey]
   if (isMetaArray(fieldMeta)) {
     review(fieldMeta as Meta<unknown>)
     if (!fieldMeta.$.state.hidden) {
       fieldMeta.forEach(itemMeta => review(itemMeta))
       const fieldView = fieldMeta.$.spec.view || repeatView
-      return fieldView(<unknown>fieldMeta as Meta<T[]>)
+      return metaCall(fieldView)(<unknown>fieldMeta as Meta<T[]>)
     } else return ""
   } else {
     review(fieldMeta as Meta<unknown>)
     const view = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
     if (typeof fieldMeta.$.spec.hidden === "function") {
-      return animatedHideShow(view)(fieldMeta)
+      return metaCall(animatedHideShow(view))(fieldMeta)
     } else {
-      return fieldMeta.$.state.hidden ? "" : view(fieldMeta)
+      return fieldMeta.$.state.hidden ? "" : metaCall(view)(fieldMeta)
     }
   }
 }
 
-export const repeatView: MetaView<any[]> = meta => {
+export const repeatView: MetaView<any[]> = (v, meta) => {
   const metaArr = <unknown>meta as MetaArray<any>
   const itemView = meta.$.spec.items?.view || defaultFieldView(metaArr[0])
   return metaArr.map(itemMeta => {
-    return itemView(itemMeta)
+    return metaCall(itemView)(itemMeta)
   })
 }
 
@@ -81,7 +84,8 @@ const defaultFieldView = <T> (meta: Meta<T>): MetaView<T> => {
 /**
  * Return a MetaView for a type that combines multiple other MetaViews for that type into a single MetaView.
  */
-export const multiView = <T>(...views: Array<MetaView<T>>): MetaView<T> => meta => views.map(view => view(meta))
+export const multiView = <T>(...views: Array<MetaView<T>>): MetaView<T> => (v, meta) =>
+  views.map(view => view(v, meta))
 
 /**
  * Return a view that consists of the given text or HTML template.
@@ -93,11 +97,11 @@ export const content = (textOrHtml: ViewResult): MetaView<any> => meta => textOr
  * If the condition is met, the `then` view is shown.
  * Optionally an `else` view can be specified to show if condition not met.
  */
-export const ifThen = <T, P = any> (
-  condition: MetaFn<T, P, boolean>,
-  thenView: MetaView<T>,
-  elseView?: MetaView<T>
-): MetaView<T, P> => meta => condition(meta) ? thenView(meta) : elseView?.(meta) ?? ""
+export const ifThen = <T, P = any, C = any> (
+  condition: MetaFn<T, P, any, boolean>,
+  thenView: MetaView<T, P, C>,
+  elseView?: MetaView<T, P, C>
+): MetaView<T, P, C> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
 
 export type InputOptions<T> = {
   type?: "text" | "checkbox" | "number" | "tel"
@@ -112,7 +116,7 @@ export type InputOptions<T> = {
  * Basic input element that uses some InputOptions.
  * To get full use of all options use `inputField`.
  */
-export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => {
+export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (value, meta) => {
   const disabled = isDisabled(meta)
   return html`
     <input type=${options.type || "text"}
@@ -147,7 +151,7 @@ export const isDisabled = (meta: Meta<any>): boolean => {
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
-export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => meta => html`
+export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (value, meta) => html`
   <label class="mq-field ${classMap({
     [options.classes]: !!options.classes,
     [`mq-${options.type || "text"}-field`]: true,
@@ -155,19 +159,19 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => met
     "mq-active": meta.$.state.active,
     "mq-populated": !!meta.$.value
   })}" >
-    ${!options.labelAfter ? fieldLabel(options)(meta) : ""}
-    ${input({ type: "text", ...options })(meta)}
-    ${options.labelAfter ? fieldLabel(options)(meta) : ""}
-    ${errorMsg({ classes: "mq-field-error" })(meta as Meta<unknown>)}
+    ${!options.labelAfter ? fieldLabel(options)(value, meta) : ""}
+    ${input({ type: "text", ...options })(value, meta)}
+    ${options.labelAfter ? fieldLabel(options)(value, meta) : ""}
+    ${errorMsg({ classes: "mq-field-error" })(value, meta as Meta<unknown>)}
   </label>
 `
 
 /**
  * Label element for input field.
  */
-export const fieldLabel = <T>(options: InputOptions<T>): MetaView<T> => meta =>
+export const fieldLabel = <T>(options: InputOptions<T>): MetaView<T> => (value, meta) =>
   typeof options.labelView === "function"
-    ? options.labelView(meta)
+    ? options.labelView(value, meta)
     : html`<span class="mq-input-label">${labelOrKey(meta)}</span>`
 
 /**
@@ -183,8 +187,9 @@ export const checkboxField = (options: InputOptions<boolean> = {}): MetaView<boo
 /**
  * Error message for the given field.
  */
-export const errorMsg = <T> (options: { classes?: string } = {}): MetaView<T> => meta => {
-  const error = meta.$.state.error
+export const errorMsg = <T> (options: { classes?: string } = {}): MetaView<T> => (value, mValue) => {
+  mValue = mValue || meta(value)
+  const error = mValue.$.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
   const classes = `mq-error-msg ${options.classes ?? ""}`
   return error ? html`<span class=${classes}>${errorMsg}</span>` : ""
@@ -214,7 +219,7 @@ const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
     if (doCommit && meta.$.parent) commit(meta.$.parent)
   }
 
-export const errorsBlock: MetaView<any> = meta => html`
+export const errorsBlock: MetaView<any> = (value, meta) => html`
   <div class="mq-error-msg mq-page-error">
     ${meta.$.state.allErrors?.map(errorMeta => html`
       <div>${label(errorMeta)}</div>
@@ -229,12 +234,12 @@ export type ButtonOptions<T> = {
   onClick?: Update<Meta<T>>
 }
 
-export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => meta => html`
+export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => (value, meta) => html`
   <button class="mq-button ${options.classes ?? ""}" @click=${up(options.onClick, meta)}>
     ${options.label ?? "Button"}
   </button> 
 `
 
-export const formPage = <T>(content: MetaView<T>): MetaView<T> => meta => html`
-  <div class="mq-form-page">${content(meta)}</div>
+export const formPage = <T>(content: MetaView<T>): MetaView<T> => (value, meta) => html`
+  <div class="mq-form-page">${content(value, meta)}</div>
 `

@@ -1,18 +1,19 @@
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-import { fieldKeys, Meta } from "../../meta"
+import { fieldKeys, Meta, metaProxy } from "../../meta"
 import { up } from "@metaliq/up"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "./widgets"
 import { label } from "../terminology/terminology"
+import { MetaView } from "./presentation"
 
-export const wizardView = (wizard: Meta<any>) => [
-  wizardTramline(wizard),
-  wizardStep(wizard)
+export const wizardView: MetaView<any> = (value, meta) => [
+  wizardTramline(value, meta),
+  wizardStep(value, meta)
 ]
 
-export const wizardTramline = (wizard: Meta<any>) => {
+export const wizardTramline: MetaView<any> = (value, wizard) => {
   return html`
     <div class="mq-wizard-nav">
       ${fieldKeys(wizard.$.spec).map((stepName) => html`
@@ -32,11 +33,12 @@ export const wizardTramline = (wizard: Meta<any>) => {
   `
 }
 
-export const wizardStep = (wizard: Meta<any>) => {
+export const wizardStep: MetaView<any> = (value, wizard) => {
   const currentStep = wizard[wizard.$.state.step] as Meta<any>
+  const currentValue = metaProxy(currentStep)
   const labels = {
-    forwards: forwardsLabel(currentStep),
-    backwards: backwardsLabel(currentStep)
+    forwards: forwardsLabel(currentValue, currentStep),
+    backwards: backwardsLabel(currentValue, currentStep)
   }
 
   return html`
@@ -51,9 +53,9 @@ export const wizardStep = (wizard: Meta<any>) => {
       </div>
       <div>
         ${currentStep
-          ? currentStep.$.spec.view(currentStep)
+          ? currentStep.$.spec.view(currentValue, currentStep)
           : notConfiguredWarning}
-        ${pageError(currentStep)}
+        ${pageError(currentValue, currentStep)}
       </div>
       ${currentStep.$.spec.wizard ? "" : html`
         <div class="mq-wizard-buttons">

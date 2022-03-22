@@ -1,8 +1,8 @@
 import chai from "chai"
 import { describe, it } from "mocha"
-import { metaFn, MetaSpec } from "../meta"
+import { MetaCalcs, metaCall, MetaSpec } from "../meta"
 import { run } from "../policies/application/application"
-import { CalcFns, calcs } from "../policies/calculation/calculation"
+import { calcs } from "../policies/calculation/calculation"
 import { up } from "@metaliq/up"
 
 chai.should()
@@ -19,14 +19,14 @@ describe("metaliq/policies/calculation", () => {
       fullName: string
     }
 
-    const contactCalcFns: CalcFns<Contact, any, ContactCalcs> = {
-      fullName: metaFn(contact => {
+    const contactCalcFns: MetaCalcs<Contact, any, ContactCalcs> = {
+      fullName: contact => {
         return `${contact.firstName} ${contact.lastName}`
-      })
+      }
     }
 
     const contactSpec: MetaSpec<Contact> = {
-      calcFns: contactCalcFns, // Here there is an implicit check that ContactCalcs indeed satisfies Calcs<Contect>
+      calcs: contactCalcFns, // Here there is an implicit check that ContactCalcs indeed satisfies Calcs<Contect>
       init: {
         firstName: "Tom",
         lastName: "Sawyer"
@@ -52,7 +52,7 @@ describe("metaliq/policies/calculation", () => {
       // Our IDE now knows that contactCalcResults has a property `fullName` of type string
       contactCalcs.fullName.should.be.a("string").equals("Tom Sawyer")
 
-      await up(metaFn((contact: Contact) => {
+      await up(metaCall((contact: Contact) => {
         contact.firstName = "Huckleberry"
       }), mContact)()
 
