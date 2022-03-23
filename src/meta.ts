@@ -288,7 +288,9 @@ export const m$ = <T>(value: T | Meta<T>): MetaInfo<T> => (<unknown>value as Met
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T>(value: T | Meta<T>): Meta<T> => (m$(value)?.meta as Meta<T>)
+export const meta = <T, P = any, C = any>
+  (value: T | MetaProxy<T, P, C> | Meta<T, P, C>) =>
+    m$(value)?.meta as Meta<T, P, C>
 
 /**
  * Typed shortcut from a value array to its associated meta array.
@@ -328,6 +330,12 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
  */
 export type MetaFn<T, P = any, C = any, R = any> = (value: T | MetaProxy<T, P, C>, meta?: Meta<T, P, C>) => R
 
+/**
+ * A proxy object for a meta, appears similarly to its value.
+ * Will set or return uncommitted transient values where present (i.e. defined in the spec).
+ * Any property access or manipulation on fields that are not included in the spec will
+ * fall back to getting or setting the underlying data value.
+ */
 export type MetaProxy <T, P = any, C = any> = T extends object ? T & Meta$<T, P, C> : T
 
 /**
@@ -343,7 +351,7 @@ export const metaCall = <T, P = any, R = any, C = any> (
     const value = on !== m && on !== m.$.value
       ? on as MetaProxy<T, P, C> // on is already a meta-proxy
       : typeof (m?.$.value ?? false) === "object"
-        ? metaProxy(m, true)
+        ? metaProxy(m)
         : m?.$.value as MetaProxy<T, P, C>
     return fn(value, m)
   }
@@ -355,13 +363,8 @@ export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "
 
 /**
  * Return a proxy for a given Meta object's values.
- * Will set or return uncommitted transient values where present (i.e. defined in the spec).
- * If the fallbackToUnderlying option is left as true, any property access or manipulation
- * on fields that are not included in the spec will fall back to getting or setting the underlying data value.
- * This is the default in order to most widely facilitate workable meta derivations
- * based on an object type that may not have all fields included in the spec.
  */
-export const metaProxy = <T>(meta: Meta<T>, fallbackToUnderlying: boolean = true): MetaProxy<T> =>
+export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> =>
   <unknown>(new Proxy(meta, {
     get <K extends FieldKey<T>>(target: Meta<T>, p: K): any {
       if (p === "$") {
