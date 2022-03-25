@@ -6,7 +6,7 @@ import { up } from "@metaliq/up"
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "./widgets"
 import { label } from "../terminology/terminology"
-import { MetaView } from "./presentation"
+import { MetaView, specView } from "./presentation"
 
 export const wizardView: MetaView<any> = (value, meta) => [
   wizardTramline(value, meta),
@@ -53,7 +53,7 @@ export const wizardStep: MetaView<any> = (value, wizard) => {
       </div>
       <div>
         ${currentStep
-          ? currentStep.$.spec.view(currentValue, currentStep)
+          ? specView(currentValue, currentStep)
           : notConfiguredWarning}
         ${pageError(currentValue, currentStep)}
       </div>

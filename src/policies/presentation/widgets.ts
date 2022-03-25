@@ -2,11 +2,10 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { metaCall, commit, FieldKey, fieldKeys, isMetaArray, Meta, MetaArray, MetaFn, meta } from "../../meta"
+import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
 import { label, labelOrKey } from "../terminology/terminology"
-import { MetaView, ViewResult } from "./presentation"
-import { review } from "../application/application"
+import { MetaView, specViewWithFallback, view, ViewResult } from "./presentation"
 import { animatedHideShow } from "./animated-hide-show"
 
 export { expander } from "./expander"
@@ -21,49 +20,41 @@ export type MetaFormOptions<T> = {
 /**
  * A MetaView for an object type that displays all its child fields.
  */
-export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (value, mValue?) => {
-  mValue = mValue || meta(value)
+export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v, m) => {
+  m = m || meta(v)
   return html`
-  <div class="mq-form ${options.classes || ""}">
-    ${fieldKeys(mValue?.$.spec)
-    .filter(key =>
-      (!options.include || options.include.includes(key)) &&
-      (!(options.exclude || []).includes(key))
-    )
-    .map(key => fieldView(key)(value, mValue))}
-  </div>
-`
+    <div class="mq-form ${options.classes || ""}" >
+      ${fieldKeys(m?.$.spec)
+        .filter(key =>
+          (!options.include || options.include.includes(key)) &&
+          (!(options.exclude || []).includes(key))
+        )
+        .map(key => {
+          const fieldMeta = m[key]
+          if (isMetaArray(fieldMeta)) {
+            if (!fieldMeta.$.state.hidden) {
+              return metaCall(specViewWithFallback(repeatView))(<unknown>fieldMeta as Meta<T[]>)
+            } else return ""
+          } else {
+            const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
+            if (typeof fieldMeta.$.spec.hidden === "function") {
+              return metaCall(animatedHideShow(itemView))(fieldMeta)
+            } else {
+              return fieldMeta.$.state.hidden ? "" : view(itemView)(fieldMeta)
+            }
+          }
+        })}
+    </div>
+  `
 }
 
-/**
- * Return a MetaView for a type that displays the view of a particular field given its key.
- */
-const fieldView = <T>(fieldKey: FieldKey<T>): MetaView<T> => (value, meta) => {
-  const fieldMeta = meta[fieldKey]
-  if (isMetaArray(fieldMeta)) {
-    review(fieldMeta as Meta<unknown>)
-    if (!fieldMeta.$.state.hidden) {
-      fieldMeta.forEach(itemMeta => review(itemMeta))
-      const fieldView = fieldMeta.$.spec.view || repeatView
-      return metaCall(fieldView)(<unknown>fieldMeta as Meta<T[]>)
-    } else return ""
-  } else {
-    review(fieldMeta as Meta<unknown>)
-    const view = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
-    if (typeof fieldMeta.$.spec.hidden === "function") {
-      return metaCall(animatedHideShow(view))(fieldMeta)
-    } else {
-      return fieldMeta.$.state.hidden ? "" : metaCall(view)(fieldMeta)
-    }
-  }
-}
+export const repeatView: MetaView<any[]> = (v, m) => {
+  m = m || meta(v)
 
-export const repeatView: MetaView<any[]> = (v, meta) => {
-  const metaArr = <unknown>meta as MetaArray<any>
-  const itemView = meta.$.spec.items?.view || defaultFieldView(metaArr[0])
-  return metaArr.map(itemMeta => {
-    return metaCall(itemView)(itemMeta)
-  })
+  const metaArr = <unknown>m as MetaArray<any>
+  const itemView = view(m.$.spec.items?.view || defaultFieldView(metaArr[0]))
+
+  return <unknown>v.map(item => itemView) as ViewResult
 }
 
 /**
@@ -80,12 +71,6 @@ const defaultFieldView = <T> (meta: Meta<T>): MetaView<T> => {
     return inputField({ type: "number" })
   } else return inputField()
 }
-
-/**
- * Return a MetaView for a type that combines multiple other MetaViews for that type into a single MetaView.
- */
-export const multiView = <T>(...views: Array<MetaView<T>>): MetaView<T> => (v, meta) =>
-  views.map(view => view(v, meta))
 
 /**
  * Return a view that consists of the given text or HTML template.

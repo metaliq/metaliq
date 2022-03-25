@@ -1,7 +1,7 @@
 import { html, LitElement, PropertyValues } from "lit"
 import { styleMap } from "lit/directives/style-map.js"
 import { customElement, property, state } from "lit/decorators.js"
-import { MetaView } from "./presentation"
+import { MetaView, MetaViewTerm, view } from "./presentation"
 import { up } from "@metaliq/up"
 
 @customElement("mq-animated-hide-show")
@@ -59,7 +59,7 @@ export class AnimatedHideShow extends LitElement {
   }
 }
 
-export const animatedHideShow = <T> (view: MetaView<T>): MetaView<T> => (value, meta) => {
+export const animatedHideShow = <T> (viewTerm: MetaViewTerm<T>): MetaView<T> => (value, meta) => {
   const hidden = !!meta.$.state.hidden
   return html`
     <mq-animated-hide-show ?mqHidden=${hidden} 
@@ -70,7 +70,7 @@ export const animatedHideShow = <T> (view: MetaView<T>): MetaView<T> => (value, 
         meta.$.state.showing = false
       })}
     >
-      ${meta.$.state.showing ? view(value, meta) : ""}
+      ${meta.$.state.showing ? view(viewTerm)(value, meta) : ""}
     </mq-animated-hide-show>
   `
 }

@@ -288,9 +288,12 @@ export const m$ = <T>(value: T | Meta<T>): MetaInfo<T> => (<unknown>value as Met
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T, P = any, C = any>
-  (value: T | MetaProxy<T, P, C> | Meta<T, P, C>) =>
-    m$(value)?.meta as Meta<T, P, C>
+export const meta = <T, P = any, C = any> (value: T | MetaProxy<T, P, C> | Meta<T, P, C>) => {
+  if (!(value ?? false) || typeof value !== "object") {
+    throw new Error(`Attempt to obtain meta from primitive value: ${value}`)
+  }
+  return m$(value)?.meta as Meta<T, P, C>
+}
 
 /**
  * Typed shortcut from a value array to its associated meta array.
@@ -340,6 +343,7 @@ export type MetaProxy <T, P = any, C = any> = T extends object ? T & Meta$<T, P,
 
 /**
  * Shortcut to call a metaFn by passing just the Meta.
+ * This is intended for use at the policy level.
  */
 export const metaCall = <T, P = any, R = any, C = any> (
   fn: MetaFn<T, P, C, R>
