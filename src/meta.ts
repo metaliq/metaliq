@@ -354,9 +354,7 @@ export const metaCall = <T, P = any, R = any, C = any> (
     const m = meta(on)
     const value = on !== m && on !== m.$.value
       ? on as MetaProxy<T, P, C> // on is already a meta-proxy
-      : typeof (m?.$.value ?? false) === "object"
-        ? metaProxy(m)
-        : m?.$.value as MetaProxy<T, P, C> // TODO: Move to metaProxy
+      : metaProxy(m)
     return fn(value, m)
   }
 
@@ -389,13 +387,7 @@ export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> => {
         if (p === "$") {
           return target.$
         } else if (typeof target[p] === "object") {
-          const value = target[p].$.value
-          if (value && typeof value === "object") {
-            // Recurse to inner object
-            return metaProxy(<unknown>target[p] as Meta<T[K]>)
-          } else {
-            return value // TODO: Move to top-level
-          }
+          return metaProxy(<unknown>target[p] as Meta<T[K]>)
         } else {
           // No spec for this field
           return target.$.value[p]
