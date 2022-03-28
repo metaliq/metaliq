@@ -6,7 +6,6 @@ import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCa
 import { validate } from "../validation/validation"
 import { label, labelOrKey } from "../terminology/terminology"
 import { MetaView, specViewWithFallback, view, ViewResult } from "./presentation"
-import { animatedHideShow } from "./animated-hide-show"
 
 export { expander } from "./expander"
 export { AnimatedHideShow } from "./animated-hide-show"
@@ -32,16 +31,10 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
         .map(key => {
           const fieldMeta = m[key]
           if (isMetaArray(fieldMeta)) {
-            if (!fieldMeta.$.state.hidden) {
-              return metaCall(specViewWithFallback(repeatView))(<unknown>fieldMeta as Meta<T[]>)
-            } else return ""
+            return metaCall(specViewWithFallback(repeatView))(<unknown>fieldMeta as Meta<T[]>)
           } else {
             const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
-            if (typeof fieldMeta.$.spec.hidden === "function") {
-              return metaCall(animatedHideShow(itemView))(fieldMeta)
-            } else {
-              return fieldMeta.$.state.hidden ? "" : view(itemView)(fieldMeta)
-            }
+            return view(itemView)(fieldMeta)
           }
         })}
     </div>
@@ -54,7 +47,9 @@ export const repeatView: MetaView<any[]> = (v, m) => {
   const metaArr = <unknown>m as MetaArray<any>
   const itemView = view(m.$.spec.items?.view || defaultFieldView(metaArr[0]))
 
-  return <unknown>v.map(item => itemView) as ViewResult
+  return metaArr.map(itemMeta => {
+    return metaCall(itemView)(itemMeta)
+  })
 }
 
 /**

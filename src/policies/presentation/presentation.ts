@@ -1,8 +1,9 @@
 import { render, TemplateResult } from "lit"
-import { meta, MetaFn, metaSetups } from "../../meta"
+import { meta, metaCall, MetaFn, metaSetups } from "../../meta"
 import { metaForm } from "./widgets"
 import { label } from "../terminology/terminology"
 import { review } from "../application/application"
+import { animatedHideShow } from "./animated-hide-show"
 
 export interface PresentationSpec<T, P, C> {
   view?: MetaViewTerm<T, P, C>
@@ -71,15 +72,27 @@ export const specViewWithFallback =
     }
 
 /**
- * Get a ViewResult for the given view and meta.
+ * Get a ViewResult for the given meta.
+ * If the view is not specified, will fall back to the spec view.
+ * Calling `view(myView)(myMeta)` has several advantages over calling `myView(myValue, myMeta)`
+ * in addition to ensuring that the meta is sent through.
+ * First, it can accommodate either a single view or an array of views - enabling the
+ * view term of a meta to accomodate multiple views.
+ * Second, it performs a review of all dynamic values on the meta, such as calcs and hidden.
+ * Third, it automatically handles dynamic hide / show.
  */
-export const view = <T, P = any, C = any>(metaView: MetaViewTerm<T, P, C>): MetaFn<T, P, C, ViewResult> =>
+export const view = <T, P = any, C = any>(metaView?: MetaViewTerm<T, P, C>): MetaFn<T, P, C, ViewResult> =>
   (v, m) => {
     m = m || meta(v)
+    metaView = metaView || m.$.spec.view
     if (m.$.parent) review(m) // Don't review on top level, this is auto done in renderPage
-    return metaView
-      ? Array.isArray(metaView)
-        ? metaView.map(mv => view(mv)(v, m))
-        : metaView(v, m)
-      : ""
+    if (Array.isArray(metaView)) {
+      return metaView.map(mv => view(mv)(v, m))
+    } else if (metaView) {
+      if (typeof m.$.spec.hidden === "function") {
+        return metaCall(animatedHideShow(metaView))(m)
+      } else {
+        return m.$.state.hidden ? "" : metaCall(metaView)(m)
+      }
+    } else return ""
   }

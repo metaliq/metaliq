@@ -199,7 +199,7 @@ export function metafy <T, P = any> (
     for (const item of valueArr) {
       metaArr.push(metafy(spec.items, item, parent, key))
     }
-  } else {
+  } else if (!Array.isArray(value)) {
     for (const fieldKey of fieldKeys(spec)) {
       const fieldValue = value?.[fieldKey]
       const fieldSpec = meta.$.spec.fields[fieldKey]
@@ -356,7 +356,7 @@ export const metaCall = <T, P = any, R = any, C = any> (
       ? on as MetaProxy<T, P, C> // on is already a meta-proxy
       : typeof (m?.$.value ?? false) === "object"
         ? metaProxy(m)
-        : m?.$.value as MetaProxy<T, P, C>
+        : m?.$.value as MetaProxy<T, P, C> // TODO: Move to metaProxy
     return fn(value, m)
   }
 
@@ -368,47 +368,63 @@ export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "
 /**
  * Return a proxy for a given Meta object's values.
  */
-export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> =>
-  <unknown>(new Proxy(meta, {
-    get <K extends FieldKey<T>>(target: Meta<T>, p: K): any {
-      if (p === "$") {
-        return target.$
-      } else if (typeof target[p] === "object") {
-        const value = target[p].$.value
-        if (value && typeof value === "object") {
-          // Recurse to inner object
-          return metaProxy(<unknown>target[p] as Meta<T[K]>)
-        } else {
-          return value
-        }
-      } else {
-        // No spec for this field
-        return target.$.value[p]
-      }
-    },
-
-    set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
-      const isMeta = (obj: unknown): obj is Meta<unknown> => typeof obj === "object"
-      const targetMeta = target[p]
-
-      if (isMeta(targetMeta)) {
-        const oldValue = target[p].$.value
-        if (oldValue && typeof oldValue === "object" && typeof newValue === "object") {
-          const proxy = metaProxy(targetMeta)
-          for (const [key, value] of Object.entries(newValue)) {
-            (proxy as any)[key] = value
+export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> => {
+  if (isMetaArray(meta)) {
+    const valueArr = meta.$.value
+    if (meta.length !== valueArr.length &&
+      typeof valueArr[0] !== "object" &&
+      typeof meta.$.value[0] !== "object"
+    ) {
+      // Array of primitives
+      return meta.$.value as MetaProxy<T>
+    } else {
+      return <unknown>Object.assign(
+        [...meta.map(m => metaProxy(m))],
+        { $: meta.$ }
+      ) as MetaProxy<T>
+    }
+  } else if (typeof meta.$.value === "object") {
+    return <unknown>(new Proxy(meta, {
+      get<K extends FieldKey<T>> (target: Meta<T>, p: K): any {
+        if (p === "$") {
+          return target.$
+        } else if (typeof target[p] === "object") {
+          const value = target[p].$.value
+          if (value && typeof value === "object") {
+            // Recurse to inner object
+            return metaProxy(<unknown>target[p] as Meta<T[K]>)
+          } else {
+            return value // TODO: Move to top-level
           }
         } else {
-          target[p].$.value = newValue
+          // No spec for this field
+          return target.$.value[p]
         }
-      } else {
-        // No spec for this field
-        target.$.value[p] = newValue
+      },
+
+      set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
+        const isMeta = (obj: unknown): obj is Meta<unknown> => typeof obj === "object"
+        const targetMeta = target[p]
+
+        if (isMeta(targetMeta)) {
+          const oldValue = target[p].$.value
+          if (oldValue && typeof oldValue === "object" && typeof newValue === "object") {
+            const proxy = metaProxy(targetMeta)
+            for (const [key, value] of Object.entries(newValue)) {
+              (proxy as any)[key] = value
+            }
+          } else {
+            target[p].$.value = newValue
+          }
+        } else {
+          // No spec for this field
+          target.$.value[p] = newValue
+        }
+        return true
       }
-      return true
-    }
-  }
-  )) as MetaProxy<T>
+    })) as MetaProxy<T>
+  } else return meta.$.value as MetaProxy<T>
+}
 
 type SpecKey = keyof Policy.Specification<any>
 type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
