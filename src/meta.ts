@@ -390,7 +390,7 @@ export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> => {
           return metaProxy(<unknown>target[p] as Meta<T[K]>)
         } else {
           // No spec for this field
-          return target.$.value[p]
+          return target.$.value?.[p]
         }
       },
 
