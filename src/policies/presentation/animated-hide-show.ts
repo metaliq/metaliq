@@ -2,7 +2,6 @@ import { html, LitElement, PropertyValues } from "lit"
 import { styleMap } from "lit/directives/style-map.js"
 import { customElement, property, state } from "lit/decorators.js"
 import { MetaView } from "./presentation"
-import { up } from "@metaliq/up"
 
 @customElement("mq-animated-hide-show")
 export class AnimatedHideShow extends LitElement {
@@ -15,6 +14,9 @@ export class AnimatedHideShow extends LitElement {
   @state()
   private height = "auto"
 
+  @state()
+  private showing = false
+
   setHeight () {
     this.height = `${(Array.from(this.children)).reduce((t, e) => t + e.clientHeight, 0)}px`
   }
@@ -26,7 +28,7 @@ export class AnimatedHideShow extends LitElement {
         this.setHeight()
       } else {
         this.height = "0"
-        this.dispatchEvent(new CustomEvent("show", { bubbles: false }))
+        this.showing = true
       }
       setTimeout(() => {
         if (!this.mqHidden) {
@@ -38,7 +40,7 @@ export class AnimatedHideShow extends LitElement {
           this.height = "auto"
           this.changing = false
           if (this.mqHidden) {
-            this.dispatchEvent(new CustomEvent("hide", { bubbles: false }))
+            this.showing = false
           }
         }, 325)
       }, 10)
@@ -53,7 +55,7 @@ export class AnimatedHideShow extends LitElement {
         height: this.height,
         overflowY: this.changing ? "hidden" : "visible"
       })}>
-        <slot></slot>
+        ${this.showing ? html`<slot></slot>` : ""}
       </div>
     `
   }
@@ -62,15 +64,8 @@ export class AnimatedHideShow extends LitElement {
 export const animatedHideShow = <T> (metaView: MetaView<T>): MetaView<T> => (value, meta) => {
   const hidden = !!meta.$.state.hidden
   return html`
-    <mq-animated-hide-show ?mqHidden=${hidden} 
-      @show=${up(() => {
-        meta.$.state.showing = true
-      })}
-      @hide=${up(() => {
-        meta.$.state.showing = false
-      })}
-    >
-      ${meta.$.state.showing ? metaView(value, meta) : ""}
+    <mq-animated-hide-show ?mqHidden=${hidden}>
+      ${metaView(value, meta)}
     </mq-animated-hide-show>
   `
 }
