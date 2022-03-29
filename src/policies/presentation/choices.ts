@@ -39,7 +39,8 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
           // eslint-disable-next-line no-new -- No need to hold reference to Choices
           new Choices(`#${id}`, {
             choices: options.choices,
-            searchPlaceholderValue: options.searchText ?? ""
+            searchPlaceholderValue: options.searchText ?? "",
+            allowHTML: true
           })
         },
         250
