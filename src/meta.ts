@@ -192,14 +192,14 @@ export function metafy <T, P = any> (
   }
 
   // Descend through children creating further meta objects
-  if (spec.items) {
+  if (spec.items || Array.isArray(value)) {
     const valueArr = <unknown>value as any[] || []
     const metaArr = <unknown>meta as MetaArray<any, P>
     metaArr.length = 0 // Remove any items from supplied prototype
     for (const item of valueArr) {
-      metaArr.push(metafy(spec.items, item, parent, key))
+      metaArr.push(metafy(spec.items || {}, item, parent, key))
     }
-  } else if (!Array.isArray(value)) {
+  } else {
     for (const fieldKey of fieldKeys(spec)) {
       const fieldValue = value?.[fieldKey]
       const fieldSpec = meta.$.spec.fields[fieldKey]
