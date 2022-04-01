@@ -4,6 +4,11 @@ import { FieldKey } from "../meta"
 // TYPESCRIPT UTILITIES
 
 /**
+ * An EndoFunction returns the same type as its (single) parameter.
+ */
+export type EndoFunction = <T> (o: T) => T
+
+/**
  * Return type for a function that returns either the given type or null.
  */
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -97,6 +102,22 @@ export function copy<T> (obj: T, { exclude, include }: { exclude?: string[], inc
     : stringify(obj, include as Array<string | number>)
   return parse(flatted)
 }
+
+/**
+ * Return a function that transforms an object according to a predicate,
+ * which takes [key, value] property entries and returns entries for the new object.
+ * Any entry whose returned key is null or undefined will be excluded.
+ */
+export type EntryPredicate = ([k, v]: [k: string, v: any], i: number) => [string, any]
+export const objectTransformer = (fn: EntryPredicate) => (obj: any) =>
+  Object.fromEntries(Object.entries(obj).map(fn).filter(([k]) => k ?? false))
+
+/**
+ * An object transformer that produces an object with any null or undefined values filtered out.
+ */
+export const onlyKeysWithVals = objectTransformer(([k, v]) => [
+  (v ?? false) ? k : undefined, v
+])
 
 /**
  * Return the given value if is is defined, or if it is an object then at least one of its direct children is defined
