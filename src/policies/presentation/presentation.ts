@@ -74,8 +74,7 @@ export const specViewWithFallback =
 /**
  * Get a ViewResult for the given meta.
  * If the view is not specified, will fall back to the spec view.
- * Calling `view(myView)(myMeta)` has several advantages over calling `myView(myValue, myMeta)`
- * in addition to ensuring that the meta is sent through.
+ * Calling `view(myView)(myValue, myMeta)` has several advantages over calling `myView(myValue, myMeta)`.
  * First, it can accommodate either a single view or an array of views - enabling the
  * view term of a meta to accomodate multiple views.
  * Second, it performs a review of all dynamic values on the meta, such as calcs and hidden.

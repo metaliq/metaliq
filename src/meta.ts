@@ -381,7 +381,7 @@ export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> => {
         { $: meta.$ }
       ) as MetaProxy<T>
     }
-  } else if (typeof meta.$.value === "object") {
+  } else if (typeof (meta.$.value ?? false) === "object") {
     return <unknown>(new Proxy(meta, {
       get<K extends FieldKey<T>> (target: Meta<T>, p: K): any {
         const targetField = <unknown>(target[p] ?? {}) as Meta<T[K]>

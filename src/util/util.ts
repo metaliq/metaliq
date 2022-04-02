@@ -35,6 +35,7 @@ export type SortKey<T> = `${"-" | ""}${FieldKey<T>}`
 
 /**
  * Return a function to sort by the given key(s).
+ * Each key can be preceded by a `-` character to perform a descending sort.
  */
 export function sortBy<T> (keyOrKeys: SortKey<T> | Array<SortKey<T>>) {
   const keys: Array<SortKey<T>> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]

@@ -4,7 +4,7 @@ import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
 import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
-import { label, labelOrKey } from "../terminology/terminology"
+import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, specViewWithFallback, view, ViewResult } from "./presentation"
 
 export { expander } from "./expander"
@@ -199,14 +199,17 @@ const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
     if (doCommit && meta.$.parent) commit(meta.$.parent)
   }
 
-export const errorsBlock: MetaView<any> = (value, meta) => html`
-  <div class="mq-error-msg mq-page-error">
-    ${meta.$.state.allErrors?.map(errorMeta => html`
-      <div>${label(errorMeta)}</div>
-      <div>${errorMeta.$.state.error}</div>
-    `)}
-  </div>
-`
+export const errorsBlock: MetaView<any> = (v, m) => {
+  m = m || meta(v)
+  return html`
+    <div class="mq-error-msg mq-page-error">
+      ${m.$.state.allErrors?.map(mError => html`
+        <div class="mq-error-label">${labelPath(m, mError)}</div>
+        <div>${mError.$.state.error}</div>
+      `)}
+    </div>
+  `
+}
 
 export type ButtonOptions<T> = {
   label?: string
