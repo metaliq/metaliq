@@ -1,4 +1,5 @@
 import { match, compile, MatchFunction, PathFunction } from "path-to-regexp"
+import { EndoFunction, objectTransformer } from "../../util/util"
 
 export type ParamsGetter<T> = ((data: any) => T)
 export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => void
@@ -30,7 +31,8 @@ export function route<P extends object, Q extends object = any> (pattern: string
     on,
     go: function (pathParams?, queryParams?) {
       // TODO: Allow pathParams and queryParams to be a getter with this.data
-      const currentPathParams = (this.router.currentRoute || this).match(location.pathname)?.params
+      const slashedParams = (this.router.currentRoute || this).match(location.pathname)?.params
+      const currentPathParams = deSlashObject(slashedParams || {})
       const pathObj = Object.assign(currentPathParams, pathParams)
       const path = (<Route<P, Q>> this).make(pathObj)
       const queryObj = Object.assign(searchToObject(location.search), queryParams)
@@ -121,3 +123,9 @@ function searchToObject (search: string) {
   }
   return result
 }
+
+export const deSlash = (str: string) => str.replace(/\//g, "%2F")
+
+export const deSlashObject = objectTransformer(([k, v]) => [
+  k, typeof v === "string" ? deSlash(v) : v
+]) as EndoFunction
