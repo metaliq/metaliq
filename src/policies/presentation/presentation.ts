@@ -27,10 +27,12 @@ export type MetaViewTerm<T, P = any, C = any> = MetaView<T, P, C> | Array<MetaVi
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
   if (!meta.$.parent) {
+    // TODO: This should go into forms module
     if (!meta.$.spec.publication?.target && !meta.$.spec.view) {
       meta.$.spec.view = metaForm()
     }
-    if (meta.$.spec.view) {
+    // TODO: These should go into runtime target
+    if (meta.$.spec.view || !meta.$.spec.publication?.target) {
       meta.$.spec.review = meta.$.spec.review || renderPage
       Object.assign(window, { meta })
       document.title = label(meta)
