@@ -1,12 +1,12 @@
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-import { fieldKeys, Meta, metaProxy } from "../../meta"
+import { fieldKeys, Meta } from "../../meta"
 import { up } from "@metaliq/up"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "./widgets"
 import { label } from "../terminology/terminology"
-import { MetaView, specView } from "./presentation"
+import { MetaView, view } from "./presentation"
 
 export const wizardView: MetaView<any> = (value, meta) => [
   wizardTramline(value, meta),
@@ -35,7 +35,7 @@ export const wizardTramline: MetaView<any> = (value, wizard) => {
 
 export const wizardStep: MetaView<any> = (value, wizard) => {
   const currentStep = wizard[wizard.$.state.step] as Meta<any>
-  const currentValue = metaProxy(currentStep)
+  const currentValue = currentStep.$.value
   const labels = {
     forwards: forwardsLabel(currentValue, currentStep),
     backwards: backwardsLabel(currentValue, currentStep)
@@ -53,7 +53,7 @@ export const wizardStep: MetaView<any> = (value, wizard) => {
       </div>
       <div>
         ${currentStep
-          ? specView(currentValue, currentStep)
+          ? view()(currentValue, currentStep)
           : notConfiguredWarning}
         ${pageError(currentValue, currentStep)}
       </div>

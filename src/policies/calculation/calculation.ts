@@ -1,4 +1,4 @@
-import { Meta$, MetaCalcs, metaSetups } from "../../meta"
+import { meta, Meta, MetaCalcs, metaSetups, MetaValue } from "../../meta"
 import { addReview } from "../application/application"
 
 export interface CalculationSpec<T, P, C> {
@@ -23,4 +23,5 @@ metaSetups.push(meta => {
 /**
  * Shortcut to a meta's calcs
  */
-export const calcs = <T, P = any, C = any> (meta: Meta$<T, P, C>) => meta?.$.calcs
+export const calcs = <T, P = any, C = any> (value: T | MetaValue<T, P, C> | Meta<T, P, C>) =>
+  meta(value)?.$.calcs

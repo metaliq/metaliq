@@ -5,7 +5,7 @@ import { up, Update } from "@metaliq/up"
 import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
-import { MetaView, specViewWithFallback, view, ViewResult } from "./presentation"
+import { MetaView, view, ViewResult, viewWithFallback } from "./presentation"
 
 export { expander } from "./expander"
 export { AnimatedHideShow } from "./animated-hide-show"
@@ -31,7 +31,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
         .map(key => {
           const fieldMeta = m[key]
           if (isMetaArray(fieldMeta)) {
-            return metaCall(specViewWithFallback(repeatView))(<unknown>fieldMeta as Meta<T[]>)
+            return metaCall(viewWithFallback(repeatView))(<unknown>fieldMeta as Meta<T[]>)
           } else {
             const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
             return view(itemView)(fieldMeta)

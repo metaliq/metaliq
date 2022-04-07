@@ -69,7 +69,7 @@ export type MetaInfo<T, P = any, C = any> = {
   /**
    * The underlying data value.
    */
-  value?: T
+  value?: T | MetaValue<T>
 
   /**
    * The values of calculated fields.
@@ -288,7 +288,7 @@ export const m$ = <T>(value: T | Meta<T>): MetaInfo<T> => (<unknown>value as Met
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T, P = any, C = any> (value: T | MetaProxy<T, P, C> | Meta<T, P, C>) => {
+export const meta = <T, P = any, C = any> (value: T | MetaValue<T, P, C> | Meta<T, P, C>) => {
   if (!(value ?? false) || typeof value !== "object") {
     throw new Error(`Attempt to obtain meta from primitive value: ${value}`)
   }
@@ -308,7 +308,7 @@ export const isMetaArray = (m: Meta<any> | MetaArray<any>): m is MetaArray<any> 
 /**
  * Shortcut to a proxy object for the parent.
  */
-export const parent = <T extends object, P = any, C = any> (m: T | Meta<T, P, C>) => metaProxy((<Meta$<T, P, C>>m).$.parent)
+export const parent = <T extends object, P = any, C = any> (m: T | Meta<T, P, C>) => meta(m)?.$?.parent?.$.value
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -323,38 +323,31 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
 
 /**
  * The primary pattern for defining a data function in MetaliQ.
- * A MetaFn receives two parameters - a data value proxy and the meta itself.
- * The proxy has the same type as the underlying data value and can generally
- * be treated as if it is that value. However, in the case where a meta has
- * uncommitted transient values, these values will be returned by the proxy.
- * The second parameter is the full meta object, with all attached meta-information.
- * If you need to get to the currently committed state of an underlying value object,
- * then it can be accessed via meta.$.value.
+ * A MetaFn receives two parameters - the underlying data value and the meta.
+ * The first parameter is the data value itself, and often you can specify a function
+ * which works on a single parameter of the underlying data type.
+ * The second parameter is the associated object from the meta-graph.
  */
-export type MetaFn<T, P = any, C = any, R = any> = (value: T | MetaProxy<T, P, C>, meta?: Meta<T, P, C>) => R
+export type MetaFn<T, P = any, C = any, R = any> = (value: T | MetaValue<T, P, C>, meta?: Meta<T, P, C>) => R
 
 /**
- * A proxy object for a meta, appears similarly to its value.
- * Will set or return uncommitted transient values where present (i.e. defined in the spec).
- * Any property access or manipulation on fields that are not included in the spec will
- * fall back to getting or setting the underlying data value.
+ * The underlying value, either a primitive value or an object enhanced with the meta info.
  */
-export type MetaProxy <T, P = any, C = any> = T extends object ? T & Meta$<T, P, C> : T
+export type MetaValue<T, P = any, C = any> = T extends object ? T & Meta$<T, P, C> : T
 
 /**
- * Shortcut to call a metaFn by passing just the Meta.
+ * Shortcut to call a metaFn with both parameters
+ * by passing just the Meta or the MetaValue of an object type.
  * This is intended for use at the policy level.
  */
-export const metaCall = <T, P = any, R = any, C = any> (
+export const metaCall = <T, P = any, C = any, R = any> (
   fn: MetaFn<T, P, C, R>
 ) => (on: T | Meta<T, P, C>): R => {
     if (typeof (on ?? false) !== "object") {
       throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
     }
     const m = meta(on)
-    const value = on !== m && on !== m.$.value
-      ? on as MetaProxy<T, P, C> // on is already a meta-proxy
-      : metaProxy(m)
+    const value = m.$.value
     return fn(value, m)
   }
 
@@ -362,64 +355,6 @@ export const metaCall = <T, P = any, R = any, C = any> (
  * A simple type guard for values that may or may not be a meta function.
  */
 export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
-
-/**
- * Return a proxy for a given Meta object's values.
- */
-export const metaProxy = <T>(meta: Meta<T>): MetaProxy<T> => {
-  if (isMetaArray(meta)) {
-    const valueArr = meta.$.value
-    if (meta.length !== valueArr.length &&
-      typeof valueArr[0] !== "object" &&
-      typeof meta.$.value[0] !== "object"
-    ) {
-      // Array of primitives
-      return meta.$.value as MetaProxy<T>
-    } else {
-      return <unknown>Object.assign(
-        [...meta.map(m => metaProxy(m))],
-        { $: meta.$ }
-      ) as MetaProxy<T>
-    }
-  } else if (typeof (meta.$.value ?? false) === "object") {
-    return <unknown>(new Proxy(meta, {
-      get<K extends FieldKey<T>> (target: Meta<T>, p: K): any {
-        const targetField = <unknown>(target[p] ?? {}) as Meta<T[K]>
-        const noValue = {}
-        const targetValue = targetField.$?.value ?? noValue
-        if (p === "$") {
-          return target.$
-        } else if (targetValue !== noValue) {
-          return metaProxy(targetField)
-        } else {
-          // No spec for this field
-          return target.$.value?.[p]
-        }
-      },
-
-      set (target: Meta<T>, p: FieldKey<T>, newValue: any) {
-        const isMeta = (obj: unknown): obj is Meta<unknown> => typeof obj === "object"
-        const targetMeta = target[p]
-
-        if (isMeta(targetMeta)) {
-          const oldValue = target[p].$.value
-          if (oldValue && typeof oldValue === "object" && typeof newValue === "object") {
-            const proxy = metaProxy(targetMeta)
-            for (const [key, value] of Object.entries(newValue)) {
-              (proxy as any)[key] = value
-            }
-          } else {
-            target[p].$.value = newValue
-          }
-        } else {
-          // No spec for this field
-          target.$.value[p] = newValue
-        }
-        return true
-      }
-    })) as MetaProxy<T>
-  } else return meta.$.value as MetaProxy<T>
-}
 
 type SpecKey = keyof Policy.Specification<any>
 type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]

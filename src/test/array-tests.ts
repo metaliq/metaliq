@@ -1,6 +1,6 @@
 import chai from "chai"
 import { describe } from "mocha"
-import { metafy, metaProxy, MetaSpec } from "../meta"
+import { metafy, MetaSpec } from "../meta"
 
 chai.should()
 
@@ -48,18 +48,18 @@ describe("MetaliQ Array Handling", () => {
 
     it("should proxify to a reflection of an array of primitives regardless of items definition", () => {
       const personWithItemsMeta = metafy(personSpecWithItems, samplePerson)
-      const personWithItemsProxy = metaProxy(personWithItemsMeta)
+      const personWithItems = personWithItemsMeta.$.value
 
-      personWithItemsProxy.aliases.should.be.an("array")
-      personWithItemsProxy.aliases.should.have.length(2)
-      personWithItemsProxy.aliases[0].should.equal("One")
+      personWithItems.aliases.should.be.an("array")
+      personWithItems.aliases.should.have.length(2)
+      personWithItems.aliases[0].should.equal("One")
 
       const personNoItemsMeta = metafy(personSpecNoItems, samplePerson)
-      const personNoItemsProxy = metaProxy(personNoItemsMeta)
+      const personNoItems = personNoItemsMeta.$.value
 
-      personNoItemsProxy.aliases.should.be.an("array")
-      personNoItemsProxy.aliases.should.have.length(2)
-      personNoItemsProxy.aliases[0].should.equal("One")
+      personNoItems.aliases.should.be.an("array")
+      personNoItems.aliases.should.have.length(2)
+      personNoItems.aliases[0].should.equal("One")
     })
   })
 })

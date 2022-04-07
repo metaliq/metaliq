@@ -1,4 +1,4 @@
-## Value and Meta Objects
+## The Meta-Graph
 
 You have seen that MetaliQ solutions consist of specifications that provide additional information about data model types in the terms defined by policies. These specifications are made using the generic type `MetaSpec`.
 
