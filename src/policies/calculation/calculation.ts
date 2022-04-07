@@ -14,7 +14,6 @@ declare module "../../policy" {
   }
 }
 
-// TODO: Initialise calcs in review on meta-setup
 metaSetups.push(meta => {
   for (const [key, calc] of Object.entries(meta.$.spec.calcs || {})) {
     addReview(meta, (value, meta) => { meta.$.calcs[key] = calc(value, meta) })
