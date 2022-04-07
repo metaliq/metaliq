@@ -6,7 +6,7 @@ import flatpickr from "flatpickr"
 import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
 import { validate } from "../validation/validation"
-import { fieldError } from "./widgets"
+import { fieldError, setPrimitiveValue } from "./widgets"
 import { label } from "../terminology/terminology"
 
 export type DatePickerOptions = {
@@ -34,7 +34,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
           flatpickr(`#${id}`, {
             onClose (selectedDates, dateStr) {
               value = dateStr
-              meta.$.value = dateStr
+              setPrimitiveValue(meta, dateStr)
               up(validate, meta)()
             },
             defaultDate: value || "",

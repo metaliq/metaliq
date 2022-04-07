@@ -1,5 +1,6 @@
 import { Constraint } from "../validation"
 import { allOf, matchRegex, transform } from "./foundation"
+import { setPrimitiveValue } from "../../presentation/widgets"
 
 /** Emails **/
 
@@ -37,9 +38,9 @@ export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") =>
     return "Too few digits"
   }
   if (rest.match(/^4/)) { // Mobile number
-    mPhone.$.value = `+${countryCode} ${rest.substr(0, 3)} ${rest.substr(3, 3)} ${rest.substr(6)}`
+    setPrimitiveValue(mPhone, `+${countryCode} ${rest.substr(0, 3)} ${rest.substr(3, 3)} ${rest.substr(6)}`)
   } else { // Land line
-    mPhone.$.value = `+${countryCode} ${rest.substr(0, 1)} ${rest.substr(1, 4)} ${rest.substr(5)}`
+    setPrimitiveValue(mPhone, `+${countryCode} ${rest.substr(0, 1)} ${rest.substr(1, 4)} ${rest.substr(5)}`)
   }
   return true // No error, potentially reformatted
 }

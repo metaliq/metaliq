@@ -105,11 +105,11 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (value, 
         "mq-error-field": meta.$.state.error,
         "mq-disabled": disabled
       })}"
-      .value=${live(meta.$.value ?? "")}
+      .value=${live(meta?.$?.parent?.$?.value[meta?.$?.key] ?? "")}
       @focus=${up(onFocus, meta)}
       @blur=${up(onBlur(options), meta)}
       @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
-      .checked=${options.type === "checkbox" && meta.$.value}
+      .checked=${options.type === "checkbox" && primitiveValue(meta)}
     />
   `
 }
@@ -137,7 +137,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (va
     [`mq-${options.type || "text"}-field`]: true,
     "mq-mandatory": meta.$.state.mandatory,
     "mq-active": meta.$.state.active,
-    "mq-populated": !!meta.$.value
+    "mq-populated": !!primitiveValue(meta)
   })}" >
     ${!options.labelAfter ? fieldLabel(options)(value, meta) : ""}
     ${input({ type: "text", ...options })(value, meta)}
@@ -190,14 +190,23 @@ const onBlur = <T>(options: InputOptions<T>) => (meta: Meta<T>, event: Event) =>
 const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
   (meta: Meta<T>, event: Event) => {
     const target = <HTMLInputElement>event.target
-    meta.$.value = <unknown>(target.type === "checkbox"
-      ? target.checked
-      : type === "number"
-        ? parseFloat(target.value)
-        : target.value) as T
+    setPrimitiveValue(
+      meta,
+      <unknown>(target.type === "checkbox"
+        ? target.checked
+        : type === "number"
+          ? parseFloat(target.value)
+          : target.value) as T
+    )
     if (!unvalidated) validate(meta)
     if (doCommit && meta.$.parent) commit(meta.$.parent)
   }
+
+export const primitiveValue = (meta: Meta<any>) => meta?.$?.parent.$?.value?.[meta?.$?.key] || ""
+export const setPrimitiveValue = <T>(meta: Meta<T>, value: T) => {
+  const parentValue = meta?.$?.parent.$?.value
+  parentValue[meta?.$?.key] = value
+}
 
 export const errorsBlock: MetaView<any> = (v, m) => {
   m = m || meta(v)

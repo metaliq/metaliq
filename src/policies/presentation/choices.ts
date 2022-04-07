@@ -6,7 +6,7 @@ import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
 import { validate } from "../validation/validation"
-import { fieldError } from "./widgets"
+import { fieldError, setPrimitiveValue } from "./widgets"
 import { label } from "../terminology/terminology"
 import { getModuleDefault } from "../../util/import"
 
@@ -65,6 +65,6 @@ export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
 export const stringChoices = (strings: string[]) => strings.map(s => ({ value: s, label: s }))
 
 function onSelect (meta: Meta<any>, event: { detail: { value: string } }) {
-  meta.$.value = event.detail.value
+  setPrimitiveValue(meta, event.detail.value)
   validate(meta)
 }

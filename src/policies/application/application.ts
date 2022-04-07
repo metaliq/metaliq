@@ -68,7 +68,7 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>): Promise<Meta<T
   const local = spec.local || false
   const start = await startUp({
     review: (updatedMeta) => {
-      recursiveReview(updatedMeta)
+      recursiveReview(updatedMeta?.$?.parent || updatedMeta)
       review(runMeta)
     },
     log,
