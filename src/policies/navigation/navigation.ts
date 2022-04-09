@@ -1,51 +1,118 @@
 import { Route, RouteHandler, Router } from "./router"
-import { metaCall, MetaFn, metaSetups } from "../../meta"
+import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec } from "../../meta"
 import { up } from "@metaliq/up"
+import { MaybeReturn } from "../../util/util"
 
 export { route } from "./router"
 
-export interface NavigationSpec<T, P = any, C = any> {
+export interface NavigationSpec<T, P = any, C = any, RP extends object = any, RQ = any> {
   /**
-   * Route processing for this spec.
-   *
+   * Route object associated with this specification.
    */
-  routes?: Array<MetaRoute<T, P, C, any, any>>
+  route?: Route<RP, RQ>
+
   /**
-   * An initial path from the application base URL for this spec.
+   * Meta functions for application navigation events.
    */
-  path?: string
+  onEnter?: MetaFn<T, P, C, RouteHandler<RP, RQ>>
+  onLeave?: MetaFn<T, P, C, RouteHandler<RP, RQ>>
+
+  /**
+   * Initial path for the top level spec,
+   * if one is not already present in the browser location.
+   */
+  urlPath?: string
+
+  /**
+   * Navigation type.
+   * This is set at the parent level to define the mechanism for navigating between children.
+   */
+  navType?: NavigationType
+}
+
+export type NavigationType = {
+  onNavigate?: (from: Meta<any>, to: Meta<any>) => MaybeReturn<boolean>
+}
+
+export interface NavigationState {
+  /**
+   * Field key of the currently selected option in this navigation level.
+   */
+  selected?: string
 }
 
 declare module "../../policy" {
   namespace Policy {
     interface Specification<T, P, C> extends NavigationSpec<T, P, C> {}
+
+    interface State<T, P, C> {
+      this?: State<T, P, C>
+      nav?: NavigationState
+    }
   }
 }
 
-/**
- * Function which takes a meta and returns a route handler.
- */
-export type MetaRouteHandler<T, P, C, RP extends object, RQ> = MetaFn<T, P, C, RouteHandler<RP, RQ>>
+type NavigationPolicy = {
+  routeMetas: Map<Route<object>, Meta<any>>
+}
+const policy: NavigationPolicy = {
+  routeMetas: new Map()
+}
 
-/**
- * Tuple associating a route and its meta route handler.
- */
-export type MetaRoute<T, P, C, RP extends object, RQ> = [Route<RP, RQ>, MetaRouteHandler<T, P, C, RP, RQ>]
+export const routeMeta = (route: Route<object>) => policy.routeMetas.get(route)
 
 metaSetups.push(meta => {
   const spec = meta.$.spec
-  if (spec.routes && !meta.$.parent) {
-    // If this is the top-level meta and has routes specified then initialise navigation
-    if (spec.path && typeof history !== "undefined" && typeof window !== "undefined" &&
+  // If this spec has a route, initialise any route handling functions
+  if (spec?.route) {
+    policy.routeMetas.set(spec.route, meta)
+    if (typeof spec.onLeave === "function") {
+      spec.route.onLeave = metaCall(spec.onLeave)(meta)
+    }
+    if (typeof spec.onEnter === "function") {
+      spec.route.onEnter = metaCall(spec.onEnter)(meta)
+    }
+  }
+  // If this is the top-level meta and has routes specified then initialise navigation
+  if (!meta.$.parent) {
+    if (spec?.urlPath &&
+      typeof history !== "undefined" && typeof window !== "undefined" &&
       (!window.location?.pathname || window.location.pathname === "/")
-    ) {
       // Only use initially specified path if one isn't already in the browser location
-      history.pushState(null, null, spec.path)
+    ) {
+      history.pushState(null, null, spec.urlPath)
     }
-    for (const [route, metaHandler] of spec.routes || []) {
-      route.on = metaCall(metaHandler)(meta)
+    if (policy.routeMetas.size) {
+      const router = new Router(
+        Array.from(policy.routeMetas.keys()),
+        () => { up()() }
+      ).start()
+      router.catch(console.error)
     }
-    const router = new Router(spec.routes.map(([route]) => route), () => { up()() }).start()
-    router.catch(console.error)
+  }
+  // If this is a nav container, select first item
+  if (meta.$.spec.navType) {
+    meta.$.state.nav = meta.$.state.nav || { selected: null }
+    meta.$.state.nav.selected = fieldKeys(meta.$.spec)[0]
   }
 })
+
+export const freeNavigation: NavigationType = {}
+
+/**
+ * Convenience method to map all nodes of a navigation model
+ * to the same underlying logical model.
+ */
+export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
+  spec = spec || this as MetaSpec<T>
+  const navModel = {} as T
+  for (const key of fieldKeys(spec)) {
+    const childSpec = spec.fields?.[key] as unknown as MetaSpec<unknown>
+    if (childSpec.fields) { // Branch node - recurse
+      mapNavModel(model)(childSpec)
+    } else { // Leaf node - assign logical model
+      Object.assign(navModel, { [key]: model })
+    }
+  }
+  return navModel
+}
