@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf ./lib",
     "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
-    "dev": "npm run clean && npm run prep-css && rm -rf ./lib && tsc --watch",
+    "dev": "npm run clean && npm run prep-css && tsc --watch",
     "prepare": "npm run clean && npm run prep-css && tsc",
     "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register compiled.js ./lib/test/"
   },
