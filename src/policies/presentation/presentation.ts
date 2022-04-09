@@ -5,7 +5,20 @@ import { label } from "../terminology/terminology"
 import { animatedHideShow } from "./animated-hide-show"
 
 export interface PresentationSpec<T, P, C> {
+  /**
+   * The primary view associated with this specification.
+   */
   view?: MetaViewTerm<T, P, C>
+
+  /**
+   * An auxiliary view, such as for a contextual control zone.
+   */
+  controlView?: MetaViewTerm<T, P, C>
+
+  /**
+   * An auxiliary view, such as for a contextual status zone.
+   */
+  statusView?: MetaViewTerm<T, P, C>
 }
 
 declare module "../../policy" {
@@ -55,28 +68,52 @@ export const renderPage: MetaFn<any> = (value, meta) => {
 /**
  * Get a ViewResult for the given meta.
  * If the view is not specified, will fall back to the spec view.
- * Calling `view(myView)(myValue, myMeta)` has several advantages over calling `myView(myValue, myMeta)`.
+ * Calling `view(myView)(myValue, myMeta)` has several advantages over calling `myView(myValue, myMeta)`:
+ *
  * First, it can accommodate either a single view or an array of views - enabling the
- * view term of a meta to accommodate multiple views.
- * Second, it automatically handles dynamic hide / show.
- * Third, it automatically uses meta spec view if none specified.
- * Fourth, it can be called with only the value, and will add the meta parameter automatically
- * unless the value is a primitive.
+ * view term of a meta to accomodate multiple views.
+ * Second, it performs a review of all dynamic values on the meta, such as calcs and hidden.
+ * Third, it automatically handles dynamic hide / show.
+ * Fourth, if provided with only a value it will deduce the meta, except for primitive values.
+ *
+ * There is also handling provided for default views and fallbacks.
+ *
+ * ```
+ * view()(myValue) // View myValue with the view from the spec, if present
+ * view(maybeView)(myValue) // View using maybeView if present, otherwise nothing (no fallback)
+ * view(maybeView, false)(myValue) // As above - View using maybeView if it exists, otherwise nothing
+ * view(maybeView, true)(myValue) // View myValue with maybeView if it exists, else view from spec if present
+ * view(null, maybeView)(myValue) // Use the view from the spec if present, else fall back to maybeView
+ * view(maybeView, otherView)(myValue) // View myValue with maybeView if it exists, else use otherView (no fallback to spec view)
+ * ```
  */
-export const view = <T, P = any, C = any>(metaView?: MetaViewTerm<T, P, C>): MetaFn<T, P, C, ViewResult> =>
-  (v, m) => {
+export function view <T, P = any, C = any> (
+  metaView?: MetaViewTerm<T, P, C>, fallback?: boolean | MetaViewTerm<T, P, C>
+): MetaFn<T, P, C, ViewResult> {
+  const fallbackToSpec = arguments.length === 0 || fallback === true
+
+  return (v, m) => {
     m = m || meta(v)
-    metaView = metaView || m.$.spec.view
-    if (Array.isArray(metaView)) {
+    if (fallbackToSpec) {
+      metaView = metaView || m.$.spec.view
+    }
+    if (!metaView && typeof fallback === "function") {
+      metaView = fallback
+    }
+    if (m.$.parent) review(m) // Don't review on top level, this is auto done in renderPage
+    if (!metaView) {
+      return ""
+    } else if (Array.isArray(metaView)) {
       return metaView.map(mv => view(mv)(v, m))
-    } else if (metaView) {
+    } else {
       if (typeof m.$.spec.hidden === "function") {
         return metaCall(animatedHideShow(metaView))(m)
       } else {
         return m.$.state.hidden ? "" : metaCall(metaView)(m)
       }
-    } else return ""
+    }
   }
+}
 
 /**
  * Get a ViewResult for the given meta or its value proxy using its specified view

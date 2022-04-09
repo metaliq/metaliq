@@ -48,7 +48,7 @@ declare module "../../policy" {
   }
 }
 
-export type InitFunction<T> = (() => T) | (() => Promise<T>)
+export type InitFunction<T> = ((spec?: MetaSpec<T>) => T) | ((spec?: MetaSpec<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 
 export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>): Promise<Meta<T>> {
@@ -114,7 +114,7 @@ export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
 
 export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   const data: T = typeof spec.init === "function"
-    ? await (spec.init as InitFunction<T>)()
+    ? await (spec.init as InitFunction<T>)(spec)
     : spec.init ?? {} as T
 
   return data
