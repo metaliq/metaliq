@@ -5,7 +5,7 @@ import { up, Update } from "@metaliq/up"
 import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
-import { MetaView, view, ViewResult, viewWithFallback } from "./presentation"
+import { MetaView, view, ViewResult } from "./presentation"
 
 export { expander } from "./expander"
 export { AnimatedHideShow } from "./animated-hide-show"
@@ -31,7 +31,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
         .map(key => {
           const fieldMeta = m[key]
           if (isMetaArray(fieldMeta)) {
-            return metaCall(viewWithFallback(repeatView))(<unknown>fieldMeta as Meta<T[]>)
+            return metaCall(view(null, repeatView))(<unknown>fieldMeta as Meta<T[]>)
           } else {
             const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
             return view(itemView)(fieldMeta)
@@ -105,11 +105,11 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (value, 
         "mq-error-field": meta.$.state.error,
         "mq-disabled": disabled
       })}"
-      .value=${live(meta?.$?.parent?.$?.value[meta?.$?.key] ?? "")}
+      .value=${live(meta.$.value ?? "")}
       @focus=${up(onFocus, meta)}
       @blur=${up(onBlur(options), meta)}
       @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
-      .checked=${options.type === "checkbox" && primitiveValue(meta)}
+      .checked=${options.type === "checkbox" && meta.$.value}
     />
   `
 }
@@ -137,7 +137,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (va
     [`mq-${options.type || "text"}-field`]: true,
     "mq-mandatory": meta.$.state.mandatory,
     "mq-active": meta.$.state.active,
-    "mq-populated": !!primitiveValue(meta)
+    "mq-populated": !!meta.$.value
   })}" >
     ${!options.labelAfter ? fieldLabel(options)(value, meta) : ""}
     ${input({ type: "text", ...options })(value, meta)}
@@ -190,23 +190,14 @@ const onBlur = <T>(options: InputOptions<T>) => (meta: Meta<T>, event: Event) =>
 const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
   (meta: Meta<T>, event: Event) => {
     const target = <HTMLInputElement>event.target
-    setPrimitiveValue(
-      meta,
-      <unknown>(target.type === "checkbox"
-        ? target.checked
-        : type === "number"
-          ? parseFloat(target.value)
-          : target.value) as T
-    )
+    meta.$.value = <unknown>(target.type === "checkbox"
+      ? target.checked
+      : type === "number"
+        ? parseFloat(target.value)
+        : target.value) as T
     if (!unvalidated) validate(meta)
     if (doCommit && meta.$.parent) commit(meta.$.parent)
   }
-
-export const primitiveValue = (meta: Meta<any>) => meta?.$?.parent.$?.value?.[meta?.$?.key] || ""
-export const setPrimitiveValue = <T>(meta: Meta<T>, value: T) => {
-  const parentValue = meta?.$?.parent.$?.value
-  parentValue[meta?.$?.key] = value
-}
 
 export const errorsBlock: MetaView<any> = (v, m) => {
   m = m || meta(v)

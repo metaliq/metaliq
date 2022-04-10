@@ -347,7 +347,7 @@ export const metaCall = <T, P = any, C = any, R = any> (
       throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
     }
     const m = meta(on)
-    const value = (m.$.parent ? m.$.parent[m.$.key] : m.$.value) as MetaValue<T>
+    const value = m.$.value as MetaValue<T>
     return fn(value, m)
   }
 

@@ -1,4 +1,4 @@
-import { fieldKeys, Meta, metaCall, MetaFn, metafy, MetaSpec } from "../../meta"
+import { Meta, metaCall, MetaFn, metafy, MetaSpec } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -51,32 +51,25 @@ declare module "../../policy" {
 export type InitFunction<T> = ((spec?: MetaSpec<T>) => T) | ((spec?: MetaSpec<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 
-export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>): Promise<Meta<T>> {
+export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   let spec: MetaSpec<T>
-  let runMeta: Meta<T>
+  let meta: Meta<T>
   // Determine whether a spec or an initialised meta was passed
   if (typeof (<any>specOrMeta).$ === "object") {
-    runMeta = specOrMeta as Meta<T>
-    spec = runMeta.$.spec
+    meta = specOrMeta as Meta<T>
+    spec = meta.$.spec
   } else {
     spec = specOrMeta as MetaSpec<T>
     const value = await initSpecValue(spec)
-    runMeta = metafy(spec, value)
+    meta = metafy(spec, value)
   }
 
   const log = spec.log || false
   const local = spec.local || false
-  const start = await startUp({
-    review: (updatedMeta) => {
-      recursiveReview(updatedMeta?.$?.parent || updatedMeta)
-      review(runMeta)
-    },
-    log,
-    local
-  })
+  const start = await startUp({ review: () => { review(meta) }, log, local })
   await start()() // Initial call to `up`
 
-  return runMeta
+  return meta
 }
 
 export function review <T> (meta: Meta<T>) {
@@ -90,19 +83,6 @@ export function review <T> (meta: Meta<T>) {
   }
 }
 
-export function recursiveReview (meta: Meta<any>) {
-  review(meta)
-  for (const key of fieldKeys(meta?.$?.spec)) {
-    const childMeta = meta[key]
-    if (Array.isArray(childMeta)) {
-      review(childMeta as unknown as Meta<any>)
-      childMeta.forEach(recursiveReview)
-    } else {
-      recursiveReview(meta[key] as Meta<any>)
-    }
-  }
-}
-
 export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
   if (!meta.$.spec.review) {
     meta.$.spec.review = []
@@ -112,7 +92,7 @@ export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
   meta.$.spec.review.push(review)
 }
 
-export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
+async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   const data: T = typeof spec.init === "function"
     ? await (spec.init as InitFunction<T>)(spec)
     : spec.init ?? {} as T

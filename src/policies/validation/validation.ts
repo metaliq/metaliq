@@ -2,7 +2,6 @@ import { fieldKeys, Meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../
 import { Policy } from "../../policy"
 import { addReview } from "../application/application"
 import { labelOrKey } from "../terminology/terminology"
-import { primitiveValue } from "../presentation/widgets"
 
 export interface ValidationSpec<T, P = any, C = any> {
   validator?: Validator<T, P, C>
@@ -118,7 +117,7 @@ export function validate (meta: Meta<any>) {
 }
 
 export function hasValue (meta: Meta<any>) {
-  const value = primitiveValue(meta)
+  const value = meta.$.value
   return !(value === "" || (value ?? null) === null)
 }
 

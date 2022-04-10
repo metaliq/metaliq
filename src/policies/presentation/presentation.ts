@@ -115,16 +115,3 @@ export function view <T, P = any, C = any> (
     }
   }
 }
-
-/**
- * Get a ViewResult for the given meta or its value proxy using its specified view
- * or the given fallback if no spec view present.
- */
-export const viewWithFallback =
-  <T, P = any, C = any>(fallback: MetaViewTerm<T, P, C>): MetaFn<any, any, any, ViewResult> =>
-    (v, m) => {
-      m = m || meta(v)
-      return m.$.spec.view
-        ? view(m.$.spec.view)(v, m)
-        : view(fallback)(v, m)
-    }
