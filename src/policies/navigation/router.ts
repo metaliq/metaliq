@@ -1,8 +1,12 @@
-import { match, compile, MatchFunction, PathFunction } from "path-to-regexp"
+import { compile, match, MatchFunction, PathFunction } from "path-to-regexp"
 import { EndoFunction, objectTransformer } from "../../util/util"
 
-export type ParamsGetter<T> = ((data: any) => T)
 export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => void
+/**
+ * RouteHandler is a function with parameters typed to the route path and search query.
+ * It can be synchronous or asynchronous.
+ * In either case, if it returns boolean literal `false` navigation is cancelled.
+ */
 export type RouteHandler<P, Q = any> = (routeParams: P, queryParams?: Q) => any
 
 /**
@@ -14,30 +18,32 @@ export type RouteHandler<P, Q = any> = (routeParams: P, queryParams?: Q) => any
  */
 export type Route<P extends object, Q = any> = {
   pattern: string
-  on?: RouteHandler<P, Q> // Optionally initialised on creation or added later
+  onEnter?: RouteHandler<P, Q> // Performed on entering the route
+  onLeave?: RouteHandler<P, Q> // Performed on leaving the route, return false to cancel
   match: MatchFunction<P> // Matcher for the route's given pattern
   make: PathFunction<P> // Function to construct a route of the given pattern
   go: RouteGoer<P, Q> // Function to go to the given route
   router?: Router
-  data?: any // A data object stored with the route that is passed into the parameter getter on `go`
 }
 
 /**
- * Create a route for the given pattern, optionally with a given route handler.
+ * Create a route for the given pattern.
  */
-export function route<P extends object, Q extends object = any> (pattern: string, on?: RouteHandler<P>): Route<P, Q> {
+export function route<P extends object, Q extends object = any> (pattern: string): Route<P, Q> {
   return {
     pattern,
-    on,
-    go: function (pathParams?, queryParams?) {
-      // TODO: Allow pathParams and queryParams to be a getter with this.data
-      const slashedParams = (this.router.currentRoute || this).match(location.pathname)?.params
-      const currentPathParams = deSlashObject(slashedParams || {})
-      const pathObj = Object.assign(currentPathParams, pathParams)
+    go: async function (pathParams?, queryParams?) {
+      const leave = await this.router.canLeave()
+      if (leave === false) {
+        if (this.onHandled) this.onHandled()
+        return
+      }
+      const preservePathParams = this.currentRoute?.match(location.pathname)?.params
+      const pathObj = deSlashObject(Object.assign(preservePathParams, pathParams))
       const path = (<Route<P, Q>> this).make(pathObj)
-      const queryObj = Object.assign(searchToObject(location.search), queryParams)
+      const queryObj = deSlashObject(Object.assign(queryToObject(), queryParams))
       const hasQuery = !!Object.keys(queryObj).length
-      const query = hasQuery ? `?${objectToSearch(queryParams)}` : ""
+      const query = hasQuery ? `?${objectToQuery(queryParams)}` : ""
 
       history.pushState(null, null, `${path}${query}`)
       window.dispatchEvent(new PopStateEvent("popstate"))
@@ -64,24 +70,40 @@ export class Router {
     this.onHandled = onHandled
   }
 
+  oldLocation: { pathParams: any, query: any } = null
+
+  async canLeave () {
+    if (typeof this.currentRoute?.onLeave === "function") {
+      const leave = await this.currentRoute.onLeave(
+        this.oldLocation?.pathParams || {},
+        this.oldLocation?.query || {}
+      )
+      return leave
+    }
+  }
+
   async onPathChange () {
-    const path = location.pathname
     for (const route of this.routes) {
-      const urlMatch = route.match(path)
+      const urlMatch = route.match(location.pathname)
       if (urlMatch) {
-        this.currentRoute = route
         if (!Router.disabled) {
-          await route.on(urlMatch.params, searchToObject(location.search))
+          const pathParams = urlMatch.params
+          const query = queryToObject()
+          if (typeof route.onEnter === "function") {
+            const enter = await route.onEnter(pathParams, query)
+            if (enter === false) return
+          }
           if (this.onHandled) this.onHandled()
+          this.oldLocation = { pathParams, query }
         }
+        this.currentRoute = route
         return
       }
     }
-    console.warn(`Unrecognised route: ${path}`)
+    console.warn(`Unrecognised route: ${location.pathname}`)
   }
 
-  // Proxy the async path change method to a valid event handler
-
+  // Proxy the async path change method to a valid (sync) event handler
   handler = () => {
     this.onPathChange().catch(e => { throw e })
   }
@@ -89,7 +111,7 @@ export class Router {
   async start () {
     window.addEventListener("popstate", this.handler)
     await this.onPathChange()
-    return this // Enable router = await new Router().start()
+    return this // Enable `router = await new Router().start()`
   }
 
   stop () {
@@ -102,12 +124,11 @@ export class Router {
  * URL query parameters are best dealt with separately from route patterns, as they should be valid in any order.
  * Instead, get them (within route `on` handling) and set them with these functions.
  */
-
 export function getQueryParam (name: string) {
   return new URLSearchParams(location.search).get(name)
 }
 
-function objectToSearch (params?: object) {
+function objectToQuery (params?: object) {
   const urlParams = new URLSearchParams()
   for (const [key, value] of Object.entries(params || {})) {
     urlParams.set(key, value)
@@ -115,7 +136,8 @@ function objectToSearch (params?: object) {
   return urlParams.toString()
 }
 
-function searchToObject (search: string) {
+function queryToObject (search?: string) {
+  search = search || location.search
   const urlSearchParams = new URLSearchParams(search)
   const result: any = {}
   for (const [key, value] of urlSearchParams.entries()) {
