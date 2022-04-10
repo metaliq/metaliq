@@ -67,9 +67,14 @@ export type MetaInfo<T, P = any, C = any> = {
   state: Policy.State<T, P>
 
   /**
-   * The underlying data value.
+   * The underlying data value getter / setter.
    */
   value?: T | MetaValue<T>
+
+  /**
+   * The internal (potentially transient) version of the data value.
+   */
+  transVal?: T
 
   /**
    * The values of calculated fields.
@@ -171,11 +176,21 @@ export function metafy <T, P = any> (
   // Create contextual meta information object
   const $: MetaInfo<T, P> = {
     spec,
-    value,
     parent,
     key,
     state: proto?.$?.state || {},
-    calcs: {}
+    calcs: {},
+    transVal: value,
+    get value () {
+      if (typeof this.transVal === "object" || !this.parent) {
+        return this.transVal
+      } else {
+        return this.parent[this.key].$.transVal
+      }
+    },
+    set value (val) {
+      this.meta.reset(val)
+    }
   }
   const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 

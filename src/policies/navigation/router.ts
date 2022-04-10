@@ -32,14 +32,14 @@ export type Route<P extends object, Q = any> = {
 export function route<P extends object, Q extends object = any> (pattern: string): Route<P, Q> {
   return {
     pattern,
-    go: async function (pathParams?, queryParams?) {
+    async go (pathParams?, queryParams?) {
       const leave = await this.router.canLeave()
       if (leave === false) {
         if (this.onHandled) this.onHandled()
         return
       }
       const preservePathParams = this.currentRoute?.match(location.pathname)?.params
-      const pathObj = deSlashObject(Object.assign(preservePathParams, pathParams))
+      const pathObj = deSlashObject(Object.assign({}, preservePathParams, pathParams))
       const path = (<Route<P, Q>> this).make(pathObj)
       const queryObj = deSlashObject(Object.assign(queryToObject(), queryParams))
       const hasQuery = !!Object.keys(queryObj).length

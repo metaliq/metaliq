@@ -108,11 +108,10 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   const navModel = {} as T
   for (const key of fieldKeys(spec)) {
     const childSpec = spec.fields?.[key] as unknown as MetaSpec<unknown>
-    if (childSpec.fields) { // Branch node - recurse
-      mapNavModel(model)(childSpec)
-    } else { // Leaf node - assign logical model
-      Object.assign(navModel, { [key]: model })
-    }
+    const keyModel = childSpec.fields
+      ? mapNavModel(model)(childSpec)
+      : model
+    Object.assign(navModel, { [key]: keyModel })
   }
   return navModel
 }
