@@ -1,7 +1,7 @@
 import { Route, RouteHandler, Router } from "./router"
-import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec } from "../../meta"
-import { up } from "@metaliq/up"
+import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
+import { up } from "../../../../up"
 
 export { route } from "./router"
 
@@ -31,7 +31,7 @@ export interface NavigationSpec<T, P = any, C = any, RP extends object = any, RQ
 }
 
 export type NavigationType = {
-  onNavigate?: (from: Meta<any>, to: Meta<any>) => MaybeReturn<boolean>
+  onNavigate?: (to: Meta<any>) => MaybeReturn<boolean>
 }
 
 export interface NavigationState {
@@ -69,9 +69,23 @@ metaSetups.push(meta => {
     if (typeof spec.onLeave === "function") {
       spec.route.onLeave = metaCall(spec.onLeave)(meta)
     }
-    if (typeof spec.onEnter === "function") {
-      spec.route.onEnter = metaCall(spec.onEnter)(meta)
+    spec.route.onEnter = async (pathParams, query) => {
+      if (typeof spec.onEnter === "function") {
+        const routeResult = await metaCall(spec.onEnter)(meta)(pathParams, query)
+        if (routeResult === false) return false
+      }
+      const navType = meta.$.parent?.$.spec.navType
+      if (typeof navType?.onNavigate === "function") {
+        const navTypeResult = navType.onNavigate(meta)
+        if (navTypeResult === false) return false
+      }
+      reset(meta)
     }
+  }
+  // If this is a nav container, set initial selection
+  if (meta.$.spec.navType) {
+    meta.$.state.nav = meta.$.state.nav || { selected: null }
+    meta.$.state.nav.selected = fieldKeys(meta.$.spec)[0]
   }
   // If this is the top-level meta and has routes specified then initialise navigation
   if (!meta.$.parent) {
@@ -90,14 +104,7 @@ metaSetups.push(meta => {
       router.catch(console.error)
     }
   }
-  // If this is a nav container, select first item
-  if (meta.$.spec.navType) {
-    meta.$.state.nav = meta.$.state.nav || { selected: null }
-    meta.$.state.nav.selected = fieldKeys(meta.$.spec)[0]
-  }
 })
-
-export const freeNavigation: NavigationType = {}
 
 /**
  * Convenience method to map all nodes of a navigation model
@@ -114,4 +121,16 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
     Object.assign(navModel, { [key]: keyModel })
   }
   return navModel
+}
+
+export const selectItem = (meta: Meta<any>) => {
+  const parent = meta.$.parent
+  if (parent?.$.spec.navType) {
+    parent.$.state.nav.selected = meta.$.key
+    selectItem(parent)
+  }
+}
+
+export const freeNavigation: NavigationType = {
+  onNavigate: selectItem
 }
