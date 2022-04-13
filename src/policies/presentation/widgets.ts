@@ -23,7 +23,7 @@ export type MetaFormOptions<T> = {
 export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v, m) => {
   m = m || meta(v)
   return html`
-    <div class="${!options.baseClass ?? "mq-form"} ${options.classes || ""}" >
+    <div class="${options.baseClass ?? "mq-form"} ${options.classes || ""}" >
       ${fieldKeys(m?.$.spec)
         .filter(key =>
           (!options.include || options.include.includes(key)) &&
@@ -59,7 +59,7 @@ export const repeatView: MetaView<any[]> = (v, m) => {
 const defaultFieldView = <T> (meta: Meta<T>): MetaView<T> => {
   if (!meta) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
-  } else if (typeof meta.$.value === "object") {
+  } else if (meta.$.value && typeof meta.$.value === "object") {
     return metaForm()
   } else if (typeof meta.$.value === "boolean") {
     return <unknown>checkboxField() as MetaView<T>

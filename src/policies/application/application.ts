@@ -1,4 +1,4 @@
-import { Meta, metaCall, MetaFn, metafy, MetaSpec } from "../../meta"
+import { Meta, metaCall, MetaFn, metafy, MetaSpec, reset } from "../../meta"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -66,7 +66,7 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
 
   const log = spec.log || false
   const local = spec.local || false
-  const start = await startUp({ review: () => { review(meta) }, log, local })
+  const start = await startUp({ review: () => { reset(meta); review(meta) }, log, local })
   await start()() // Initial call to `up`
 
   return meta
