@@ -11,6 +11,7 @@ export { expander } from "./expander"
 export { AnimatedHideShow } from "./animated-hide-show"
 
 export type MetaFormOptions<T> = {
+  baseClass?: string // Base class defaults to mq-form
   classes?: string
   include?: Array<FieldKey<T>>
   exclude?: Array<FieldKey<T>>
@@ -22,7 +23,7 @@ export type MetaFormOptions<T> = {
 export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v, m) => {
   m = m || meta(v)
   return html`
-    <div class="mq-form ${options.classes || ""}" >
+    <div class="${!options.baseClass ?? "mq-form"} ${options.classes || ""}" >
       ${fieldKeys(m?.$.spec)
         .filter(key =>
           (!options.include || options.include.includes(key)) &&
