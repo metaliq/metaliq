@@ -39,7 +39,7 @@ export type ChannelCall<M> = (msg: M) => any
  * (a) Create a partially applied function that will call the channel and
  * (b) Use call (either directly or via partial application) from `up`.
  */
-export const call = <T, P, C, M> (channel: MetaFn<T, P, C, ChannelCall<M>>) => (msg: M) => {
+export const call = <T, P, C, M> (channel: MetaFn<T, P, C, ChannelCall<M>>) => (msg?: M) => {
   const meta = policy.channelMap.get(channel) as Meta<T, P>
   if (meta) return metaCall(channel)(meta)(msg)
 }
