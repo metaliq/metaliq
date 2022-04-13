@@ -74,7 +74,7 @@ export type MetaInfo<T, P = any, C = any> = {
   /**
    * The internal (potentially transient) version of the data value.
    */
-  transVal?: T
+  _value?: T
 
   /**
    * The values of calculated fields.
@@ -180,16 +180,16 @@ export function metafy <T, P = any> (
     key,
     state: proto?.$?.state || {},
     calcs: {},
-    transVal: value,
+    _value: value,
     get value () {
-      if (typeof this.transVal === "object" || !this.parent) {
-        return this.transVal
+      if (typeof this._value === "object" || !this.parent) {
+        return this._value
       } else {
-        return this.parent[this.key].$.transVal
+        return this.parent[this.key].$._value
       }
     },
     set value (val) {
-      this.meta.reset(val)
+      reset(this.meta, val)
     }
   }
   const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
