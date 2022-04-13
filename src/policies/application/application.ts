@@ -92,7 +92,7 @@ export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
   meta.$.spec.review.push(review)
 }
 
-async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
+export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   const data: T = typeof spec.init === "function"
     ? await (spec.init as InitFunction<T>)(spec)
     : spec.init ?? {} as T
