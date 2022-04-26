@@ -69,7 +69,7 @@ export const renderPage: MetaFn<any> = (value, meta) => {
 /**
  * Get a ViewResult for the given meta.
  * If the view is not specified, will fall back to the spec view.
- * Calling `view(myView)(myValue, myMeta)` has several advantages over calling `myView(myValue, myMeta)`:
+ * Calling `view(myView)(myValue, myMeta?)` has several advantages over calling `myView(myValue, myMeta)`:
  *
  * First, it can accommodate either a single view or an array of views - enabling the
  * view term of a meta to accomodate multiple views.
@@ -82,9 +82,8 @@ export const renderPage: MetaFn<any> = (value, meta) => {
  * ```
  * view()(myValue) // View myValue with the view from the spec, if present
  * view(maybeView)(myValue) // View using maybeView if present, otherwise nothing (no fallback)
- * view(maybeView, false)(myValue) // As above - View using maybeView if it exists, otherwise nothing
- * view(maybeView, true)(myValue) // View myValue with maybeView if it exists, else view from spec if present
  * view(null, maybeView)(myValue) // Use the view from the spec if present, else fall back to maybeView
+ * view(maybeView, true)(myValue) // View myValue with maybeView if it exists, else view from spec if present
  * view(maybeView, otherView)(myValue) // View myValue with maybeView if it exists, else use otherView (no fallback to spec view)
  * ```
  */

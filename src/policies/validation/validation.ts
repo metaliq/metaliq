@@ -56,23 +56,32 @@ metaSetups.push(<T>(meta: Meta<T>) => {
     ? { error: false, validated: false } // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
     : {}
 
+  const addDynamic = (meta: Meta<T>, name: string, getter: MetaFn<T>) => {
+    Object.defineProperty(meta.$.state, name, {
+      enumerable: true,
+      get () {
+        return getter(meta.$.value, meta)
+      }
+    })
+  }
+
   const hiddenSpec = meta.$.spec.hidden
   if (typeof hiddenSpec === "function") {
-    addReview(meta, (value, meta) => { meta.$.state.hidden = hiddenSpec(value, meta) })
+    addDynamic(meta, "hidden", hiddenSpec)
   } else if (typeof hiddenSpec === "boolean") {
     state.hidden = hiddenSpec
   }
 
   const disabledSpec = meta.$.spec.disabled
   if (typeof disabledSpec === "function") {
-    addReview(meta, (value, meta) => { meta.$.state.disabled = disabledSpec(value, meta) })
+    addDynamic(meta, "disabled", disabledSpec)
   } else if (typeof disabledSpec === "boolean") {
     state.disabled = disabledSpec
   }
 
   const mandatorySpec = meta.$.spec.mandatory
   if (typeof mandatorySpec === "function") {
-    addReview(meta, (value, meta) => { meta.$.state.mandatory = mandatorySpec(value, meta) })
+    addDynamic(meta, "mandatory", mandatorySpec)
   } else if (typeof mandatorySpec === "boolean") {
     state.mandatory = mandatorySpec
   }

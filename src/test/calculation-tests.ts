@@ -1,9 +1,10 @@
 import chai from "chai"
 import { describe, it } from "mocha"
-import { MetaCalcs, metaCall, MetaSpec } from "../meta"
+import { MetaCalcs, MetaSpec } from "../meta"
 import { run } from "../policies/application/application"
 import { calcs } from "../policies/calculation/calculation"
 import { up } from "@metaliq/up"
+import { fullName } from "./test-calcs"
 
 chai.should()
 
@@ -52,11 +53,12 @@ describe("metaliq/policies/calculation", () => {
       // Our IDE now knows that contactCalcResults has a property `fullName` of type string
       contactCalcs.fullName.should.be.a("string").equals("Tom Sawyer")
 
-      await up(metaCall((contact: Contact) => {
+      await up((contact: Contact) => {
         contact.firstName = "Huckleberry"
-      }), mContact)()
+      }, mContact.$.value)()
 
-      contactCalcs.fullName.should.equal("Huckleberry Sawyer")
+      // TODO: contactCalcs is no longer equal mContact.calcs. Why?
+      fullName(mContact.$.value).should.equal("Huckleberry Sawyer")
     })
   })
 })

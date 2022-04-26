@@ -113,7 +113,7 @@ export const metaSetups: Array<MetaSetup<any>> = []
 function setupMeta (meta: Meta<any>) {
   for (const maker of metaSetups) {
     const state = maker(meta) || {}
-    meta.$.state = Object.assign({}, state, meta.$.state) // Preserve any predefined state, for example from serialisation
+    Object.assign(meta.$.state, state)
   }
 }
 

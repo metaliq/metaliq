@@ -1,5 +1,25 @@
-import { MetaSpec } from "../meta"
-import { Application, Contact, ContactCalcs } from "./test-types"
+import { MetaSpec, parent } from "../meta"
+import { Address, Application, Contact, ContactCalcs } from "./test-types"
+
+export const emptyContact = (): Contact => ({
+  age: null,
+  firstName: "",
+  lastName: ""
+})
+
+export const emptyAddress = (): Address => ({
+  streetNumber: "",
+  streetName: "",
+  suburb: "",
+  state: "",
+  postcode: ""
+})
+
+export const emptyApplication = (): Application => ({
+  applicant: emptyContact(),
+  deliveryAddress: emptyAddress(),
+  billingAddress: null
+})
 
 export const contactSpec: MetaSpec<Contact, any, ContactCalcs> = {
   calcs: {
@@ -15,8 +35,13 @@ export const contactSpec: MetaSpec<Contact, any, ContactCalcs> = {
     },
     age: {
       label: "Age"
+    },
+    isSelfEmployed: {
+      label: "Is Self-Employed",
+      hidden: (_, contact) => parent(contact).age < 18
     }
-  }
+  },
+  init: emptyContact
 }
 
 export const applicationSpec: MetaSpec<Application> = {
@@ -32,13 +57,5 @@ export const applicationSpec: MetaSpec<Application> = {
       }
     }
   },
-  init: {
-    applicant: {
-      firstName: "",
-      lastName: "",
-      age: null
-    },
-    billingAddress: {},
-    deliveryAddress: {}
-  }
+  init: emptyApplication
 }

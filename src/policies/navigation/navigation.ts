@@ -1,7 +1,7 @@
 import { Route, RouteHandler, Router } from "./router"
-import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
+import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec } from "../../meta"
 import { MaybeReturn } from "../../util/util"
-import { up } from "../../../../up"
+import { up } from "@metaliq/up"
 
 export { route } from "./router"
 
@@ -79,7 +79,6 @@ metaSetups.push(meta => {
         const navTypeResult = navType.onNavigate(meta)
         if (navTypeResult === false) return false
       }
-      reset(meta)
     }
   }
   // If this is a nav container, set initial selection
