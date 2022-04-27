@@ -10,11 +10,19 @@ import { fieldError } from "./widgets"
 import { label } from "../terminology/terminology"
 
 export type DatePickerOptions = {
-  caption?: string
   classes?: string
   labelTrigger?: boolean
   disable?: DateLimit[]
-  dateFormat?: string
+
+  /**
+   * Display format for input field, using flatpickr formatting as per https://flatpickr.js.org/formatting/
+   */
+  displayFormat?: string
+
+  /**
+   * Value storage format, using flatpickr formatting as per https://flatpickr.js.org/formatting/
+   */
+  valueFormat?: string
 }
 
 export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, meta) => html`
@@ -33,13 +41,13 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
         () => {
           flatpickr(`#${id}`, {
             onClose (selectedDates, dateStr) {
-              value = dateStr
-              meta.$.value = dateStr
+              value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
+              meta.$.value = value
               up(validate, meta)()
             },
-            defaultDate: value || "",
+            defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
             disable: options.disable || [],
-            dateFormat: options.dateFormat || "Y-m-d",
+            dateFormat: options.displayFormat || "Y-m-d",
             disableMobile: true
           })
         },
@@ -52,3 +60,6 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
     ${fieldError(value, meta)}
   </label>
 `
+
+export const formatDate = flatpickr.formatDate
+export const parseDate = flatpickr.parseDate
