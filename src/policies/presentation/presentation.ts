@@ -5,26 +5,26 @@ import { label } from "../terminology/terminology"
 import { animatedHideShow } from "./animated-hide-show"
 import { review } from "../application/application"
 
-export interface PresentationSpec<T, P, C> {
+export interface PresentationSpec<T, P> {
   /**
    * The primary view associated with this specification.
    */
-  view?: MetaViewTerm<T, P, C>
+  view?: MetaViewTerm<T, P>
 
   /**
    * An auxiliary view, such as for a contextual control zone.
    */
-  controlView?: MetaViewTerm<T, P, C>
+  controlView?: MetaViewTerm<T, P>
 
   /**
    * An auxiliary view, such as for a contextual status zone.
    */
-  statusView?: MetaViewTerm<T, P, C>
+  statusView?: MetaViewTerm<T, P>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P, C> extends PresentationSpec<T, P, C> { }
+    interface Specification<T, P> extends PresentationSpec<T, P> { }
   }
 }
 
@@ -34,8 +34,8 @@ declare module "../../policy" {
 export type SingularResult = TemplateResult | string
 export type ViewResult = SingularResult | ViewResult[]
 export type View<T> = (model: T) => ViewResult
-export type MetaView<T, P = any, C = any> = MetaFn<T, P, C, ViewResult>
-export type MetaViewTerm<T, P = any, C = any> = MetaView<T, P, C> | Array<MetaView<T, P, C>>
+export type MetaView<T, P = any> = MetaFn<T, P, ViewResult>
+export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
@@ -87,9 +87,9 @@ export const renderPage: MetaFn<any> = (value, meta) => {
  * view(maybeView, otherView)(myValue) // View myValue with maybeView if it exists, else use otherView (no fallback to spec view)
  * ```
  */
-export function view <T, P = any, C = any> (
-  metaView?: MetaViewTerm<T, P, C>, fallback?: boolean | MetaViewTerm<T, P, C>
-): MetaFn<T, P, C, ViewResult> {
+export function view <T, P = any> (
+  metaView?: MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
+): MetaFn<T, P, ViewResult> {
   const fallbackToSpec = arguments.length === 0 || fallback === true
 
   return (v, m) => {

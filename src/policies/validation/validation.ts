@@ -1,13 +1,12 @@
 import { fieldKeys, Meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
 import { Policy } from "../../policy"
-import { addReview } from "../application/application"
 import { labelOrKey } from "../terminology/terminology"
 
-export interface ValidationSpec<T, P = any, C = any> {
-  validator?: Validator<T, P, C>
-  mandatory?: boolean | MetaFn<T, P, C, boolean>
-  disabled?: boolean | MetaFn<T, P, C, boolean>
-  hidden?: boolean | MetaFn<T, P, C, boolean>
+export interface ValidationSpec<T, P = any> {
+  validator?: Validator<T, P>
+  mandatory?: boolean | MetaFn<T, P, boolean>
+  disabled?: boolean | MetaFn<T, P, boolean>
+  hidden?: boolean | MetaFn<T, P, boolean>
 }
 
 export interface ValidationState {
@@ -23,11 +22,11 @@ export interface ValidationState {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P, C> extends ValidationSpec<T, P, C> {
+    interface Specification<T, P> extends ValidationSpec<T, P> {
     }
 
-    interface State<T, P, C> extends ValidationState {
-      this?: State<T, P, C>
+    interface State<T, P> extends ValidationState {
+      this?: State<T, P>
     }
   }
 }
@@ -43,13 +42,13 @@ declare module "../../policy" {
  * Note also that if a validator function does not return a value
  * (i.e. return is undefined), no error is reported.
  */
-export type Validator<T, P = any, C = any> = MetaFn<T, P, C, ValidationResult>
+export type Validator<T, P = any> = MetaFn<T, P, ValidationResult>
 export type ValidationResult = string | boolean
 
 /**
  * A constraint takes any type of configuration parameter(s) and returns a validator function.
  */
-export type Constraint<T, P = any, C = any> = (...params: any[]) => Validator<T, P, C>
+export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
 metaSetups.push(<T>(meta: Meta<T>) => {
   const state: Policy.State<T> = meta.$.spec.validator
@@ -93,10 +92,10 @@ metaSetups.push(<T>(meta: Meta<T>) => {
  * Establish a function for mandatory field errors.
  * See src for a basic example of an English language error.
  */
-export function setRequiredLabel (fn: MetaFn<any, any, any, string>) {
+export function setRequiredLabel (fn: MetaFn<any, any, string>) {
   requiredLabelFn = fn
 }
-let requiredLabelFn: MetaFn<any, any, any, string> = (value, meta) =>
+let requiredLabelFn: MetaFn<any, any, string> = (value, meta) =>
   `${(meta ? labelOrKey(meta) : false) || "This field"} is required`
 
 /**

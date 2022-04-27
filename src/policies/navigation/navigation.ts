@@ -5,7 +5,7 @@ import { up } from "@metaliq/up"
 
 export { route } from "./router"
 
-export interface NavigationSpec<T, P = any, C = any, RP extends object = any, RQ = any> {
+export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
   /**
    * Route object associated with this specification.
    */
@@ -14,8 +14,8 @@ export interface NavigationSpec<T, P = any, C = any, RP extends object = any, RQ
   /**
    * Meta functions for application navigation events.
    */
-  onEnter?: MetaFn<T, P, C, RouteHandler<RP, RQ>>
-  onLeave?: MetaFn<T, P, C, RouteHandler<RP, RQ>>
+  onEnter?: MetaFn<T, P, RouteHandler<RP, RQ>>
+  onLeave?: MetaFn<T, P, RouteHandler<RP, RQ>>
 
   /**
    * Initial path for the top level spec,
@@ -43,10 +43,10 @@ export interface NavigationState {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P, C> extends NavigationSpec<T, P, C> {}
+    interface Specification<T, P> extends NavigationSpec<T, P> {}
 
-    interface State<T, P, C> {
-      this?: State<T, P, C>
+    interface State<T, P> {
+      this?: State<T, P>
       nav?: NavigationState
     }
   }

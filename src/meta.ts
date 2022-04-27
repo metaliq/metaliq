@@ -5,7 +5,7 @@ import { MaybeReturn } from "./util/util"
  * A Meta object with underlying value of type T,
  * optionally within parent of type P.
  */
-export type Meta<T, P = any, C = any> = MetaFields<T> & Meta$<T, P, C>
+export type Meta<T, P = any> = MetaFields<T> & Meta$<T, P>
 
 /**
  * The mapped fields component of a Meta object.
@@ -32,13 +32,13 @@ export type MetaArray<T, P = any> = Array<Meta<T, P>> & Meta$<T[], P>
  * An object that has a $ link to meta information.
  * Both Meta and MetaArray implement this type.
  */
-export type Meta$<T, P = any, C = any> = { $: MetaInfo<T, P, C> }
+export type Meta$<T, P = any> = { $: MetaInfo<T, P> }
 
 /**
  * Dollar property containing additional info.
  * This is the full meta-structure for non-object types.
  */
-export type MetaInfo<T, P = any, C = any> = {
+export type MetaInfo<T, P = any> = {
   /**
    * Link to the meta object or array containing this $ property.
    * Useful for backlinks from object values.
@@ -76,30 +76,18 @@ export type MetaInfo<T, P = any, C = any> = {
    */
   _value?: T
 
-  /**
-   * The values of calculated fields.
-   */
-  calcs: C
-}
-
-/**
- * Type for calculated field functions for a Meta object.
- */
-export type MetaCalcs<T, P = any, C = any> = {
-  [K in FieldKey<C>]: MetaFn<T, P, C, C[K]>
 }
 
 /**
  * Specification for a given Type and optional Parent.
  */
-export type MetaSpec<T, P = any, C = any> = Policy.Specification<T, P, C> & {
+export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
   fields?: T extends any[]
     ? never
     : { [K in FieldKey<T>]?: MetaSpec<T[K], T> }
   items?: T extends Array<infer I>
     ? MetaSpec<I>
     : never
-  calcs?: MetaCalcs<T, P, C>
 }
 
 /**
@@ -179,7 +167,6 @@ export function metafy <T, P = any> (
     parent,
     key,
     state: proto?.$?.state || {},
-    calcs: {},
     _value: value,
     get value () {
       if (typeof this._value === "object" || !this.parent) {
@@ -303,11 +290,11 @@ export const m$ = <T>(value: T | Meta<T>): MetaInfo<T> => (<unknown>value as Met
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T, P = any, C = any> (value: T | MetaValue<T, P, C> | Meta<T, P, C>) => {
+export const meta = <T, P = any> (value: T | MetaValue<T, P> | Meta<T, P>) => {
   if (!(value ?? false) || typeof value !== "object") {
     throw new Error(`Attempt to obtain meta from primitive value: ${value}`)
   }
-  return m$(value)?.meta as Meta<T, P, C>
+  return m$(value)?.meta as Meta<T, P>
 }
 
 /**
@@ -323,7 +310,7 @@ export const isMetaArray = (m: Meta<any> | MetaArray<any>): m is MetaArray<any> 
 /**
  * Shortcut to a proxy object for the parent.
  */
-export const parent = <T extends object, P = any, C = any> (m: T | Meta<T, P, C>) => meta(m)?.$?.parent?.$.value
+export const parent = <T extends object, P = any> (m: T | Meta<T, P>) => meta(m)?.$?.parent?.$.value
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -343,21 +330,21 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
  * which works on a single parameter of the underlying data type.
  * The second parameter is the associated object from the meta-graph.
  */
-export type MetaFn<T, P = any, C = any, R = any> = (value: T | MetaValue<T, P, C>, meta?: Meta<T, P, C>) => R
+export type MetaFn<T, P = any, R = any> = (value: T | MetaValue<T, P>, meta?: Meta<T, P>) => R
 
 /**
  * The underlying value, either a primitive value or an object enhanced with the meta info.
  */
-export type MetaValue<T, P = any, C = any> = T extends object ? T & Meta$<T, P, C> : T
+export type MetaValue<T, P = any> = T extends object ? T & Meta$<T, P> : T
 
 /**
  * Shortcut to call a metaFn with both parameters
  * by passing just the Meta or the MetaValue of an object type.
  * This is intended for use at the policy level.
  */
-export const metaCall = <T, P = any, C = any, R = any> (
-  fn: MetaFn<T, P, C, R>
-) => (on: T | Meta<T, P, C>): R => {
+export const metaCall = <T, P = any, R = any> (
+  fn: MetaFn<T, P, R>
+) => (on: T | Meta<T, P>): R => {
     if (typeof (on ?? false) !== "object") {
       throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
     }

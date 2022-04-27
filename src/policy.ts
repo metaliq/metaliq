@@ -12,11 +12,11 @@
  */
 
 export declare namespace Policy {
-  export interface Specification<T, P = any, C = any> {
+  export interface Specification<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
      */
-    this?: Specification<T, P, C>
+    this?: Specification<T, P>
 
     /**
      * Register of policy string literals.
@@ -24,10 +24,10 @@ export declare namespace Policy {
     policies?: string[]
   }
 
-  export interface State<T, P = any, C = any> {
+  export interface State<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
      */
-    this?: State<T, P, C>
+    this?: State<T, P>
   }
 }

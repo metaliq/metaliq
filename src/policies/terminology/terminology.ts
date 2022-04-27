@@ -1,25 +1,25 @@
 import { getSpecValue, Meta, MetaFn } from "../../meta"
 
-export interface TerminologySpec<T, P = any, C = any> {
+export interface TerminologySpec<T, P = any> {
   /**
    * Primary identifying label.
    */
-  label?: string | MetaFn<T, P, C, string>
+  label?: string | MetaFn<T, P, string>
 
   /**
    * Additional descriptive text.
    */
-  helpText?: string | MetaFn<T, P, C, string>
+  helpText?: string | MetaFn<T, P, string>
 
   /**
    * Symbolic indicator (such as an icon class).
    */
-  symbol?: string | MetaFn<T, P, C, string>
+  symbol?: string | MetaFn<T, P, string>
 }
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P, C> extends TerminologySpec<T, P, C> {}
+    interface Specification<T, P> extends TerminologySpec<T, P> {}
   }
 }
 

@@ -3,7 +3,6 @@ import { describe } from "mocha"
 import { review, run } from "../policies/application/application"
 import { applicationSpec } from "./test-specs"
 import { up } from "@metaliq/up"
-import { calcs } from "../policies/calculation/calculation"
 import { meta } from "../meta"
 
 chai.should()
@@ -24,7 +23,5 @@ describe("Application state processing", () => {
 
     // Would happen in any `view` of the applicant
     review(meta(value.applicant))
-
-    calcs(value.applicant).fullName.should.be.a("string").equal("Tim Stewart")
   })
 })

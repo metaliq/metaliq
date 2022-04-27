@@ -8,7 +8,7 @@ import { label } from "../terminology/terminology"
 
 export type StepLabel = string | boolean
 
-export interface WizardSpec<T, P = any, C = any> {
+export interface WizardSpec<T, P = any> {
   wizard?: {
     /**
      * Set this to allow selection of any step at any time without validation.
@@ -20,17 +20,17 @@ export interface WizardSpec<T, P = any, C = any> {
      * A function to run on completion of the step.
      * If it returns boolean `false` then navigation will not proceed.
      */
-    onComplete?: MetaFn<T, P, C>
+    onComplete?: MetaFn<T, P>
 
     /**
      * Override the default label, or set to empty to hide the button.
      */
-    forwardsLabel?: StepLabel | MetaFn<T, P, C, StepLabel>
+    forwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
 
     /**
      * Override the default label, or set to empty to hide the button.
      */
-    backwardsLabel?: StepLabel | MetaFn<T, P, C, StepLabel>
+    backwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
   }
 }
 
@@ -41,22 +41,22 @@ export interface WizardState<T> {
 
 declare module "../../policy" {
   namespace Policy {
-    interface Specification<T, P, C> extends WizardSpec<T, P, C> {}
-    interface State<T, P, C> extends WizardState<T>{
-      this?: State<T, P, C>
+    interface Specification<T, P> extends WizardSpec<T, P> {}
+    interface State<T, P> extends WizardState<T>{
+      this?: State<T, P>
     }
   }
 }
 
 // Can't use getSpecValue as it is nested
 // TODO: EITHER make a nested version of getSpecValue OR switch to a review-and-state model
-export const forwardsLabel: MetaFn<any, any, any, StepLabel> = (value, meta) => {
+export const forwardsLabel: MetaFn<any, any, StepLabel> = (value, meta) => {
   const label = meta.$.spec.wizardStep?.forwardsLabel
   if (isMetaFn(label)) return label(value, meta)
   else return label
 }
 
-export const backwardsLabel: MetaFn<any, any, any, StepLabel> = (value, meta) => {
+export const backwardsLabel: MetaFn<any, any, StepLabel> = (value, meta) => {
   const label = meta.$.spec.wizardStep?.backwardsLabel
   if (isMetaFn(label)) return label(value, meta)
   else return label

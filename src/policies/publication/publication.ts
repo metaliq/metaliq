@@ -14,8 +14,8 @@ declare module "../../policy" {
   namespace Policy {
     import PublicationSpec = Publication.PublicationSpec
 
-    interface Specification<T, P, C> extends Publication.PublicationSpec {
-      this?: Specification<T, P, C>
+    interface Specification<T, P> extends Publication.PublicationSpec {
+      this?: Specification<T, P>
       publication?: PublicationSpec
     }
   }

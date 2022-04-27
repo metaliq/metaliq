@@ -60,7 +60,7 @@ export class Expander extends LitElement {
   }
 }
 
-export const expander = <T> (expandedFn: MetaView<T, any, boolean>) => (content: View<T>) => (data: T) => html`
+export const expander = <T> (expandedFn: MetaView<T>) => (content: View<T>) => (data: T) => html`
   <mq-expander>
     ${metaCall(expandedFn)(data) ? content(data) : ""}
   </mq-expander>

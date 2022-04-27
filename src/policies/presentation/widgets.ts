@@ -78,11 +78,11 @@ export const content = (textOrHtml: ViewResult): MetaView<any> => meta => textOr
  * If the condition is met, the `then` view is shown.
  * Optionally an `else` view can be specified to show if condition not met.
  */
-export const ifThen = <T, P = any, C = any> (
-  condition: MetaFn<T, P, any, boolean>,
-  thenView: MetaView<T, P, C>,
-  elseView?: MetaView<T, P, C>
-): MetaView<T, P, C> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
+export const ifThen = <T, P = any> (
+  condition: MetaFn<T, P, boolean>,
+  thenView: MetaView<T, P>,
+  elseView?: MetaView<T, P>
+): MetaView<T, P> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
 
 export type InputOptions<T> = {
   type?: "text" | "checkbox" | "number" | "tel"

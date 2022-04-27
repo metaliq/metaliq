@@ -1,5 +1,5 @@
 import { MetaSpec, parent } from "../meta"
-import { Address, Application, Contact, ContactCalcs } from "./test-types"
+import { Address, Application, Contact } from "./test-types"
 
 export const emptyContact = (): Contact => ({
   age: null,
@@ -21,10 +21,7 @@ export const emptyApplication = (): Application => ({
   billingAddress: null
 })
 
-export const contactSpec: MetaSpec<Contact, any, ContactCalcs> = {
-  calcs: {
-    fullName: contact => contact.firstName + " " + contact.lastName
-  },
+export const contactSpec: MetaSpec<Contact, any> = {
   label: "Contact",
   fields: {
     firstName: {
