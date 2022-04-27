@@ -82,24 +82,19 @@ export const renderPage: MetaFn<any> = (value, meta) => {
  * ```
  * view()(myValue) // View myValue with the view from the spec, if present
  * view(maybeView)(myValue) // View using maybeView if present, otherwise nothing (no fallback)
- * view(null, maybeView)(myValue) // Use the view from the spec if present, else fall back to maybeView
+ * view(true, maybeView)(myValue) // Use the view from the spec if present, else fall back to maybeView
  * view(maybeView, true)(myValue) // View myValue with maybeView if it exists, else view from spec if present
  * view(maybeView, otherView)(myValue) // View myValue with maybeView if it exists, else use otherView (no fallback to spec view)
  * ```
  */
 export function view <T, P = any> (
-  metaView?: MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
+  primary?: boolean | MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
 ): MetaFn<T, P, ViewResult> {
-  const fallbackToSpec = arguments.length === 0 || fallback === true
-
   return (v, m) => {
     m = m || meta(v)
-    if (fallbackToSpec) {
-      metaView = metaView || m.$.spec.view
-    }
-    if (!metaView && typeof fallback === "function") {
-      metaView = fallback
-    }
+    if (arguments.length === 0 || primary === true) primary = m.$.spec.view
+    if (fallback === true) fallback = m.$.spec.view
+    const metaView = (primary || fallback) as MetaViewTerm<T, P>
     if (m.$.parent) review(m) // Don't review on top level, this is auto done in renderPage
     if (!metaView) {
       return ""

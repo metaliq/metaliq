@@ -179,40 +179,41 @@ export function metafy <T, P = any> (
       reset(this.meta, val)
     }
   }
-  const meta: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
+  const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
   // Assign the meta object to itself - useful for backlinks from values
-  meta.$.meta = meta
+  result.$.meta = result
 
   // Create backlink from value object to meta object to enable moving to and fro
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
   if (parent && key && !(parent[key] instanceof MetaArrayProto)) {
-    Object.assign(parent, { [key]: meta }) // (Re)attach this meta to its parent
+    Object.assign(parent, { [key]: result }) // (Re)attach this meta to its parent
     Object.assign(parent.$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
   }
 
   // Descend through children creating further meta objects
   if (spec.items || Array.isArray(value)) {
     const valueArr = <unknown>value as any[] || []
-    const metaArr = <unknown>meta as MetaArray<any, P>
+    const metaArr = <unknown>result as MetaArray<any, P>
     metaArr.length = 0 // Remove any items from supplied prototype
     for (const item of valueArr) {
-      metaArr.push(metafy(spec.items || {}, item, parent, key))
+      const itemMeta = meta(item)
+      metaArr.push(metafy(spec.items || {}, item, parent, key, itemMeta))
     }
   } else {
     for (const fieldKey of fieldKeys(spec)) {
       const fieldValue = value?.[fieldKey]
-      const fieldSpec = meta.$.spec.fields[fieldKey]
-      const fieldMeta = (meta[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
-      if (fieldSpec) metafy(fieldSpec, fieldValue, meta, fieldKey, fieldMeta)
+      const fieldSpec = result.$.spec.fields[fieldKey]
+      const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
+      if (fieldSpec) metafy(fieldSpec, fieldValue, result, fieldKey, fieldMeta)
     }
   }
 
-  if (!hasProto) setupMeta(meta) // Only do initial meta setup if no previous meta provided
+  if (!hasProto) setupMeta(result) // Only do initial meta setup if no previous meta provided
 
-  return meta
+  return result
 }
 
 /**

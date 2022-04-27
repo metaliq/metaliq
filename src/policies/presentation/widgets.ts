@@ -32,7 +32,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
         .map(key => {
           const fieldMeta = m[key]
           if (isMetaArray(fieldMeta)) {
-            return metaCall(view(null, repeatView))(<unknown>fieldMeta as Meta<T[]>)
+            return metaCall(view(true, repeatView))(<unknown>fieldMeta as Meta<T[]>)
           } else {
             const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
             return view(itemView)(fieldMeta)
