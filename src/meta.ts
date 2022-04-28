@@ -199,7 +199,7 @@ export function metafy <T, P = any> (
     const metaArr = <unknown>result as MetaArray<any, P>
     metaArr.length = 0 // Remove any items from supplied prototype
     for (const item of valueArr) {
-      const itemMeta = meta(item)
+      const itemMeta = item?.$?.meta
       metaArr.push(metafy(spec.items || {}, item, parent, key, itemMeta))
     }
   } else {
