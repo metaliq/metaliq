@@ -46,20 +46,5 @@ describe("MetaliQ Array Handling", () => {
       personMeta.aliases[0].$.spec.should.have.property("label")
     })
 
-    it("should proxify to a reflection of an array of primitives regardless of items definition", () => {
-      const personWithItemsMeta = metafy(personSpecWithItems, samplePerson)
-      const personWithItems = personWithItemsMeta.$.value
-
-      personWithItems.aliases.should.be.an("array")
-      personWithItems.aliases.should.have.length(2)
-      personWithItems.aliases[0].should.equal("One")
-
-      const personNoItemsMeta = metafy(personSpecNoItems, samplePerson)
-      const personNoItems = personNoItemsMeta.$.value
-
-      personNoItems.aliases.should.be.an("array")
-      personNoItems.aliases.should.have.length(2)
-      personNoItems.aliases[0].should.equal("One")
-    })
   })
 })

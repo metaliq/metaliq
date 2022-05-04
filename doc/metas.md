@@ -21,6 +21,8 @@ export const contactSpec: MetaSpec<Contact> = {
 
 A specification's `init` term can provide an initial value of the specification's related type - either as a hard-coded value as shown above, or a synchronous or asynchronous function to obtain such a value. When a specification is run, an initial value is created using its `init` term. We call the object that is produced the *underlying data value*.
 
+In many cases, our application code (processes, views and functional terms such as validators) can work with this value object - and any further nested value objects - directly, by inspecting and assigning values within it. But in addition to this basic value graph MetaliQ builds a parallel "Meta-Graph", which can sometimes be very useful.  
+
 ### Meta Objects
 
 Having established the underlying data value of the top-level type and it's descendant types - the branches and leaves of the overall value object graph - MetaliQ goes on to create a `Meta` object for the value. A meta object contains two things. Firstly it contains a special key called `$` which holds some references which we'll see below. Secondly it contains entries for each of the fields that were included in the specification, and each of those entries is itself a `Meta` object for that field's value.
@@ -73,54 +75,32 @@ But you might wonder whether it really makes sense to add this additional layer 
 
 Well, that would be fine for most objects, and indeed MetaliQ does actually add the `$` reference to the value object too, providing a simple way to link from underlying values across to their associated Metas (with a few caveats which we'll cover below). But that wouldn't work for primitive values - strings, numbers and booleans - which can't have additional properties. And these "leaf" values are often the very levels within the data model where meta-specifications (for example the validation rules for a specific email field) and meta-state (such as the error message generated when the user tabbed out of that specific field) are most useful.
 
-In addition to being able to manage policy-driven state for each branch and leaf node of the overall data graph, the parallel Meta object gives us a transient version of the primitive data itself. As noted above, the `$.value` of any Meta is its associated underlying data value. In the case of objects within the graph, this is a direct reference to the value object itself. For Metas of primitive values, it is a reference to the primitive value itself. However, because JavaScript makes a new copy every time a reference is assigned to a primitive value, the copy can be altered without changing the original. This gives MetaliQ systems the ability to modify primitive values by their `$.value` reference, and then to choose whether to write these values to the underlying value graph (known as *comitting* the Meta) or to overwrite them with the original values (known as *resetting* the Meta).
-
-Whilst the concepts of comitting or rolling back transactions have long been established in the world of databases, they also turn out to be very useful in many user-facing solutions, where we wish to let people cancel edits, prevent invalid values from being saved and so on.
-
-One other feature of having a parallel graph of Meta objects is that a single value object can be referenced at different points in the graph by different Meta objects. We'll see how this can be useful further below.
+One other feature of having a parallel graph of Meta objects is that a single value object can be referenced at different points in the graph by different Meta objects, and thus be linked to different specifications. We'll see how this can be useful further below.
 
 ### When to use the Meta or the Value?
 
-Althought the Meta does reflect the original data structure, we've seen that the primitive leaf values need to be accessed via `$.value`, and any properties of the underlying data which don't have an entry in the `fields` section of the specification on which the Meta was based will not have an associated place in the Meta graph. Often, you just don't need any of the additional meta-information that might be associated with data, and it may be easier to think and work with the underlying data object. In this case, you can reach it via `$.value` and use it directly without worrying about its associated Meta.
+Althought the Meta does reflect the original data structure, we've seen that the underlying values need to be accessed via `$.value`, and any properties of the underlying data which don't have an entry in the `fields` section of the specification on which the Meta was based will not have an associated place in the Meta graph. Often, you just don't need any of the additional meta-information that might be associated with data, and you prefer to deal directly with the underlying data object.
 
-But some policy terms are defined as requiring a Meta, or a function that takes a Meta. For example, the `view` property provided by the standard presentation policy within MetaliQ expects a template function that accepts the Meta itself, not the underlying value object. This can be useful, and indeed is the basis of things such as the MetaliQ form components, which use the meta information to add automatic validation behaviour. But if you're just trying to display a name-and-address card on screen, it can be annoying to have to keep drilling down through `$.value` on every piece of data.
+### Meta Functions
 
-For this reason, MetaliQ provides a few shortcuts to make it easier to switch between working with Meta objects and their associated data values.  
+There is a common pattern, often seen within the specification terms defined by various policies called a meta-function (referred to in code as a `MetaFn`). This takes two parameters. The first is the underlying value, and the second is the meta object for that value.
 
-* toString
+For example the `view` term of the presentation policy takes a template function defined as a `MetaFn<T, P, ViewResult>`. The T and P generic types are the underlying type and parent type of the related meta, and `ViewResult` is the result type - which can be a `html` template result, a plain string, or an array of either. There is an alias for a `MetaFn` with return type `ViewResult`, called a `MetaView`.  You could make a MetaView that only uses the underlying data type:
 
-The `toString` method of a Meta object is defined such that if the Meta has a primitive value then that value is returned as a string (which may be the string version of a number or the string "true" or "false" for a boolean). The `lit` templating system used by the default presentation policy in MetaliQ calls toString if it finds an object embedded in a text node of the HTML, meaning that for display purposes you can often treat the Meta objects as if they were the value objects themselves.
-
-* metaView
-
-If you have a template fuction (or "view") that takes a straightforward data type, then passing it to `metaView` will give you a template function that takes a Meta of that type, which can be used as the `view` term in a specification.
-
-```ts
-const contactView = (contact: Contact) => html`
-	<div>${contact.firstName} ${contact.lastName}</div>
-	<img src=${contact.mugshot} />
+```typescript
+const contactView: MetaView<Contact> = contact => html`
+	<div>First Name: ${contact.firstName}</div
+	<div>Last Name: ${contact.lastName}</div>
 `
-
-const contactSpec: MetaSpec<Contact> = {
-  view: metaView(contactView)
-}
 ```
 
-* metaFn
+Or you could utilise the second parameter, the meta object, in order to access meta information from the spec or state, such as the field's label:
 
-Similarly, with any general process function that takes a value of a straightforward data type, passing that process function to `metaFn` returns a `MetaFn` that takes a Meta of that type.
-
-This Process pattern is commonly used in MetaliQ policies, so metaFn is a good way of transforming framework-agnostic business logic code for use in MetaliQ specifications.
-
-```ts
-// savePerson is a framework-agnostic piece of business logic
-const savePerson = (person: Person) => {
-  // Some process code
-  db.write(person)
-}
-
-// savePersonMeta could be used for example as a navigation route handler in a MetaliQ spec of type Person
-const savePersonMeta: MetaFn<Person> = metaFn(savePerson)
+```typescript
+const labelledContactView: MetaView<Contact> = (contact, mContact) => html`
+	<h2>${mContact.$.spec.label}</h2>
+	<div>${contact.firstName} ${contact.lastName}</div>
+`
 ```
 
 ### Linking back from values to Metas
@@ -158,18 +138,12 @@ But there are practices to follow if you need to do that, described in the next 
 
 ### Sharing underlying data between Metas
 
-Sometimes it makes sense for a single underlying object within your data value graph to be referenced from multiple separate Metas. These could be produced from specifications for various stages of working with the same data in different parts of an application. It is a common pattern for building wizard-style user interfaces for example, where multiple pages have separate specs based on the overall data type that is the subject of the whole wizard. Each of these Metas can seamlessly maintain their own link to the same underlying data value object, applying their own meta-information to it, holding their own validation state etc. But the value object itself can only have a single `$` property, and can thus only back-link to a single Meta.
+Sometimes it makes sense for a single underlying object within your data value graph to be referenced from multiple separate Metas. These could be produced from specifications for various stages of working with the same data in different parts of an application, such as a wizard-style user interface for example, where multiple pages have separate specs based on the overall data type that is the subject of the whole wizard. Each of these Metas can seamlessly maintain their own link to the same underlying data value object, applying their own meta-information to it, holding their own validation state etc. But the value object itself can only have a single `$` property, and can thus only back-link to a single Meta.
 
-This turns out not to be a big problem though, even if you do need to use back-links, as the value object's `$` property is reset whenever the `reset` function is called on a particular Meta. So if the Meta that is to be used in the new state of an application is reset as part of that state change process then the back-links for the overall value object will point as expected to the currently relevant Meta. 
-
-In the example of a wizard page change, the process first validates the *from* page Meta, then (if validation succeeds)  *commits* that Meta so that its transient, validated values are applied to its underlying data graph, then the *to* page Meta is reset, so that the `$` references throughout its underlying data graph point to the newly relevant Metas and the data values of primitive fields are applied to their transient Meta reflections.
+This turns out not to be a big problem though, even if you do need to use back-links, as the value object's `$` property is reset whenever the `reset` function is called on a particular Meta. This happens automatically at the end of every application update cycle when you are using `up`. So if the Meta that is to be used in the new state of an application is reset as part of that state change process then the back-links for the overall value object will point as expected to the currently relevant Meta. 
 
 ### Meta Arrays
 
 We have seen how individual objects and primitive values are reflected in the Meta graph. Arrays are quite similar in how they are handled. A `MetaSpec` that is based on an array type rather than an individual object type can have all the same policy-defined terms, but instead of the property `fields` it has the property `items`. This itself is a `MetaSpec` that becomes the specification for each individual item in the array. Note that if the `items` key of a MetaSpec is not specified then the underlying array's values will not have associated entries in the Meta graph. 
 
 At runtime, the Meta object of an array has the same `$` key as other Meta objects, with the same internal references including `$.value` which points to the underlying array with its original values. The Meta array is itself also an array of Meta objects of those original values, each of which is connected to its original value via its `$.value` property. Note that the array item Meta objects have the same `$.parent` as the array Meta itself. So, for example, if a parent object of type `Submission` had a field `contacts` of type `Contact[]`, the type for the  `contacts` field specification would be `MetaSpec<Contact[], Submission>` and the `items` property within that specification would be `MetaSpec<Contact, Submission>`. 
-
-If `reset` is called on a Meta array (or a Meta containing it) then the original array values are applied back into the Meta graph, overwriting any transient updates.
-
-If `commit` is called on a Meta array, the original array is mutated to match any updates in the transient Meta array. Any items that were removed in the transient Meta array are removed in the underlying array. Other items are reordered as per the order of their associated Metas in the Meta array, and new items are inserted wherever they have been created in the Meta array.
