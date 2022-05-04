@@ -6,7 +6,7 @@ import flatpickr from "flatpickr"
 import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
 import { validate } from "../validation/validation"
-import { fieldError } from "./widgets"
+import { fieldError, isDisabled } from "./widgets"
 import { label } from "../terminology/terminology"
 
 export type DatePickerOptions = {
@@ -25,41 +25,47 @@ export type DatePickerOptions = {
   valueFormat?: string
 }
 
-export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, meta) => html`
-  <label class="mq-field mq-text-field ${classMap({
-    [options.classes]: !!options.classes,
-    "mq-mandatory": meta.$.state.mandatory,
-    "mq-active": meta.$.state.active,
-    "mq-populated": !!value
-  })}">
-    <span class="mq-input-label">
-      ${label(meta)}
-    </span>
-    ${guard([meta], () => {
-      const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
-      setTimeout(
-        () => {
-          flatpickr(`#${id}`, {
-            onClose (selectedDates, dateStr) {
-              value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
-              meta.$.value = value
-              up(validate, meta)()
-            },
-            defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
-            disable: options.disable || [],
-            dateFormat: options.displayFormat || "Y-m-d",
-            disableMobile: true
-          })
-        },
-        250
-      )
-      return html`
-        <input class="mq-input ${options.classes ?? ""}" id=${id} />
-      `
-    })}
-    ${fieldError(value, meta)}
-  </label>
-`
+export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, meta) => {
+  const disabled = isDisabled(meta)
+  return html`
+    <label class="mq-field mq-text-field ${classMap({
+      [options.classes]: !!options.classes,
+      "mq-mandatory": meta.$.state.mandatory,
+      "mq-active": meta.$.state.active,
+      "mq-populated": !!value
+    })}">
+      <span class="mq-input-label">
+        ${label(meta)}
+      </span>
+      ${guard([meta, disabled], () => {
+        const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
+        setTimeout(
+          () => {
+            flatpickr(`#${id}`, {
+              onClose (selectedDates, dateStr) {
+                value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
+                meta.$.value = value
+                up(validate, meta)()
+              },
+              defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
+              disable: options.disable || [],
+              dateFormat: options.displayFormat || "Y-m-d",
+              disableMobile: true
+            })
+          },
+          250
+        )
+        return html`
+          <input id=${id}
+            ?disabled=${disabled}
+            class="mq-input ${classMap({ "mq-disabled": disabled })}" 
+          />
+        `
+      })}
+      ${fieldError(value, meta)}
+    </label>
+  `
+}
 
 export const formatDate = flatpickr.formatDate
 export const parseDate = flatpickr.parseDate
