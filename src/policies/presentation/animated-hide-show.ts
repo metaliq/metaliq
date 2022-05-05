@@ -1,7 +1,7 @@
 import { html, LitElement, PropertyValues } from "lit"
 import { styleMap } from "lit/directives/style-map.js"
 import { customElement, property, state } from "lit/decorators.js"
-import { MetaView } from "./presentation"
+import { MetaView, setHideShowWrapper } from "./presentation"
 
 @customElement("mq-animated-hide-show")
 export class AnimatedHideShow extends LitElement {
@@ -69,3 +69,5 @@ export const animatedHideShow = <T> (metaView: MetaView<T>): MetaView<T> => (val
     </mq-animated-hide-show>
   `
 }
+
+setHideShowWrapper(animatedHideShow)

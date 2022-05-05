@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn } from "../../meta"
+import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, view, ViewResult } from "./presentation"
@@ -16,6 +16,13 @@ export type MetaFormOptions<T> = {
   include?: Array<FieldKey<T>>
   exclude?: Array<FieldKey<T>>
 }
+
+metaSetups.push(meta => {
+  // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
+  if (!meta.$.parent && !meta.$.spec.publication?.target && !meta.$.spec.view) {
+    meta.$.spec.view = metaForm()
+  }
+})
 
 /**
  * A MetaView for an object type that displays all its child fields.

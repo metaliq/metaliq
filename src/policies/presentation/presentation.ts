@@ -1,8 +1,6 @@
 import { render, TemplateResult } from "lit"
 import { meta, metaCall, MetaFn, metaSetups } from "../../meta"
-import { metaForm } from "./widgets"
 import { label } from "../terminology/terminology"
-import { animatedHideShow } from "./animated-hide-show"
 import { review } from "../application/application"
 
 export interface PresentationSpec<T, P> {
@@ -40,10 +38,6 @@ export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 metaSetups.push(meta => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
   if (!meta.$.parent) {
-    // TODO: This should go into forms module
-    if (!meta.$.spec.publication?.target && !meta.$.spec.view) {
-      meta.$.spec.view = metaForm()
-    }
     // TODO: These should go into runtime target
     if (meta.$.spec.view || !meta.$.spec.publication?.target) {
       meta.$.spec.review = meta.$.spec.review || renderPage
@@ -64,6 +58,19 @@ export type Widget<T, P = any> = (...params: any[]) => MetaView<T, P>
  */
 export const renderPage: MetaFn<any> = (value, meta) => {
   render(view()(value, meta), document.body)
+}
+
+/**
+ * A view designed to accept and wrap another view.
+ */
+export type ViewWrapper = <T> (metaView: MetaView<T>) => MetaView<T>
+
+/**
+ * A wrapper for dynamic hide-show fields, to do animation for example.
+ */
+let hideShowWrapper: ViewWrapper = null
+export function setHideShowWrapper (wrapper: ViewWrapper) {
+  hideShowWrapper = wrapper
 }
 
 /**
@@ -102,7 +109,7 @@ export function view <T, P = any> (
       return metaView.map(mv => view(mv)(v, m))
     } else {
       if (typeof m.$.spec.hidden === "function") {
-        return metaCall(animatedHideShow(metaView))(m)
+        return metaCall(hideShowWrapper(metaView))(m)
       } else {
         return m.$.state.hidden ? "" : metaCall(metaView)(m)
       }
