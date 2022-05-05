@@ -110,6 +110,7 @@ async function build (specNames: string[], options: BuildOptions = {}) {
   if (specNames.length === 0) specNames.push("appSpec")
   console.log(`Starting MetaliQ build for ${specNames.join(", ")}`)
 
+  console.log(`Compiling project using ${tscPath}...`)
   await pExec(tscPath)
 
   type BuildBundle = { specName: string, target: PublicationTarget, context: PublicationContext }
@@ -118,6 +119,7 @@ async function build (specNames: string[], options: BuildOptions = {}) {
   // Assemble all targets
   const simplePath = optionsSimplePath(options)
   for (const specName of specNames) {
+    console.log(`Bundling modules for spec ${specName}...`)
     const spec = await importSpec(specName, simplePath)
     if (!spec) {
       return console.error(`Specification not found: ${simplePath} > ${specName}`)
@@ -130,7 +132,8 @@ async function build (specNames: string[], options: BuildOptions = {}) {
   }
 
   // Clean all targets
-  for (const { target, context } of bundles) {
+  for (const { specName, target, context } of bundles) {
+    console.log(`Cleaning output for spec ${specName}...`)
     if (target.cleaner) {
       await target.cleaner(context)
     }
@@ -139,7 +142,7 @@ async function build (specNames: string[], options: BuildOptions = {}) {
   // Build all targets
   for (const { specName, target, context } of bundles) {
     if (target.builder) {
-      console.log(`Building specification ${specName}`)
+      console.log(`Building specification ${specName}...`)
       await target.builder(context)
     } else {
       return console.error(`Specification ${specName} publication target ${target.name} for  has no builder`)

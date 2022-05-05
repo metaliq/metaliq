@@ -197,6 +197,7 @@ const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
         ? parseFloat(target.value)
         : target.value) as T
     if (!unvalidated) validate(meta)
+    // TODO: Remove doCommit
     if (doCommit && meta.$.parent) commit(meta.$.parent)
   }
 
