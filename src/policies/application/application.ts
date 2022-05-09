@@ -1,5 +1,5 @@
 import { Meta, metaCall, MetaFn, metafy, MetaSpec, reset } from "../../meta"
-import { LogFunction, startUp, Up } from "@metaliq/up"
+import { LogFunction, startUp, up, Up } from "@metaliq/up"
 
 /**
  * Policy module to define general specification and operation of a Metaliq application.
@@ -8,12 +8,18 @@ import { LogFunction, startUp, Up } from "@metaliq/up"
 
 export interface ApplicationSpec<T, P = any> {
   /**
-   * Initial value or a function to return the initial value.
-   * Initialisers will be applied recursively within the spec,
-   * with the data structure initialised for the outermost spec
-   * before then setting values from inner spec initialisers.
+   * Data initialisation term, containing
+   * initial value or a function (sync/async) to return the initial value.
+   * Not recursive unless internally implemented.
    */
   init?: Init<T>
+
+  /**
+   * Application setup process hook for top-level meta.
+   * Runs after data initialisation and metafication.
+   * Not recursive unless internally implemented.
+   */
+  bootstrap?: MetaFn<T>
 
   /**
    * Log function to be called on each update - passed as `log` to `up`.
@@ -66,7 +72,7 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
 
   const log = spec.log || false
   const local = spec.local || false
-  const start = await startUp({
+  const up = await startUp({
     review: () => {
       reset(meta)
       review(meta)
@@ -74,10 +80,20 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
     log,
     local
   })
-  await start()() // Initial call to `up`
+  if (typeof spec.bootstrap === "function") {
+    spec.bootstrap(meta.$.value, meta)
+  }
+  await up()()
 
   return meta
 }
+
+/**
+ * A version of up that wraps the default, framework agnostic implementation
+ * to provide consistent calling of meta-functions as updates.
+ * Note this is currently incompatible with message (event) passing in standard updates.
+ */
+export const mUp = <T, P> (handler: MetaFn<T, P>, data: T | Meta<T, P>) => up(metaCall(handler), data)
 
 export function review <T> (meta: Meta<T>) {
   const specReview = meta?.$?.spec?.review

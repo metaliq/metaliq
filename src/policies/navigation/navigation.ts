@@ -96,11 +96,15 @@ metaSetups.push(meta => {
       history.pushState(null, null, spec.urlPath)
     }
     if (policy.routeMetas.size) {
-      const router = new Router(
-        Array.from(policy.routeMetas.keys()),
-        () => { up()() }
-      ).start()
-      router.catch(console.error)
+      const bootstrap = meta.$.spec.bootstrap || (() => {})
+      meta.$.spec.bootstrap = (v, m) => {
+        bootstrap(v, m)
+        const router = new Router(
+          Array.from(policy.routeMetas.keys()),
+          () => { up()() }
+        ).start()
+        router.catch(console.error)
+      }
     }
   }
 })
