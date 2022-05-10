@@ -150,14 +150,12 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta
     }
   }
 
-  commit(nowStep)
   const onComplete = nowStep.$.spec.wizardStep?.onComplete
   if (typeof onComplete === "function") {
     const completionResponse = await metaCall(onComplete)(nowStep)
     if (completionResponse === false) return
   }
   wizard.$.state.step = stepNames[nextIndex]
-  resetStepMetas()
 
   window.history.pushState({}, label(nowStep))
   window.onpopstate = (evt: PopStateEvent) => {
