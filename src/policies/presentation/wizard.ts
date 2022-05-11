@@ -1,4 +1,4 @@
-import { commit, FieldKey, isMetaFn, Meta, metaCall, MetaFn, metaSetups, reset } from "../../meta"
+import { FieldKey, isMetaFn, Meta, metaCall, MetaFn, metaSetups, reset } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"

@@ -217,52 +217,10 @@ export function metafy <T, P = any> (
 }
 
 /**
- * Process to commit the current state of the embedded / nested value object to the given meta.
- * Any values that were originally null stay null if all recursively nested sub-values are null,
- * but if any of the nested sub-values have been populated then the higher level value
- * is initialised to an object with the sub-values assigned to it.
- */
-export function commit<T> (meta: Meta<T>) {
-  if (meta.$.spec.items) {
-    const metaArr = <unknown>meta as MetaArray<any>
-
-    // Initialise value array if empty
-    const value = <unknown>meta.$.value as any[] || []
-    Object.assign(meta.$, { value })
-
-    // Replace previous values with (maybe the same) current ones
-    value.length = 0
-    for (const metaItem of metaArr) {
-      commit(metaItem)
-      value.push(metaItem.$.value)
-    }
-  } else {
-    const keys = fieldKeys(meta.$.spec)
-    for (const key of keys) {
-      const metaField = meta[key] as Meta<any>
-      commit(metaField)
-    }
-  }
-
-  // Commit meta for primitive value
-  const primitives = ["string", "number", "boolean", "bigint"]
-  if (primitives.includes(typeof meta.$.value)) {
-    // Assign value and ensure parent value chain exists
-    const setParentValue = <T, P>(child: Meta<T, P>) => {
-      const { parent, key, value } = child.$
-      if (!parent || parent[key] instanceof MetaArrayProto) return
-      parent.$.value = parent.$.value || {} as P
-      parent.$.value[key] = <unknown>value as P[FieldKey<P>]
-      if (!parent.$.parent?.$.value?.[parent.$.key]) {
-        setParentValue(parent)
-      }
-    }
-    setParentValue(meta)
-  }
-}
-
-/**
  * Resets the Meta's data value, to any provided value else the original underlying data.
+ * Example uses include:
+ * (a) replacing a complete object value directly rather than via its parent, and
+ * (b) to restore current backlinks to a value object that is referenced more than once in the meta-graph.
  */
 export function reset<T> (meta: Meta$<T>, value?: T) {
   metafy(meta.$.spec,

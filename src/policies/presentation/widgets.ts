@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
-import { commit, FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
+import { FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
 import { validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, view, ViewResult } from "./presentation"
@@ -93,7 +93,6 @@ export const ifThen = <T, P = any> (
 
 export type InputOptions<T> = {
   type?: "text" | "checkbox" | "number" | "tel"
-  commit?: boolean // immediately commit values to underlying value object
   unvalidated?: boolean // don't perform validation
   labelAfter?: boolean // Place the label after the input
   labelView?: MetaView<T> // Custom label content function
@@ -195,7 +194,7 @@ const onBlur = <T>(options: InputOptions<T>) => (meta: Meta<T>, event: Event) =>
   if (options.type !== "checkbox") onInput(options)(meta, event)
 }
 
-const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
+const onInput = <T>({ unvalidated, type }: InputOptions<T>) =>
   (meta: Meta<T>, event: Event) => {
     const target = <HTMLInputElement>event.target
     meta.$.value = <unknown>(target.type === "checkbox"
@@ -204,8 +203,6 @@ const onInput = <T>({ unvalidated, commit: doCommit, type }: InputOptions<T>) =>
         ? parseFloat(target.value)
         : target.value) as T
     if (!unvalidated) validate(meta)
-    // TODO: Remove doCommit
-    if (doCommit && meta.$.parent) commit(meta.$.parent)
   }
 
 export const errorsBlock: MetaView<any> = (v, m) => {
