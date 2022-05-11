@@ -93,7 +93,7 @@ export class Router {
             const enter = await route.onEnter(pathParams, query)
             if (enter === false) return
           }
-          if (this.onHandled) this.onHandled()
+          if (this.onHandled) await this.onHandled()
           this.oldLocation = { pathParams, query }
         }
         this.currentRoute = route

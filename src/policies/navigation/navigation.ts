@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec } from "../../meta"
+import { fieldKeys, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
 
@@ -54,9 +54,11 @@ declare module "../../policy" {
 
 type NavigationPolicy = {
   routeMetas: Map<Route<object>, Meta<any>>
+  selectedRouteMeta: Meta<any>
 }
 const policy: NavigationPolicy = {
-  routeMetas: new Map()
+  routeMetas: new Map(),
+  selectedRouteMeta: null
 }
 
 export const routeMeta = (route: Route<object>) => policy.routeMetas.get(route)
@@ -101,7 +103,13 @@ metaSetups.push(meta => {
         bootstrap(v, m)
         const router = new Router(
           Array.from(policy.routeMetas.keys()),
-          () => { up()() }
+          async () => {
+            try {
+              await up()()
+            } finally {
+              reset(policy.selectedRouteMeta)
+            }
+          }
         ).start()
         router.catch(console.error)
       }
@@ -118,19 +126,20 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   const navModel = {} as T
   for (const key of fieldKeys(spec)) {
     const childSpec = spec.fields?.[key] as unknown as MetaSpec<unknown>
-    const keyModel = childSpec.fields
-      ? mapNavModel(model)(childSpec)
-      : model
+    const keyModel = childSpec.route
+      ? model
+      : mapNavModel(model)(childSpec)
     Object.assign(navModel, { [key]: keyModel })
   }
   return navModel
 }
 
-export const selectItem = (meta: Meta<any>) => {
+export const selectItem = (meta: Meta<any>, recursing = false) => {
   const parent = meta.$.parent
+  if (!recursing) policy.selectedRouteMeta = meta
   if (parent?.$.spec.navType) {
     parent.$.state.nav.selected = meta.$.key
-    selectItem(parent)
+    selectItem(parent, true)
   }
 }
 

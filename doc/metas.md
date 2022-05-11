@@ -19,7 +19,7 @@ export const contactSpec: MetaSpec<Contact> = {
 
 ### Value Initialisation
 
-A specification's `init` term can provide an initial value of the specification's related type - either as a hard-coded value as shown above, or a synchronous or asynchronous function to obtain such a value. When a specification is run, an initial value is created using its `init` term. We call the object that is produced the *underlying data value*.
+A specification's `init` term can provide an initial value of the specification's related type - either as a hard-coded value as shown above, or a synchronous or asynchronous function to obtain such a value. When a specification is run, an initial value is created using its `init` term. We call the object that is produced the *underlying data value*. (Note that this `init` process is not recursive for nested specifications - you can get nested values based on their specs using the function `initSpecValue` from within the higher-level `init` if required.)
 
 In many cases, our application code (processes, views and functional terms such as validators) can work with this value object - and any further nested value objects - directly, by inspecting and assigning values within it. But in addition to this basic value graph MetaliQ builds a parallel "Meta-Graph", which can sometimes be very useful.  
 
