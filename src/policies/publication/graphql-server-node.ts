@@ -4,7 +4,7 @@ import { ApolloServer as ApolloServerExpress } from "apollo-server-express"
 import express from "express"
 import fsExtra from "fs-extra"
 import { SinglePageAppConfig } from "./spa"
-import { GraphQLServerConfig } from "./graphql-server"
+import { CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "./util"
 import { join } from "path"
 import { makeProdJs } from "./prod-js"
@@ -72,7 +72,7 @@ export const builder: Builder = async ({ spec, simplePath, specName }) => {
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema))
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath))
+  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, spec.publication.graphQLServer?.build?.cloudFnOptions))
   const js = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
@@ -134,22 +134,29 @@ const schemaJs = (schema: string) => dedent`
   \`
 `
 
-const indexJs = (specName: string, specPath: string) => dedent`
-  import { typeDefs } from "./schema.js"
-  import { ${specName} } from "./${specPath}.js"
-  
-  import { ApolloServer } from "apollo-server-cloud-functions"
-  import functions from "firebase-functions"
-  
-  const server = new ApolloServer({ 
-    typeDefs, 
-    resolvers: ${specName}.resolvers,
-    playground: true,
-    introspection: true
-  })
+const indexJs = (specName: string, specPath: string, cloudFnOptions: CloudFnOptions = {}) => {
+  if (cloudFnOptions.vpcConnector) Object.assign(cloudFnOptions, { vpcConnectorEgressSettings: "ALL_TRAFFIC" })
 
-  export const graphql = functions.https.onRequest(server.createHandler())
-`
+  return dedent`
+    import { typeDefs } from "./schema.js"
+    import { ${specName} } from "./${specPath}.js"
+    
+    import { ApolloServer } from "apollo-server-cloud-functions"
+    import functions from "firebase-functions"
+    
+    const server = new ApolloServer({ 
+      typeDefs, 
+      resolvers: ${specName}.resolvers,
+      playground: true,
+      introspection: true
+    })
+  
+    export const graphql = functions
+      .runWith(${JSON.stringify(cloudFnOptions)})
+      .https
+      .onRequest(server.createHandler())
+  `
+}
 
 const packageJson = {
   name: "functions",

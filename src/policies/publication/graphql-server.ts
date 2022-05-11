@@ -49,7 +49,15 @@ export type GraphQLServerConfig = {
    */
   build?: {
     destDir?: string // Defaults to prod/api
+
+    cloudFnOptions?: CloudFnOptions
   }
+}
+
+export type CloudFnOptions = {
+  memory?: string
+  timeoutSeconds?: number
+  vpcConnector?: string
 }
 
 const nodeModule = "./graphql-server-node.js"
