@@ -81,7 +81,7 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
     local
   })
   if (typeof spec.bootstrap === "function") {
-    spec.bootstrap(meta.$.value, meta)
+    await spec.bootstrap(meta.$.value, meta)
   }
   await up()()
 

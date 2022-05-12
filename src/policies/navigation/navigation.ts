@@ -99,8 +99,8 @@ metaSetups.push(meta => {
     }
     if (policy.routeMetas.size) {
       const bootstrap = meta.$.spec.bootstrap || (() => {})
-      meta.$.spec.bootstrap = (v, m) => {
-        bootstrap(v, m)
+      meta.$.spec.bootstrap = async (v, m) => {
+        await bootstrap(v, m)
         const router = new Router(
           Array.from(policy.routeMetas.keys()),
           async () => {
