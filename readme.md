@@ -1,3 +1,7 @@
+![logo](./doc/logo.png)
+
+
+
 ## The MetaliQ Platform
 
 MetaliQ is a platform for delivering online solutions as model-driven, policy-based, composable, runnable specifications.
@@ -195,7 +199,7 @@ metaliq build --help
 
 ### Next Steps
 
-#### The Meta-Model
+#### The Meta-Graph
 
 Read about the way that MetaliQ manages a graph of meta-objects in parallel with your application's data model [here](./doc/metas.md).
 
