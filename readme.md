@@ -153,7 +153,7 @@ The project output is normally specified using terms from the Publication policy
 
 #### Compiling
 
-MetaliQ solutions are compiled automatically as part of the run and build processes described below, or can be compiled manually with the TypeScript compiler. MetaliQ makes use of the TypeScript generic type system to check for validity of all Specification and Configuration terms at compile time. If using a suitable IDE such as VSCode, any invalid specification term is immediately highlighted.
+MetaliQ solutions are compiled automatically as part of the run and build processes described below, or can be compiled manually with the TypeScript compiler. MetaliQ makes use of the TypeScript generic type system to check for validity of all Specification terms at compile time. If using a suitable IDE such as VSCode, any invalid specification term is immediately highlighted.
 
 #### Running in Development
 

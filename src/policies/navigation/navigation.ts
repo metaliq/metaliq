@@ -39,6 +39,11 @@ export interface NavigationState {
    * Field key of the currently selected option in this navigation level.
    */
   selected?: string
+
+  /**
+   * For dynamically shown menus.
+   */
+  showMenu?: boolean
 }
 
 declare module "../../policy" {
@@ -101,12 +106,14 @@ metaSetups.push(meta => {
       const bootstrap = meta.$.spec.bootstrap || (() => {})
       meta.$.spec.bootstrap = async (v, m) => {
         await bootstrap(v, m)
+        // Extend any existing bootstrap to initialise the Router
         const router = new Router(
           Array.from(policy.routeMetas.keys()),
           async () => {
             try {
               await up()()
             } finally {
+              // Reset the backlinks for the currently selected value _after_ the update / review
               reset(policy.selectedRouteMeta)
             }
           }
@@ -134,15 +141,49 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   return navModel
 }
 
-export const selectItem = (meta: Meta<any>, recursing = false) => {
+/**
+ * Set the navigation meta state.
+ */
+export const setNavItem = (meta: Meta<any>, recursing = false) => {
   const parent = meta.$.parent
   if (!recursing) policy.selectedRouteMeta = meta
   if (parent?.$.spec.navType) {
     parent.$.state.nav.selected = meta.$.key
-    selectItem(parent, true)
+    if (parent.$.state.nav.showMenu) {
+      parent.$.state.nav.showMenu = false
+    }
+    setNavItem(parent, true)
   }
 }
 
+/**
+ * Go to the given nav node's route if it has one,
+ * otherwise find and go to its first child route.
+ * This will in turn trigger any onNavigation, such as `selectMenuItem`.
+ */
+export const goNavRoute = (item: Meta<any>) => {
+  while (item && !item.$.spec.route) {
+    const firstChildKey = fieldKeys(item.$.spec)[0]
+    item = item[firstChildKey] as Meta<any>
+  }
+  item.$.spec.route?.go()
+}
+
 export const freeNavigation: NavigationType = {
-  onNavigate: selectItem
+  onNavigate: setNavItem
+}
+
+export const toggleMenu = (m: Meta<any>) => {
+  m.$.state.nav = m.$.state.nav || {}
+  m.$.state.nav.showMenu = !m.$.state.nav.showMenu
+}
+
+export const openMenu = (m: Meta<any>) => {
+  m.$.state.nav = m.$.state.nav || {}
+  m.$.state.nav.showMenu = true
+}
+
+export const closeMenu = (m: Meta<any>) => {
+  m.$.state.nav = m.$.state.nav || {}
+  m.$.state.nav.showMenu = false
 }

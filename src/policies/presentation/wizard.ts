@@ -101,16 +101,6 @@ metaSetups.push(<T>(meta: Meta<T>) => {
   }
 })
 
-/**
- * Reset backlinks and transient values on current step of wizard at any level of nesting.
- */
-function resetStepMetas () {
-  wizardMetas.forEach(wizard => {
-    const { nowStep } = getWizardInfo(wizard)
-    reset(nowStep)
-  })
-}
-
 export const getWizardInfo = <T> (wizard: Meta<T>): WizardInfo<T> => {
   const stepNames = Object.keys(wizard.$.spec.fields) as Array<FieldKey<T>>
   const nowIndex = stepNames.indexOf(wizard.$.state.step)
