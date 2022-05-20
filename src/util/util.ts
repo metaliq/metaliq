@@ -165,7 +165,7 @@ export const initObjProps = <T extends object>(obj: T, keys: Array<keyof T>) => 
 
 // TEXT FUNCTIONS
 
-export const capitalize = (str: string) => str.substr(0, 1).toUpperCase() + str.substr(1)
+export const capitalize = (str: string) => str.substr(0, 1).toUpperCase() + str.substr(1).toLowerCase()
 
 /**
  * English language form of the verb "to be" appropriate for the plurality of the subject.
