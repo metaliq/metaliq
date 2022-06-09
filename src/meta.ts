@@ -317,9 +317,9 @@ export const metaCall = <T, P = any, R = any> (
  */
 export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
 
-type SpecKey = keyof Policy.Specification<any>
-type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
-type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
+export type SpecKey = keyof Policy.Specification<any>
+export type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
+export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
 
 /**
  * Return the value of a spec term that is defined as being
@@ -331,3 +331,8 @@ export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(k
     if (isMetaFn(specValue)) return metaCall(specValue)(meta)
     else return specValue as V
   }
+
+export const getAncestorValue = <K extends SpecKey, V extends SpecValue<K>>(meta: Meta$<any>, key: K): V => {
+  while (meta && typeof meta.$.spec[key] === "undefined") meta = meta.$.parent
+  return meta?.$.spec[key]
+}
