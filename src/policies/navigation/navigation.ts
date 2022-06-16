@@ -147,7 +147,8 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
 export const setNavItem = (meta: Meta<any>, recursing = false) => {
   const parent = meta.$.parent
   if (!recursing) policy.selectedRouteMeta = meta
-  if (parent?.$.spec.navType) {
+  if (parent) {
+    parent.$.state.nav = parent.$.state.nav || {}
     parent.$.state.nav.selected = meta.$.key
     if (parent.$.state.nav.showMenu) {
       parent.$.state.nav.showMenu = false
