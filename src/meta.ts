@@ -154,12 +154,14 @@ export function metafy <T, P = any> (
   spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: Meta$<T>
 ): Meta<T, P> {
   const hasProto = !!proto
+  const isArray = spec.items || Array.isArray(value)
+
   // Establish the correct form of prototype for this meta
-  proto = proto || (
-    spec.items || Array.isArray(value)
-      ? new MetaArrayProto()
-      : Object.create(MetaProto)
-  )
+  proto = isArray
+    ? proto instanceof MetaArrayProto
+      ? proto
+      : new MetaArrayProto()
+    : proto || Object.create(MetaProto)
 
   // Create contextual meta information object
   const $: MetaInfo<T, P> = {
@@ -194,7 +196,7 @@ export function metafy <T, P = any> (
   }
 
   // Descend through children creating further meta objects
-  if (spec.items || Array.isArray(value)) {
+  if (isArray) {
     const valueArr = <unknown>value as any[] || []
     const metaArr = <unknown>result as MetaArray<any, P>
     metaArr.length = 0 // Remove any items from supplied prototype
