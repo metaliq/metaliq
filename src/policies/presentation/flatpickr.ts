@@ -43,9 +43,11 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
           () => {
             flatpickr(`#${id}`, {
               onClose (selectedDates, dateStr) {
-                value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
-                meta.$.value = value
-                up(validate, meta)()
+                if (selectedDates[0]) {
+                  value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
+                  meta.$.value = value
+                  up(validate, meta)()
+                }
               },
               defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
               disable: options.disable || [],
