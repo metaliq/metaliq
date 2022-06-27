@@ -1,13 +1,23 @@
 import { compile, match, MatchFunction, PathFunction } from "path-to-regexp"
 import { EndoFunction, objectTransformer } from "../../util/util"
 
-export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => void
 /**
- * RouteHandler is a function with parameters typed to the route path and search query.
- * It can be synchronous or asynchronous.
- * In either case, if it returns boolean literal `false` navigation is cancelled.
+ * Signature of a route's `go` method.
+ * Can specify the path parameters <P> and query parameters <Q>.
  */
-export type RouteHandler<P, Q = any> = (routeParams: P, queryParams?: Q) => any
+export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => void
+
+/**
+ * A route parameters object supplied to any route handlers.
+ * Contains any selection of the properties of the route's
+ * path paramaters <P> and query parameters <Q>.
+ */
+export type RouteParams<P, Q = any> = Partial<P & Q>
+
+/**
+ * The signature of a route handler function (such as onEnter and onLeave).
+ */
+export type RouteHandler<P, Q = any> = (params?: RouteParams<P, Q>) => any
 
 /**
  * An route related to a given pattern, which has the embedded URL parameters P,
@@ -70,14 +80,14 @@ export class Router {
     this.onHandled = onHandled
   }
 
-  oldLocation: { pathParams: any, query: any } = null
+  oldLocation: { pathParams: any, queryParams: any } = null
 
   async canLeave () {
     if (typeof this.currentRoute?.onLeave === "function") {
-      const leave = await this.currentRoute.onLeave(
-        this.oldLocation?.pathParams || {},
-        this.oldLocation?.query || {}
-      )
+      const leave = await this.currentRoute.onLeave({
+        ...this.oldLocation?.pathParams,
+        ...this.oldLocation?.queryParams
+      })
       return leave
     }
   }
@@ -88,13 +98,15 @@ export class Router {
       if (urlMatch) {
         if (!Router.disabled) {
           const pathParams = urlMatch.params
-          const query = queryToObject()
+          const queryParams = queryToObject()
           if (typeof route.onEnter === "function") {
-            const enter = await route.onEnter(pathParams, query)
+            const enter = await route.onEnter({
+              ...pathParams, ...queryParams
+            })
             if (enter === false) return
           }
           if (this.onHandled) await this.onHandled()
-          this.oldLocation = { pathParams, query }
+          this.oldLocation = { pathParams, queryParams }
         }
         this.currentRoute = route
         return

@@ -2,6 +2,7 @@ import { Route, RouteHandler, Router } from "./router"
 import { fieldKeys, getAncestorValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
+import { extendBootstrap } from "../application/application"
 
 export { route } from "./router"
 
@@ -76,16 +77,20 @@ metaSetups.push(meta => {
     if (typeof spec.onLeave === "function") {
       spec.route.onLeave = metaCall(spec.onLeave)(meta)
     }
-    spec.route.onEnter = async (pathParams, query) => {
-      if (typeof spec.onEnter === "function") {
-        const routeResult = await metaCall(spec.onEnter)(meta)(pathParams, query)
-        if (routeResult === false) return false
-      }
-      const navType = getAncestorValue(meta, "navType")
-      if (typeof navType?.onNavigate === "function") {
-        const navTypeResult = navType.onNavigate(meta)
-        if (navTypeResult === false) return false
-      }
+    spec.route.onEnter = (params) => {
+      up(async () => {
+        let routeResult
+        if (typeof spec.onEnter === "function") {
+          routeResult = await metaCall(spec.onEnter)(meta)(params)
+          if (routeResult === false) return false
+        }
+        const navType = getAncestorValue(meta, "navType")
+        if (typeof navType?.onNavigate === "function") {
+          const navTypeResult = navType.onNavigate(meta)
+          if (navTypeResult === false) return false
+        }
+        return routeResult
+      })()
     }
   }
   // If this is a nav container, set initial selection
@@ -103,23 +108,17 @@ metaSetups.push(meta => {
       history.pushState(null, null, spec.urlPath)
     }
     if (policy.routeMetas.size) {
-      const bootstrap = meta.$.spec.bootstrap || (() => {})
-      meta.$.spec.bootstrap = async (v, m) => {
-        await bootstrap(v, m)
+      extendBootstrap(meta, (v, m) => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
           Array.from(policy.routeMetas.keys()),
-          async () => {
-            try {
-              await up()()
-            } finally {
-              // Reset the backlinks for the currently selected value _after_ the update / review
-              reset(policy.selectedRouteMeta)
-            }
+          () => {
+            // Reset the backlinks for the currently selected value
+            policy.selectedRouteMeta && reset(policy.selectedRouteMeta)
           }
         ).start()
         router.catch(console.error)
-      }
+      })
     }
   }
 })
