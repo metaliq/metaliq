@@ -122,3 +122,11 @@ export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
 
   return data
 }
+
+export const extendBootstrap = <T, P = any> (meta: Meta<T, P>, metaFn: MetaFn<T, P>) => {
+  const bootstrap = meta.$.spec.bootstrap || (() => {})
+  meta.$.spec.bootstrap = async (v, m) => {
+    await bootstrap(v, m)
+    await metaFn(v, m)
+  }
+}
