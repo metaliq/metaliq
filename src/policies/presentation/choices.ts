@@ -9,12 +9,14 @@ import { validate } from "../validation/validation"
 import { fieldError, isDisabled } from "./widgets"
 import { label } from "../terminology/terminology"
 import { getModuleDefault } from "../../util/import"
+import { remove } from "../../util/util"
 
 export type SelectorOptions = {
   classes?: string
   type?: "text" | "select-one" | "select-multiple"
   choices?: ChoicesModule.Choice[]
   searchText?: string
+  multiple?: boolean
 }
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
@@ -27,32 +29,47 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
       "mq-populated": !!value
     })}">
       ${guard([meta], () => {
+        let choices: any
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
         if (value) {
-          const selected = options.choices.find(c => c.value === value)
-          if (!selected) {
-            console.warn(`Invalid selector value for ${meta.$.key} : ${value}`)
-          } else {
-            selected.selected = true
+          const values = Array.isArray(value) ? value : [value]
+          for (const val of values) {
+            const selected = options.choices.find(c => c.value === val)
+            if (!selected) {
+              console.warn(`Invalid selector value for ${meta.$.key} : ${value}`)
+            } else {
+              selected.selected = true
+            }
           }
         }
         setTimeout(
           () => {
             // eslint-disable-next-line no-new -- No need to hold reference to Choices
-            new Choices(`#${id}`, {
+            choices = new Choices(`#${id}`, {
               choices: options.choices,
               searchPlaceholderValue: options.searchText ?? "",
-              allowHTML: true
+              allowHTML: true,
+              removeItems: true,
+              removeItemButton: true,
+              callbackOnInit: () => {
+                console.log("Initialised choices", this)
+              }
             })
           },
           250
         )
+
         return html`
-            <select id=${id} @change=${up(onSelect, meta)}
+            <select id=${id} 
+              @addItem=${up(onAddItem(options), meta)}
+              @removeItem=${up(onRemoveItem(options), meta)}
+              ?multiple=${options.multiple}
               ?disabled=${disabled}
               class="mq-input ${classMap({ "mq-disabled": disabled })}"
             >
-              <option value="">${label(meta)}</option>
+              ${options.multiple ? "" : html`
+                <option value="">${label(meta)}</option>
+              `}
             </select>
           `
       })}
@@ -70,7 +87,24 @@ export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
 
 export const stringChoices = (strings: string[]) => strings.map(s => ({ value: s, label: s }))
 
-function onSelect (meta: Meta<any>, event: { detail: { value: string } }) {
-  meta.$.value = event.detail.value
+const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
+  console.log(event)
+}
+
+const onAddItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
+  if (options.multiple) {
+    meta.$.value = meta.$.value || []
+    meta.$.value.push(event.detail.value)
+  } else {
+    meta.$.value = event.detail.value
+  }
   validate(meta)
+}
+
+const onRemoveItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
+  if (options.multiple) {
+    remove(meta.$.value, event.detail.value)
+  } else {
+    meta.$.value = ""
+  }
 }
