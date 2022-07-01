@@ -1,8 +1,8 @@
 import { Route, RouteHandler, Router } from "./router"
-import { fieldKeys, getAncestorValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
+import { fieldKeys, getAncestorSpecValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
-import { extendBootstrap } from "../application/application"
+import { extendBootstrap } from "../application"
 
 export { route } from "./router"
 
@@ -84,7 +84,7 @@ metaSetups.push(meta => {
           routeResult = await metaCall(spec.onEnter)(meta)(params)
           if (routeResult === false) return false
         }
-        const navType = getAncestorValue(meta, "navType")
+        const navType = getAncestorSpecValue(meta, "navType")
         if (typeof navType?.onNavigate === "function") {
           const navTypeResult = navType.onNavigate(meta)
           if (navTypeResult === false) return false

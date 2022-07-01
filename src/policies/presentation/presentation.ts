@@ -1,7 +1,7 @@
 import { render, TemplateResult } from "lit"
 import { meta, metaCall, MetaFn, metaSetups } from "../../meta"
 import { label } from "../terminology/terminology"
-import { review } from "../application/application"
+import { review } from "../application"
 
 export interface PresentationSpec<T, P> {
   /**
