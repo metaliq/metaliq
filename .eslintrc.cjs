@@ -3,6 +3,7 @@ module.exports = {
   parserOptions: {
     project: "./tsconfig.json"
   },
+  ignorePatterns: [ "**/*.js", "**/*.cjs" ],
   // Add specific overrides to tweak StandardJS defaults to match our usage
   rules: {
     // We prefer double quoted strings ...
