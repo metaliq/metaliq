@@ -3,7 +3,7 @@ import { describe } from "mocha"
 import { $Fn, $fn } from "../meta"
 import { Contact } from "./test-types"
 import { organisationSpec } from "./test-specs"
-import { run } from "../policies/application"
+import { run } from "../policies/application/application"
 
 chai.should()
 
@@ -16,8 +16,6 @@ chai.should()
  *
  * They accept the meta info (the `$` property) of a meta object,
  * along with optional data and event parameters for additional info.
- *
-
  */
 describe("Meta functions ($Fn)", () => {
 

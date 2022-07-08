@@ -2,7 +2,7 @@ import { Route, RouteHandler, Router } from "./router"
 import { fieldKeys, getAncestorSpecValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
-import { extendBootstrap } from "../application"
+import { extendBootstrap } from "../application/application"
 
 export { route } from "./router"
 

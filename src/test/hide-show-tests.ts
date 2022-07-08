@@ -1,7 +1,7 @@
 import { describe } from "mocha"
 import chai from "chai"
 import { organisationSpec } from "./test-specs"
-import { run } from "../policies/application"
+import { run } from "../policies/application/application"
 import { up } from "@metaliq/up"
 import { meta } from "../meta"
 
