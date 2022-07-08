@@ -140,9 +140,12 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   return navModel
 }
 
+/**
+ * Get the Meta object for the current selection in the given navigation level.
+ */
 export const getNavSelection = <T>(navMeta: Meta<T>) => {
   const key: FieldKey<T> = navMeta.$.state.nav?.selected
-  return navMeta[key]
+  return navMeta[key] as Meta<any>
 }
 
 /**
