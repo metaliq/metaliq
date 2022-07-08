@@ -66,5 +66,5 @@ export const organisationSpec: MetaSpec<Organisation> = {
       }
     }
   },
-  init: sampleOrganisation()
+  init: sampleOrganisation
 }
