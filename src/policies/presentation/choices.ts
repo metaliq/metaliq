@@ -29,7 +29,6 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
       "mq-populated": !!value
     })}">
       ${guard([meta], () => {
-        let choices: any
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
         if (value) {
           const values = Array.isArray(value) ? value : [value]
@@ -45,7 +44,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
         setTimeout(
           () => {
             // eslint-disable-next-line no-new -- No need to hold reference to Choices
-            choices = new Choices(`#${id}`, {
+            new Choices(`#${id}`, {
               choices: options.choices,
               searchPlaceholderValue: options.searchText ?? "",
               allowHTML: true,
@@ -86,10 +85,6 @@ export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
 ]
 
 export const stringChoices = (strings: string[]) => strings.map(s => ({ value: s, label: s }))
-
-const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
-  console.log(event)
-}
 
 const onAddItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
   if (options.multiple) {
