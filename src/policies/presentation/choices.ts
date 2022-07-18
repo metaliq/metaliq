@@ -5,7 +5,6 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
-import { validate } from "../validation/validation"
 import { fieldError, isDisabled } from "./widgets"
 import { label } from "../terminology/terminology"
 import { getModuleDefault } from "../../util/import"
@@ -59,7 +58,8 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
         )
 
         return html`
-            <select id=${id} 
+            <select id=${id}
+              @change=${up(onChange(options), meta)}
               @addItem=${up(onAddItem(options), meta)}
               @removeItem=${up(onRemoveItem(options), meta)}
               ?multiple=${options.multiple}
@@ -86,20 +86,44 @@ export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
 
 export const stringChoices = (strings: string[]) => strings.map(s => ({ value: s, label: s }))
 
-const onAddItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
-  if (options.multiple) {
-    meta.$.value = meta.$.value || []
-    meta.$.value.push(event.detail.value)
-  } else {
-    meta.$.value = event.detail.value
+type ProposedChange = {
+  type: "Add" | "Remove"
+  value: string
+}
+
+const state = {
+  proposedChange: null as ProposedChange
+}
+
+const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: Event) => {
+  if (state.proposedChange?.type === "Add") {
+    if (options.multiple) {
+      meta.$.value = meta.$.value || (meta.$.parent.$.value[meta.$.key] = [])
+      meta.$.value.push(state.proposedChange.value)
+    } else {
+      meta.$.value = state.proposedChange.value
+    }
+  } else if (state.proposedChange?.type === "Remove") {
+    if (options.multiple) {
+      remove(meta.$.value, state.proposedChange.value)
+    } else {
+      meta.$.value = ""
+    }
   }
-  validate(meta)
+  // validate(meta)
+  state.proposedChange = null
+}
+
+const onAddItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
+  state.proposedChange = {
+    type: "Add",
+    value: event.detail.value
+  }
 }
 
 const onRemoveItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
-  if (options.multiple) {
-    remove(meta.$.value, event.detail.value)
-  } else {
-    meta.$.value = ""
+  state.proposedChange = {
+    type: "Remove",
+    value: event.detail.value
   }
 }
