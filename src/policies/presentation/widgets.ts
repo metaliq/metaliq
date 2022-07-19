@@ -6,6 +6,7 @@ import { FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, Meta
 import { validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, view, ViewResult } from "./presentation"
+import { ifDefined } from "lit/directives/if-defined.js"
 
 export { expander } from "./expander"
 export { AnimatedHideShow } from "./animated-hide-show"
@@ -97,6 +98,7 @@ export type InputOptions<T> = {
   labelAfter?: boolean // Place the label after the input
   labelView?: MetaView<T> // Custom label content function
   classes?: string // Additional class(es) for field container
+  autocomplete?: string
 }
 
 /**
@@ -117,6 +119,7 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (value, 
       @blur=${up(onBlur(options), meta)}
       @click=${options.type === "checkbox" ? up(onInput(options), meta, { doDefault: true }) : () => {}}
       .checked=${options.type === "checkbox" && meta.$.value}
+      autocomplete=${ifDefined(options.autocomplete)}
     />
   `
 }
