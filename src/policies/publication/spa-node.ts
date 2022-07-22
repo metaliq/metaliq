@@ -23,7 +23,9 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
   const devServerConfig: DevServerConfig = {
     rootDir: process.cwd(),
     port,
-    nodeResolve: true,
+    nodeResolve: {
+      browser: true
+    },
     open: true,
     watch: true,
     middleware: [
