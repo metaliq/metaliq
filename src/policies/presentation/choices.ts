@@ -5,16 +5,17 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
-import { validate } from "../validation/validation"
 import { fieldError, isDisabled } from "./widgets"
 import { label } from "../terminology/terminology"
 import { getModuleDefault } from "../../util/import"
+import { remove } from "../../util/util"
 
 export type SelectorOptions = {
   classes?: string
   type?: "text" | "select-one" | "select-multiple"
   choices?: ChoicesModule.Choice[]
   searchText?: string
+  multiple?: boolean
 }
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
@@ -29,11 +30,14 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
       ${guard([meta], () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
         if (value) {
-          const selected = options.choices.find(c => c.value === value)
-          if (!selected) {
-            console.warn(`Invalid selector value for ${meta.$.key} : ${value}`)
-          } else {
-            selected.selected = true
+          const values = Array.isArray(value) ? value : [value]
+          for (const val of values) {
+            const selected = options.choices.find(c => c.value === val)
+            if (!selected) {
+              console.warn(`Invalid selector value for ${meta.$.key} : ${value}`)
+            } else {
+              selected.selected = true
+            }
           }
         }
         setTimeout(
@@ -42,17 +46,29 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
             new Choices(`#${id}`, {
               choices: options.choices,
               searchPlaceholderValue: options.searchText ?? "",
-              allowHTML: true
+              allowHTML: true,
+              removeItems: true,
+              removeItemButton: true,
+              callbackOnInit: () => {
+                console.log("Initialised choices", this)
+              }
             })
           },
           250
         )
+
         return html`
-            <select id=${id} @change=${up(onSelect, meta)}
+            <select id=${id}
+              @change=${up(onChange(options), meta)}
+              @addItem=${up(onAddItem(options), meta)}
+              @removeItem=${up(onRemoveItem(options), meta)}
+              ?multiple=${options.multiple}
               ?disabled=${disabled}
               class="mq-input ${classMap({ "mq-disabled": disabled })}"
             >
-              <option value="">${label(meta)}</option>
+              ${options.multiple ? "" : html`
+                <option value="">${label(meta)}</option>
+              `}
             </select>
           `
       })}
@@ -70,7 +86,44 @@ export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
 
 export const stringChoices = (strings: string[]) => strings.map(s => ({ value: s, label: s }))
 
-function onSelect (meta: Meta<any>, event: { detail: { value: string } }) {
-  meta.$.value = event.detail.value
-  validate(meta)
+type ProposedChange = {
+  type: "Add" | "Remove"
+  value: string
+}
+
+const state = {
+  proposedChange: null as ProposedChange
+}
+
+const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: Event) => {
+  if (state.proposedChange?.type === "Add") {
+    if (options.multiple) {
+      meta.$.value = meta.$.value || (meta.$.parent.$.value[meta.$.key] = [])
+      meta.$.value.push(state.proposedChange.value)
+    } else {
+      meta.$.value = state.proposedChange.value
+    }
+  } else if (state.proposedChange?.type === "Remove") {
+    if (options.multiple) {
+      remove(meta.$.value, state.proposedChange.value)
+    } else {
+      meta.$.value = ""
+    }
+  }
+  // validate(meta)
+  state.proposedChange = null
+}
+
+const onAddItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
+  state.proposedChange = {
+    type: "Add",
+    value: event.detail.value
+  }
+}
+
+const onRemoveItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
+  state.proposedChange = {
+    type: "Remove",
+    value: event.detail.value
+  }
 }
