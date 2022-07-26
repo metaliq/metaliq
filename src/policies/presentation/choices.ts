@@ -16,11 +16,16 @@ export type SelectorOptions = {
   choices?: ChoicesModule.Choice[]
   searchText?: string
   multiple?: boolean
+  sort?: boolean // Defaults to true, set to false to prevent alpha-sorting
 }
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
 export const selector = (options: SelectorOptions = {}): MetaView<any> => (value, meta) => {
+  options = {
+    sort: true,
+    ...options
+  }
   const disabled = isDisabled(meta)
   return html`
     <label class="mq-field mq-select-field ${classMap({
@@ -49,6 +54,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
               allowHTML: true,
               removeItems: true,
               removeItemButton: true,
+              shouldSort: !!options.sort,
               callbackOnInit: () => {
                 console.log("Initialised choices", this)
               }
