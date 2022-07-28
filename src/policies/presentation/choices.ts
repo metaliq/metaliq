@@ -34,6 +34,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
     })}">
       ${guard([meta], () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
+        options.choices.forEach(choice => { delete choice.selected })
         if (value) {
           const values = Array.isArray(value) ? value : [value]
           for (const val of values) {
