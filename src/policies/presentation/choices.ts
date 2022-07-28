@@ -128,13 +128,13 @@ const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: Event) =
 const onAddItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
   state.proposedChange = {
     type: "Add",
-    value: event.detail.value
+    value: event?.detail?.value
   }
 }
 
 const onRemoveItem = (options: SelectorOptions) => (meta: Meta<any>, event: { detail: { value: string } }) => {
   state.proposedChange = {
     type: "Remove",
-    value: event.detail.value
+    value: event?.detail?.value
   }
 }
