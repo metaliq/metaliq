@@ -5,8 +5,7 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
-import { fieldError, isDisabled } from "./widgets"
-import { label } from "../terminology/terminology"
+import { fieldClasses, fieldError, fieldLabel, isDisabled } from "./widgets"
 import { getModuleDefault } from "../../util/import"
 import { remove } from "../../util/util"
 
@@ -30,7 +29,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
-      "mq-populated": !!value
+      ...fieldClasses(value, meta)
     })}">
       ${guard([meta], () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
@@ -74,11 +73,12 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
               class="mq-input ${classMap({ "mq-disabled": disabled })}"
             >
               ${options.multiple ? "" : html`
-                <option value="">${label(meta)}</option>
+                <option value="">&nbsp;</option>
               `}
             </select>
           `
       })}
+      ${fieldLabel()(value, meta)}
       ${fieldError(value, meta)}
     </label>
 `

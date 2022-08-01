@@ -169,8 +169,8 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (va
 /**
  * Label element for input field.
  */
-export const fieldLabel = <T>(options: InputOptions<T>): MetaView<T> => (value, meta) =>
-  typeof options.labelView === "function"
+export const fieldLabel = <T>(options?: InputOptions<T>): MetaView<T> => (value, meta) =>
+  typeof options?.labelView === "function"
     ? options.labelView(value, meta)
     : html`<span class="mq-input-label">${labelOrKey(meta)}</span>`
 
