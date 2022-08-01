@@ -8,6 +8,7 @@ import { Meta } from "../../meta"
 import { fieldClasses, fieldError, fieldLabel, isDisabled } from "./widgets"
 import { getModuleDefault } from "../../util/import"
 import { remove } from "../../util/util"
+import { validate } from "../validation/validation"
 
 export type SelectorOptions = {
   classes?: string
@@ -29,7 +30,8 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
-      ...fieldClasses(value, meta)
+      ...fieldClasses(value, meta),
+      "mq-populated": !!meta.$.value && meta.$.value.length > 0
     })}">
       ${guard([meta], () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
@@ -117,7 +119,7 @@ const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: Event) =
       meta.$.value = ""
     }
   }
-  // validate(meta)
+  validate(meta)
   state.proposedChange = null
 }
 
