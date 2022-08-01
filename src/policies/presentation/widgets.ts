@@ -138,6 +138,18 @@ export const isDisabled = (meta: Meta<any>): boolean => {
 }
 
 /**
+ * A standard set of field classes for the meta.
+ */
+export const fieldClasses: MetaFn<any> = (v, meta) => {
+  return {
+    "mq-mandatory": meta.$.state.mandatory,
+    "mq-active": meta.$.state.active,
+    "mq-populated": !!meta.$.value,
+    "mq-disabled": isDisabled(meta)
+  }
+}
+
+/**
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
@@ -145,9 +157,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (va
   <label class="mq-field ${classMap({
     [options.classes]: !!options.classes,
     [`mq-${options.type || "text"}-field`]: true,
-    "mq-mandatory": meta.$.state.mandatory,
-    "mq-active": meta.$.state.active,
-    "mq-populated": !!meta.$.value
+    ...fieldClasses(value, meta)
   })}" >
     ${!options.labelAfter ? fieldLabel(options)(value, meta) : ""}
     ${input({ type: "text", ...options })(value, meta)}
