@@ -9,6 +9,7 @@ import { fieldClasses, fieldError, fieldLabel, isDisabled } from "./widgets"
 import { getModuleDefault } from "../../util/import"
 import { remove } from "../../util/util"
 import { validate } from "../validation/validation"
+import { label } from "../terminology/terminology"
 
 export type SelectorOptions = {
   classes?: string
@@ -75,7 +76,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
               class="mq-input ${classMap({ "mq-disabled": disabled })}"
             >
               ${options.multiple ? "" : html`
-                <option value="">&nbsp;</option>
+                <option value="">${label(meta)}</option>
               `}
             </select>
           `
