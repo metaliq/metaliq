@@ -14,7 +14,7 @@
     "prepare": "npm run clean && npm run prep-css && tsc",
     "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/",
     "test-$fn": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/\\$fn-tests.js",
-    "publish": "pnpm publish --tag alpha"
+    "publish-alpha": "pnpm publish --tag alpha"
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",

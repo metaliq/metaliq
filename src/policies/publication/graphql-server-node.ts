@@ -161,6 +161,33 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
 
   console.log(cloudExport)
 
+  if (cloud === "netlify") {
+    return dedent`
+      const { ApolloServer, gql } = require("apollo-server-lambda");
+  
+      const typeDefs = gql\`
+        type Query {
+          hello: String
+        }
+      \`;
+      
+      const resolvers = {
+        Query: {
+          hello: (parent, args, context) => {
+            return "Hello, world!";
+          }
+        }
+      };
+      
+      const server = new ApolloServer({
+        typeDefs,
+        resolvers
+      });
+      
+      exports.handler = server.createHandler();
+    `
+  }
+
   return dedent`
     import { typeDefs } from "./schema.js"
     import { ${specName} } from "./${specPath}.js"
