@@ -184,11 +184,13 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
         resolvers
       });
       
+      const apolloHandler = server.createHandler();
+      
       exports.handler = (event, context) => {
         if (!event.requestContext) {
           event.requestContext = context;
         }
-        return server.createHandler(event, context);
+        return apolloHandler(event, context);
       }
     `
   }
