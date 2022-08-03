@@ -161,7 +161,7 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
 
   console.log(cloudExport)
 
-  if (cloud === null) {
+  if (cloud === "netlify") {
     return dedent`
       const { ApolloServer, gql } = require("apollo-server-lambda")
   
@@ -184,11 +184,16 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
         resolvers
       });
       
-      exports.handler = server.createHandler();
+      exports.handler = (event, context) => {
+        if (!event.requestContext) {
+          event.requestContext = context;
+        }
+        return server.createHandler(event, context);
+      }
     `
   }
 
-  if (cloud === "netlify") {
+  if (cloud === null) {
     return dedent`
       const { ApolloServer, gql } = require("apollo-server-lambda")
       
