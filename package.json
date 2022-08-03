@@ -58,6 +58,7 @@
     "@web/dev-server": "^0.1.25",
     "apollo-server-cloud-functions": "^3.5.0",
     "apollo-server-express": "^3.5.0",
+    "apollo-server-lambda": "^3.10.0",
     "choices.js": "10.1.0",
     "clean-css": "^4.2.3",
     "commander": "^8.2.0",
