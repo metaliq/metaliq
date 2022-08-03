@@ -161,7 +161,7 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
 
   console.log(cloudExport)
 
-  if (cloud === "netlify") {
+  if (cloud === null) {
     return dedent`
       const { ApolloServer, gql } = require("apollo-server-lambda");
   
@@ -185,6 +185,17 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
       });
       
       exports.handler = server.createHandler();
+    `
+  }
+
+  if (cloud === "netlify") {
+    return dedent`
+      exports.handler = async function (event, context) {
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ message: "Hello World" }),
+        };
+      };
     `
   }
 
