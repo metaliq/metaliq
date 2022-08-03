@@ -3,8 +3,7 @@ import { Builder, Cleaner, Runner } from "./publication"
 import { ApolloServer as ApolloServerExpress } from "apollo-server-express"
 import express from "express"
 import fsExtra from "fs-extra"
-import { SinglePageAppConfig } from "./spa"
-import { CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
+import { Cloud, CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "./util"
 import { join } from "path"
 import { makeProdJs } from "./prod-js"
@@ -65,25 +64,28 @@ export const cleaner: Cleaner = async ({ spec }) => {
 }
 
 export const builder: Builder = async ({ spec, simplePath, specName }) => {
-  const spa: SinglePageAppConfig = spec.publication?.spa
-  const destDir = spa?.build?.destDir || "prod/api"
+  const graphQLServer = spec.publication?.graphQLServer
+  const destDir = graphQLServer?.build?.destDir || "prod/api"
+  const cloud = graphQLServer?.build?.cloud || "firebase"
 
   // Make production javascript
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
-  await ensureAndWriteFile("bin/schema.js", schemaJs(schema))
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, spec.publication.graphQLServer?.build?.cloudFnOptions))
+  await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
+  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, graphQLServer?.build?.cloudFnOptions))
   const js = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
-    external: ["apollo-server-cloud-functions", "firebase-functions", "node-fetch"]
+    external: ["apollo-server-cloud-functions", "apollo-server-lambda", "firebase-functions", "node-fetch"]
   })
   // await remove(jsSrc)
   await ensureAndWriteFile(join(destDir, "index.js"), js)
 
   // Add package.json
-  const json = JSON.stringify(packageJson, null, "  ")
-  await ensureAndWriteFile(join(destDir, "package.json"), json)
+  if (cloud === "firebase") {
+    const json = JSON.stringify(packageJson, null, "  ")
+    await ensureAndWriteFile(join(destDir, "package.json"), json)
+  }
 
   return true
 }
@@ -126,23 +128,43 @@ export const startSubscriptionServer = (schema: any) => {
   pubsub = new PubSub()
 }
 
-const schemaJs = (schema: string) => dedent`
-  import { gql } from "apollo-server-cloud-functions"
+const apolloCloudLib: Record<Cloud, string> = {
+  firebase: "apollo-server-cloud-functions",
+  netlify: "apollo-server-lambda"
+}
+
+const schemaJs = (schema: string, cloud: Cloud) => dedent`
+  import { gql } from "${apolloCloudLib[cloud]}"
   
   export const typeDefs = gql\`
     ${schema}
   \`
 `
 
-const indexJs = (specName: string, specPath: string, cloudFnOptions: CloudFnOptions = {}) => {
+const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOptions: CloudFnOptions = {}) => {
   if (cloudFnOptions.vpcConnector) Object.assign(cloudFnOptions, { vpcConnectorEgressSettings: "ALL_TRAFFIC" })
+
+  const cloudExportMap: Record<Cloud, () => string> = {
+    firebase: () => dedent`
+      export const graphql = functions
+      .runWith(${JSON.stringify(cloudFnOptions)})
+      .https
+      .onRequest(server.createHandler())
+    `,
+    netlify: () => dedent`
+      export const handler = server.createHandler()
+    `
+  }
+  const cloudExport = cloudExportMap[cloud]()
+
+  console.log(cloudExport)
 
   return dedent`
     import { typeDefs } from "./schema.js"
     import { ${specName} } from "./${specPath}.js"
     
-    import { ApolloServer } from "apollo-server-cloud-functions"
-    import functions from "firebase-functions"
+    import { ApolloServer } from "${apolloCloudLib[cloud]}"
+    ${cloud === "firebase" ? "import functions from \"firebase-functions\"" : ""}
     
     const server = new ApolloServer({ 
       typeDefs, 
@@ -150,11 +172,8 @@ const indexJs = (specName: string, specPath: string, cloudFnOptions: CloudFnOpti
       playground: true,
       introspection: true
     })
-  
-    export const graphql = functions
-      .runWith(${JSON.stringify(cloudFnOptions)})
-      .https
-      .onRequest(server.createHandler())
+    
+    ${cloudExport}
   `
 }
 

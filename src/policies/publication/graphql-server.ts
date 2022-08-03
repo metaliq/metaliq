@@ -48,11 +48,26 @@ export type GraphQLServerConfig = {
    * Details for the production build.
    */
   build?: {
-    destDir?: string // Defaults to prod/api
+    /**
+     * Defaults to prod/api
+     */
+    destDir?: string
 
+    /**
+     * The destination cloud for deployment.
+     * Current values are "firebase" or "netlify" - both cloud function platforms.
+     * Defaults to firebase for legacy reasons.
+     */
+    cloud?: Cloud
+
+    /**
+     * Deployment options for various cloud-specific configurations.
+     */
     cloudFnOptions?: CloudFnOptions
   }
 }
+
+export type Cloud = "firebase" | "netlify"
 
 export type CloudFnOptions = {
   memory?: string
