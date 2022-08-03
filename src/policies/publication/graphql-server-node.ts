@@ -163,8 +163,6 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
         }
         return apolloHandler(event, context);
       }
-    
-      export const handler = server.createHandler()
     `
   }
   const cloudExport = cloudExportMap[cloud]()
