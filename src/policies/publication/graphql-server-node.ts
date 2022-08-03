@@ -153,15 +153,23 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
       .https
       .onRequest(server.createHandler())
     `,
+    // In Netlify we need to add the requestContext that is missing from underlying vendia/serverless-express
     netlify: () => dedent`
+      const apolloHandler = server.createHandler();
+      
+      export const handler = (event, context) => {
+        if (!event.requestContext) {
+          event.requestContext = context;
+        }
+        return apolloHandler(event, context);
+      }
+    
       export const handler = server.createHandler()
     `
   }
   const cloudExport = cloudExportMap[cloud]()
 
-  console.log(cloudExport)
-
-  if (cloud === "netlify") {
+  if (cloud === null) {
     return dedent`
       const { ApolloServer, gql } = require("apollo-server-lambda")
   
@@ -191,19 +199,6 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
           event.requestContext = context;
         }
         return apolloHandler(event, context);
-      }
-    `
-  }
-
-  if (cloud === null) {
-    return dedent`
-      const { ApolloServer, gql } = require("apollo-server-lambda")
-      
-      exports.handler = async function (event, context) {
-        return {
-          statusCode: 200,
-          body: JSON.stringify({ message: "Hello World" }),
-        }
       }
     `
   }
