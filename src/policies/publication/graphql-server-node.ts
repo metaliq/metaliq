@@ -163,7 +163,7 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
 
   if (cloud === null) {
     return dedent`
-      const { ApolloServer, gql } = require("apollo-server-lambda");
+      const { ApolloServer, gql } = require("apollo-server-lambda")
   
       const typeDefs = gql\`
         type Query {
@@ -190,12 +190,14 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
 
   if (cloud === "netlify") {
     return dedent`
+      const { ApolloServer, gql } = require("apollo-server-lambda")
+      
       exports.handler = async function (event, context) {
         return {
           statusCode: 200,
           body: JSON.stringify({ message: "Hello World" }),
-        };
-      };
+        }
+      }
     `
   }
 
