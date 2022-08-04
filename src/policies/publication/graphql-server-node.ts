@@ -76,7 +76,7 @@ export const builder: Builder = async ({ spec, simplePath, specName }) => {
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
-    external: ["apollo-server-cloud-functions", "apollo-server-lambda", "firebase-functions", "node-fetch"]
+    external: ["apollo-server-cloud-functions", "apollo-server-lambda", "firebase-functions", "node-fetch", "@supabase/supabase-js"]
   })
   await remove(jsSrc)
   const cloudFileNames: Record<Cloud, string> = {
