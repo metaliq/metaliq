@@ -1,4 +1,4 @@
-import { ModuleFormat, rollup } from "rollup"
+import { ModuleFormat, OutputChunk, rollup } from "rollup"
 import ignore from "rollup-plugin-ignore"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
@@ -16,6 +16,11 @@ export type ProdJsOptions = {
   exclude?: string[]
   external?: string[]
   format?: ModuleFormat
+}
+
+export type ProdJsOutput = {
+  fileName: string
+  code: string
 }
 
 /**
@@ -41,16 +46,25 @@ export const makeProdJs = async ({ src, exclude = [], external = [], format = "e
       })
     ]
   })
-  const bundledJs = await bundler.generate({
+  const bundle = await bundler.generate({
     format
   })
 
-  // Minify JS, including embedded HTML and SVG template literals
-  const minJsResult = await minify(bundledJs.output[0].code, {
-    output: {
-      comments: false
-    }
-  })
+  const outputs: ProdJsOutput[] = []
 
-  return minJsResult.code
+  for (const bundleOutput of bundle.output) {
+    const chunk = bundleOutput as OutputChunk
+    // Minify JS, including embedded HTML and SVG template literals
+    const minJs = await minify(chunk.code, {
+      output: {
+        comments: false
+      }
+    })
+    outputs.push({
+      fileName: chunk.fileName,
+      code: minJs.code
+    })
+  }
+
+  return outputs
 }

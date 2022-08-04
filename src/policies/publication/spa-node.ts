@@ -107,12 +107,15 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
 
   // Produce JS
   await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath))
-  const js = await makeProdJs({
+  const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./spa-node"]
   })
   await remove(jsSrc)
-  await ensureAndWriteFile(join(destDir, jsDest), js)
+  for (const [i, output] of prodJsOutputs.entries()) {
+    const fileName = i === 0 ? jsDest : output.fileName
+    await ensureAndWriteFile(join(destDir, fileName), output.code)
+  }
 
   // Produce CSS
   if (cssSrc) {

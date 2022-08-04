@@ -73,17 +73,21 @@ export const builder: Builder = async ({ spec, simplePath, specName }) => {
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
   await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, graphQLServer?.build?.cloudFnOptions))
-  const js = await makeProdJs({
+  const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
     external: ["apollo-server-cloud-functions", "apollo-server-lambda", "firebase-functions", "node-fetch"]
   })
-  // await remove(jsSrc)
-  const fileName: Record<Cloud, string> = {
+  await remove(jsSrc)
+  const cloudFileNames: Record<Cloud, string> = {
     firebase: "index",
     netlify: "graphql"
   }
-  await ensureAndWriteFile(join(destDir, `${fileName[cloud]}.js`), js)
+  const mainFileName = `${cloudFileNames[cloud]}.js`
+  for (const [i, output] of prodJsOutputs.entries()) {
+    const fileName = i === 0 ? mainFileName : output.fileName
+    await ensureAndWriteFile(join(destDir, fileName), output.code)
+  }
 
   // Add package.json
   const json = JSON.stringify(packageJson[cloud], null, "  ")
