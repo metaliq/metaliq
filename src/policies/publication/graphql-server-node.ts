@@ -48,7 +48,7 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
 
   // Start the API server
   httpServer.listen(port, hostname, () =>
-    console.log(`MetaliQA API server running on http://${hostname}:${port}${apolloServer.graphqlPath}`)
+    console.log(`GraphQL server running on http://${hostname}:${port}${apolloServer.graphqlPath}`)
   )
 
   return true
