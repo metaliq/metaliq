@@ -5,10 +5,11 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta } from "../../meta"
-import { fieldError, isDisabled } from "./widgets"
-import { label } from "../terminology/terminology"
+import { fieldClasses, fieldError, fieldLabel, isDisabled } from "./widgets"
 import { getModuleDefault } from "../../util/import"
 import { remove } from "../../util/util"
+import { validate } from "../validation/validation"
+import { label } from "../terminology/terminology"
 
 export type SelectorOptions = {
   classes?: string
@@ -16,19 +17,26 @@ export type SelectorOptions = {
   choices?: ChoicesModule.Choice[]
   searchText?: string
   multiple?: boolean
+  sort?: boolean // Defaults to true, set to false to prevent alpha-sorting
 }
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
 export const selector = (options: SelectorOptions = {}): MetaView<any> => (value, meta) => {
+  options = {
+    sort: true,
+    ...options
+  }
   const disabled = isDisabled(meta)
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
-      "mq-populated": !!value
+      ...fieldClasses(value, meta),
+      "mq-populated": !!meta.$.value && meta.$.value.length > 0
     })}">
       ${guard([meta], () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
+        options.choices.forEach(choice => { delete choice.selected })
         if (value) {
           const values = Array.isArray(value) ? value : [value]
           for (const val of values) {
@@ -49,6 +57,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
               allowHTML: true,
               removeItems: true,
               removeItemButton: true,
+              shouldSort: !!options.sort,
               callbackOnInit: () => {
                 console.log("Initialised choices", this)
               }
@@ -72,6 +81,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
             </select>
           `
       })}
+      ${fieldLabel()(value, meta)}
       ${fieldError(value, meta)}
     </label>
 `
@@ -110,7 +120,7 @@ const onChange = (options: SelectorOptions) => (meta: Meta<any>, event: Event) =
       meta.$.value = ""
     }
   }
-  // validate(meta)
+  validate(meta)
   state.proposedChange = null
 }
 

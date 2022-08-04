@@ -126,7 +126,11 @@ export function validate (meta: Meta<any>) {
 
 export function hasValue (meta: Meta<any>) {
   const value = meta.$.value
-  return !(value === "" || (value ?? null) === null)
+  return !(
+    value === "" ||
+    (Array.isArray(value) && !value.length) ||
+    (value ?? null) === null
+  )
 }
 
 /**
@@ -145,7 +149,10 @@ export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = 
     let childErrors: Array<Meta<any>> = []
     if (Array.isArray(sub)) {
       const subArr = sub as MetaArray<any>
+      const subMeta = <unknown>sub as Meta<any>
       childErrors = subArr.flatMap(child => validateAll(child, revalidate))
+      validate(subMeta)
+      if (sub.$.state.error) childErrors.push(subMeta)
     } else {
       const subMeta = sub as Meta<any>
       if (!subMeta.$.state.hidden) {
