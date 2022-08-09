@@ -102,7 +102,7 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   const cssDest = spa?.build?.css?.dest || cssSrc
 
   // Produce HTML
-  const html = indexHtml(spa, jsDest, cssDest)
+  const html = indexHtml(spa, jsDest, cssDest, typeof spec.label === "string" ? spec.label : undefined)
   await ensureAndWriteFile(join(destDir, htmlDest), html)
 
   // Produce JS
@@ -147,7 +147,7 @@ const indexJs = (specName: string, specPath: string) => dedent`
   run(${specName})
 `
 
-const indexHtml = (spaConfig: SinglePageAppConfig, jsPath: string, cssPath?: string) => {
+const indexHtml = (spaConfig: SinglePageAppConfig, jsPath: string, cssPath?: string, title?: string) => {
   // Add in the default js and css index files from the build
   const scripts = [
     ...(spaConfig?.pageInfo?.scripts || []),
@@ -157,7 +157,9 @@ const indexHtml = (spaConfig: SinglePageAppConfig, jsPath: string, cssPath?: str
     ...(spaConfig?.pageInfo?.styles || []),
     cssPath
   ].filter(Boolean)
+
   return page({
+    title: title,
     ...(spaConfig?.pageInfo || {}),
     scripts,
     styles

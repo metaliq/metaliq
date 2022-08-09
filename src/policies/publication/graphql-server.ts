@@ -64,11 +64,16 @@ export type GraphQLServerConfig = {
      * Deployment options for various cloud-specific configurations.
      */
     cloudFnOptions?: CloudFnOptions
+
+    useDomShim?: boolean
   }
 }
 
 export type Cloud = "firebase" | "netlify"
 
+/**
+ * Cloud options for Firebase.
+ */
 export type CloudFnOptions = {
   memory?: string
   timeoutSeconds?: number

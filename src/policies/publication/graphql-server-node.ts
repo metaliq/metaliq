@@ -67,12 +67,13 @@ export const builder: Builder = async ({ spec, simplePath, specName }) => {
   const graphQLServer = spec.publication?.graphQLServer
   const destDir = graphQLServer?.build?.destDir || "prod/api"
   const cloud = graphQLServer?.build?.cloud || "firebase"
+  const useDomShim = !!graphQLServer?.build?.useDomShim
 
   // Make production javascript
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, graphQLServer?.build?.cloudFnOptions))
+  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, graphQLServer?.build?.cloudFnOptions, useDomShim))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
@@ -147,7 +148,13 @@ const schemaJs = (schema: string, cloud: Cloud) => dedent`
   \`
 `
 
-const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOptions: CloudFnOptions = {}) => {
+const indexJs = (
+  specName: string,
+  specPath: string,
+  cloud: Cloud,
+  cloudFnOptions: CloudFnOptions = {},
+  useDomShim: boolean
+) => {
   if (cloudFnOptions.vpcConnector) Object.assign(cloudFnOptions, { vpcConnectorEgressSettings: "ALL_TRAFFIC" })
 
   const cloudExportMap: Record<Cloud, () => string> = {
@@ -171,41 +178,8 @@ const indexJs = (specName: string, specPath: string, cloud: Cloud, cloudFnOption
   }
   const cloudExport = cloudExportMap[cloud]()
 
-  if (cloud === null) {
-    return dedent`
-      const { ApolloServer, gql } = require("apollo-server-lambda")
-  
-      const typeDefs = gql\`
-        type Query {
-          hello: String
-        }
-      \`;
-      
-      const resolvers = {
-        Query: {
-          hello: (parent, args, context) => {
-            return "Hello, world!";
-          }
-        }
-      };
-      
-      const server = new ApolloServer({
-        typeDefs,
-        resolvers
-      });
-      
-      const apolloHandler = server.createHandler();
-      
-      exports.handler = (event, context) => {
-        if (!event.requestContext) {
-          event.requestContext = context;
-        }
-        return apolloHandler(event, context);
-      }
-    `
-  }
-
   return dedent`
+    ${useDomShim ? "import { installWindowOnGlobal } from \"@lit-labs/ssr/lib/dom-shim\"" : ""}
     import { typeDefs } from "./schema.js"
     import { ${specName} } from "./${specPath}.js"
     
