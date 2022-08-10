@@ -8,7 +8,7 @@ import { Meta } from "../../meta"
 import { fieldClasses, fieldError, fieldLabel, isDisabled } from "./widgets"
 import { getModuleDefault } from "../../util/import"
 import { remove } from "../../util/util"
-import { validate } from "../validation/validation"
+import { hasValue, validate } from "../validation/validation"
 import { label } from "../terminology/terminology"
 
 export type SelectorOptions = {
@@ -32,12 +32,12 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
       ...fieldClasses(value, meta),
-      "mq-populated": !!meta.$.value && meta.$.value.length > 0
+      "mq-populated": hasValue(meta)
     })}">
       ${guard([meta], () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
         options.choices.forEach(choice => { delete choice.selected })
-        if (value) {
+        if (hasValue(meta)) {
           const values = Array.isArray(value) ? value : [value]
           for (const val of values) {
             const selected = options.choices.find(c => c.value === val)
