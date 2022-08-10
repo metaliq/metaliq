@@ -52,14 +52,15 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
           () => {
             // eslint-disable-next-line no-new -- No need to hold reference to Choices
             new Choices(`#${id}`, {
-              choices: options.choices,
               searchPlaceholderValue: options.searchText ?? "",
               allowHTML: true,
               removeItems: true,
               removeItemButton: true,
               shouldSort: !!options.sort,
-              callbackOnInit: () => {
-                console.log("Initialised choices", this)
+              callbackOnInit: function () {
+                // Initialise choices here instead of in options to prevent problem with non-sorted list "selecting" placeholder.
+                const choicesJs = <unknown> this as { setChoices: (p: any[]) => void }
+                choicesJs.setChoices(options.choices)
               }
             })
           },
