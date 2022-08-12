@@ -39,7 +39,7 @@ meta.account.owner.$.value
 
 The point of this parallel Meta graph is to be able to hold additional information (meta-information) about any individual level of value in the overall data being managed by the system. This is held within the `$` property.
 
-### MetaInfo
+### Meta$
 
 The `$` key of any Meta object is of type MetaInfo and contains the following references.
 
@@ -83,9 +83,9 @@ Althought the Meta does reflect the original data structure, we've seen that the
 
 ### Meta Functions
 
-There is a common pattern, often seen within the specification terms defined by various policies called a meta-function (referred to in code as a `MetaFn`). This takes two parameters. The first is the underlying value, and the second is the meta object for that value.
+There is a common pattern, often seen within the specification terms defined by various policies called a meta-function (referred to in code as a `$Fn`). This takes two parameters. The first is the underlying value, and the second is the meta object for that value.
 
-For example the `view` term of the presentation policy takes a template function defined as a `MetaFn<T, P, ViewResult>`. The T and P generic types are the underlying type and parent type of the related meta, and `ViewResult` is the result type - which can be a `html` template result, a plain string, or an array of either. There is an alias for a `MetaFn` with return type `ViewResult`, called a `MetaView`.  You could make a MetaView that only uses the underlying data type:
+For example the `view` term of the presentation policy takes a template function defined as a `$Fn<T, P, ViewResult>`. The T and P generic types are the underlying type and parent type of the related meta, and `ViewResult` is the result type - which can be a `html` template result, a plain string, or an array of either. There is an alias for a `$Fn` with return type `ViewResult`, called a `MetaView`.  You could make a MetaView that only uses the underlying data type:
 
 ```typescript
 const contactView: MetaView<Contact> = contact => html`

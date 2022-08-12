@@ -26,12 +26,12 @@ export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
  * The meta information for an array field,
  * along with a collection of Meta objects associated with its content.
  */
-export type MetaArray<T, P = any> = Array<Meta<T, P>> & HasMeta$<T[], P>
+export type MetaArray<T, P = any> = Array<IsMeta<T, P>> & HasMeta$<T[], P>
 
 /**
  * A union of Meta and MetaArray, i.e. "meta-like" objects
  */
-export type IsMeta<T, P = any> = Meta<T, P> | MetaArray<T, P>
+export type IsMeta<T, P = any> = T extends Array<infer I> ? MetaArray<I, P> : Meta<T, P>
 
 /**
  * An object that has a $ link to meta information.
@@ -47,9 +47,13 @@ export type Meta$<T, P = any> = {
   /**
    * Link to the meta object or array containing this $ property.
    * Useful for backlinks from object values.
-   * Note that for MetaArrays this will need to be cast.
    */
-  meta?: HasMeta$<T, P>
+  meta?: IsMeta<T, P>
+
+  /**
+   * Shorthand alias for meta.
+   */
+  m?: IsMeta<T, P>
 
   /**
    * Ancestry within meta graph (if applicable)
@@ -74,7 +78,12 @@ export type Meta$<T, P = any> = {
   /**
    * The underlying data value getter / setter.
    */
-  value?: T | MetaValue<T>
+  value?: T
+
+  /**
+   * Shorthand alias for value.
+   */
+  v?: T
 
   /**
    * The internal (potentially transient) version of the data value.
@@ -99,11 +108,11 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
  * Setups should check the policy's term(s) in the meta spec to determine applicability of any such setup.
  */
-export type MetaSetup<T, P = any> = (meta: Meta<T, P>) => MaybeReturn<Policy.State<T, P>>
+export type MetaSetup<T, P = any> = (meta: IsMeta<T, P>) => MaybeReturn<Policy.State<T, P>>
 
 export const metaSetups: Array<MetaSetup<any>> = []
 
-function setupMeta (meta: Meta<any>) {
+function setupMeta (meta: IsMeta<any>) {
   for (const maker of metaSetups) {
     const state = maker(meta) || {}
     Object.assign(meta.$.state, state)
@@ -156,8 +165,8 @@ class MetaArrayProto extends Array {
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>
-): Meta<T, P> {
+  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: IsMeta<T, P>
+): IsMeta<T, P> {
   const hasProto = !!proto
   const isArray = spec.items || Array.isArray(value)
 
@@ -173,7 +182,7 @@ export function metafy <T, P = any> (
     spec,
     parent,
     key,
-    state: proto?.$?.state || {},
+    state: proto?.$?.state as Policy.State<T, P> || {},
     _value: value,
     get value () {
       if (typeof this._value === "object" || !this.parent) {
@@ -184,12 +193,18 @@ export function metafy <T, P = any> (
     },
     set value (val) {
       reset(this.meta, val)
+    },
+    get v () {
+      return this.value
+    },
+    set v (val) {
+      this.value = val
     }
   }
-  const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
+  const result = <unknown>Object.assign(proto, { $ }) as IsMeta<T, P>
 
   // Assign the meta object to itself - useful for backlinks from values
-  result.$.meta = result
+  result.$.m = result.$.meta = result
 
   // Create backlink from value object to meta object to enable moving to and fro
   if (value && typeof value === "object") Object.assign(value, { $ })
@@ -210,11 +225,12 @@ export function metafy <T, P = any> (
       metaArr.push(metafy(spec.items || {}, item, parent, key, itemMeta))
     }
   } else {
+    const resultMeta = result as Meta<T, P> // At this stage we know it is not a MetaArray
     for (const fieldKey of fieldKeys(spec)) {
       const fieldValue = value?.[fieldKey]
       const fieldSpec = result.$.spec.fields[fieldKey]
-      const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
-      if (fieldSpec) metafy(fieldSpec, fieldValue, result, fieldKey, fieldMeta)
+      const fieldMeta = (resultMeta[fieldKey] ?? null) // Re-attach to the existing meta
+      if (fieldSpec) metafy(fieldSpec, fieldValue, resultMeta, fieldKey, fieldMeta)
     }
   }
 
@@ -229,8 +245,8 @@ export function metafy <T, P = any> (
  * (a) replacing a complete object value directly rather than via its parent, and
  * (b) to restore current backlinks to a value object that is referenced more than once in the meta-graph.
  */
-export function reset<T> (meta: HasMeta$<T>, value?: T) {
-  metafy(meta.$.spec,
+export function reset<T> (meta: IsMeta<T>, value?: T) {
+  metafy(<unknown>meta.$.spec as MetaSpec<unknown[] | T>,
     typeof value === "undefined" ? meta.$.value : value,
     meta.$.parent, meta.$.key, meta)
 }
@@ -251,22 +267,34 @@ export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
 /**
  * Shortcut from a value object to the $ meta info.
  */
-export const m$ = <T>(value: T | Meta<T>): Meta$<T> => (<unknown>value as HasMeta$<T>)?.$
+export const meta$ = <T>(value: T | IsMeta<T>): Meta$<T> => (<unknown>value as HasMeta$<T>)?.$
 
 /**
  * Typed shortcut from a value object to its associated meta.
  */
-export const meta = <T, P = any> (value: T | MetaValue<T, P> | Meta<T, P>) => {
+export const meta = <T, P = any> (value: T | IsMeta<T, P>): Meta<T, P> => {
   if (!(value ?? false) || typeof value !== "object") {
     throw new Error(`Attempt to obtain meta from primitive value: ${value}`)
   }
-  return m$(value)?.meta as Meta<T, P>
+  const result = meta$(value)?.meta
+  if (isMetaArray(result)) {
+    throw new TypeError("Failed to obtain valid Meta object from `meta`")
+  } else {
+    return result as Meta<T, P>
+  }
 }
 
 /**
  * Typed shortcut from a value array to its associated meta array.
  */
-export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value)?.meta as MetaArray<T>)
+export const metarr = <T>(value: T[] | MetaArray<T>): MetaArray<T> => {
+  const result = meta$(value).meta
+  if (isMetaArray(result)) {
+    return result
+  } else {
+    throw new TypeError("Failed type assertion `isMetaArray`")
+  }
+}
 
 /**
  * A type guard to narrow a meta field to either a Meta or a MetaArray.
@@ -276,7 +304,7 @@ export const isMetaArray = (m: Meta<any> | MetaArray<any>): m is MetaArray<any> 
 /**
  * Shortcut to a proxy object for the parent.
  */
-export const parent = <T extends object, P = any> (m: T | Meta<T, P>) => meta(m)?.$?.parent?.$.value
+export const parent = <T extends object, P = any> (m: T | IsMeta<T, P>) => meta(m)?.$?.parent?.$.value
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -290,44 +318,14 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
- * The primary pattern for defining a data function in MetaliQ.
- * A MetaFn receives two parameters - the underlying data value and the meta.
- * The first parameter is the data value itself, and often you can specify a function
- * which works on a single parameter of the underlying data type.
- * The second parameter is the associated object from the meta-graph.
- */
-export type MetaFn<T, P = any, R = any> = (value: T | MetaValue<T, P>, meta?: Meta<T, P>) => R
-
-/**
- * The underlying value, either a primitive value or an object enhanced with the meta info.
- */
-export type MetaValue<T, P = any> = T extends object ? T & HasMeta$<T, P> : T
-
-/**
- * Shortcut to call a metaFn with both parameters
- * by passing just the Meta or the MetaValue of an object type.
- * This is intended for use at the policy level.
- */
-export const metaCall = <T, P = any, R = any> (
-  fn: MetaFn<T, P, R>
-) => (on: T | Meta<T, P>): R => {
-    if (typeof (on ?? false) !== "object") {
-      throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
-    }
-    const m = meta(on)
-    const value = m.$.value as MetaValue<T>
-    return fn(value, m)
-  }
-
-/**
  * A simple type guard for values that may or may not be a meta function.
  */
-export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
+export const is$Fn = (value: any): value is $Fn<any> => typeof value === "function"
 
 /**
  * The primary pattern for defining a data function in MetaliQ.
  * A $Fn (pronounce "dollar-function") receives up to three parameters.
- * The first parameter is the $ property of a value or meta-object.
+ * The first parameter is the Meta$ property of a value or meta object.
  * You can easily extract the underlying data value, the spec etc.
  * using a choice of patterns.
  *
@@ -368,21 +366,48 @@ export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "
 export type $Fn<T, P = any, D = any, R = any> = ($: Meta$<T, P>, data?: D, event?: Event) => R
 
 export type ValueFn <T, D, R> = (value: T, data: D, event: Event) => R
+
+/**
+ * Convert a plain value function (ValueFn) into a meta function ($Fn).
+ *
+ * This is commonly used to convert framework agnostic business logic funtions
+ * to meta functions that can be passed to specs etc.
+ */
 export const $fn = <T, P = any, D = any, R = any>(vFn: ValueFn<T, D, R>): $Fn<T, P, D, R> =>
   ($: Meta$<T, P>, data: D, event: Event) => vFn($.value, data, event)
 
+/**
+ * Convert a meta function ($Fn) into a function that can be
+ * called with a plain value object.
+ * The conceptual opposite of $fn - but note that is it not exactly equivalent.
+ * The value passed to the resulting function must have an associated meta object,
+ * and the function can also be called with that meta object.
+ * For this reason, this process does not work with primitive values
+ * or objects that have not previously been through `metafy`.
+ *
+ * Mainly intended for use at the policy level.
+ */
+export const $nf = <T, P = any, D = any, R = any> (
+  fn: $Fn<T, P, D, R>
+) => (on: T | IsMeta<T, P>, data?: D): R => {
+    if (typeof (on ?? false) !== "object") {
+      throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
+    }
+    return fn(meta$(on), data)
+  }
+
 export type SpecKey = keyof Policy.Specification<any>
 export type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
-export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
+export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, $Fn<any>>
 
 /**
  * Return the value of a spec term that is defined as being
- * either a particular type or a MetaFn that returns a value of that type.
+ * either a particular type or a $Fn that returns a value of that type.
  */
 export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K) =>
   (meta: HasMeta$<any>): V => {
     const specValue = meta.$.spec[key]
-    if (isMetaFn(specValue)) return metaCall(specValue)(meta)
+    if (is$Fn(specValue)) return $nf(specValue)(meta)
     else return specValue as V
   }
 

@@ -1,20 +1,20 @@
-import { getSpecValue, Meta, MetaFn } from "../../meta"
+import { $Fn, getSpecValue, IsMeta } from "../../meta"
 
 export interface TerminologySpec<T, P = any> {
   /**
    * Primary identifying label.
    */
-  label?: string | MetaFn<T, P, string>
+  label?: string | $Fn<T, P, string>
 
   /**
    * Additional descriptive text.
    */
-  helpText?: string | MetaFn<T, P, string>
+  helpText?: string | $Fn<T, P, string>
 
   /**
    * Symbolic indicator (such as an icon class).
    */
-  symbol?: string | MetaFn<T, P, string>
+  symbol?: string | $Fn<T, P, string>
 }
 
 declare module "../../policy" {
@@ -30,7 +30,7 @@ export const symbol = getSpecValue("symbol")
 /**
  * Return a full path string for the given meta within it's given ancestor.
  */
-export function labelPath (from: Meta<any>, to: Meta<any>) {
+export function labelPath (from: IsMeta<any>, to: IsMeta<any>) {
   const labels = [label(to)]
   while (to.$.parent && to.$.parent !== from) {
     to = to.$.parent
@@ -40,4 +40,4 @@ export function labelPath (from: Meta<any>, to: Meta<any>) {
   return labels.join(" > ")
 }
 
-export const labelOrKey = (meta: Meta<any>) => label(meta) || meta.$.key
+export const labelOrKey = (meta: IsMeta<any>) => label(meta) || meta.$.key

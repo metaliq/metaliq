@@ -8,6 +8,7 @@ import { DateLimit } from "flatpickr/dist/types/options"
 import { validate } from "../validation/validation"
 import { fieldError, isDisabled } from "./widgets"
 import { label } from "../terminology/terminology"
+import { $nf } from "../../meta"
 
 export type DatePickerOptions = {
   classes?: string
@@ -25,8 +26,8 @@ export type DatePickerOptions = {
   valueFormat?: string
 }
 
-export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, meta) => {
-  const disabled = isDisabled(meta)
+export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => ({ value, meta }) => {
+  const disabled = $nf(isDisabled)(meta)
   return html`
     <label class="mq-field mq-text-field ${classMap({
       [options.classes]: !!options.classes,
@@ -64,7 +65,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
           />
         `
       })}
-      ${fieldError(value, meta)}
+      ${fieldError(meta.$)}
     </label>
   `
 }

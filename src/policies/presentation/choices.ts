@@ -27,7 +27,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (value
     sort: true,
     ...options
   }
-  const disabled = isDisabled(meta)
+  const disabled = isDisabled(meta.$)
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,

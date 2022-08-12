@@ -1,5 +1,5 @@
-import { Meta, metaCall, MetaFn, metafy, MetaSpec, reset } from "../../meta"
-import { LogFunction, startUp, up, Up } from "@metaliq/up"
+import { $Fn, Meta, metafy, MetaSpec, reset, IsMeta, Meta$ } from "../../meta"
+import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
  * Policy module to define general specification and operation of a Metaliq application.
@@ -19,7 +19,7 @@ export interface ApplicationSpec<T, P = any> {
    * Runs after data initialisation and metafication.
    * Not recursive unless internally implemented.
    */
-  bootstrap?: MetaFn<T>
+  bootstrap?: $Fn<T>
 
   /**
    * Log function to be called on each update - passed as `log` to `up`.
@@ -29,7 +29,7 @@ export interface ApplicationSpec<T, P = any> {
   /**
    * Review function to be called after each update - passed as `review` to `up`.
    */
-  review?: MetaFn<T, P> | Array<MetaFn<T, P>>
+  review?: $Fn<T, P> | Array<$Fn<T, P>>
 
   /**
    * Flag to create a localised context with state updates isolated from the rest of an application.
@@ -63,11 +63,11 @@ export type Init<T> = T | InitFunction<T>
  */
 export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   let spec: MetaSpec<T>
-  let meta: Meta<T>
+  let meta: IsMeta<T>
   // Determine whether a spec or an initialised meta was passed
   if (typeof (<any>specOrMeta).$ === "object") {
-    meta = specOrMeta as Meta<T>
-    spec = meta.$.spec
+    meta = specOrMeta as IsMeta<T>
+    spec = meta.$.spec as MetaSpec<T>
   } else {
     spec = specOrMeta as MetaSpec<T>
     const value = await initSpecValue(spec)
@@ -85,32 +85,27 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
     local
   })
   if (typeof spec.bootstrap === "function") {
-    await spec.bootstrap(meta.$.value, meta)
+    await spec.bootstrap(meta.$ as Meta$<T>)
   }
   await up()()
 
   return meta
 }
 
-/**
- * A version of up that wraps the default, framework agnostic implementation
- * to provide consistent calling of meta-functions as updates.
- * Note this is currently incompatible with message (event) passing in standard updates.
- */
-export const mUp = <T, P> (handler: MetaFn<T, P>, data: T | Meta<T, P>) => up(metaCall(handler), data)
-
-export function review <T> (meta: Meta<T>) {
+export function review <T> (meta: IsMeta<T>) {
   const specReview = meta?.$?.spec?.review
+
   if (Array.isArray(specReview)) {
-    specReview.forEach(reviewFn => {
-      metaCall(reviewFn)(meta)
+    const specReviews = specReview as Array<$Fn<T>>
+    specReviews.forEach(reviewFn => {
+      reviewFn(meta.$ as Meta$<T>)
     })
   } else if (typeof specReview === "function") {
-    metaCall(specReview)(meta)
+    (specReview as $Fn<T>)(meta.$ as Meta$<T>)
   }
 }
 
-export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
+export function addReview <T> (meta: Meta<T>, review: $Fn<T>) {
   if (!meta.$.spec.review) {
     meta.$.spec.review = []
   } else if (typeof meta.$.spec.review === "function") {
@@ -127,10 +122,10 @@ export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   return data
 }
 
-export const extendBootstrap = <T, P = any> (meta: Meta<T, P>, metaFn: MetaFn<T, P>) => {
-  const bootstrap = meta.$.spec.bootstrap || (() => {})
-  meta.$.spec.bootstrap = async (v, m) => {
-    await bootstrap(v, m)
-    await metaFn(v, m)
+export const extendBootstrap = <T, P = any> (meta: IsMeta<T, P>, metaFn: $Fn<T, P>) => {
+  const bootstrap = meta.$.spec.bootstrap as $Fn<T, P> || (() => {})
+  meta.$.spec.bootstrap = async ($: Meta$<T>) => {
+    await bootstrap($)
+    await metaFn($)
   }
 }

@@ -35,10 +35,9 @@ export const wizardTramline: MetaView<any> = (value, wizard) => {
 
 export const wizardStep: MetaView<any> = (value, wizard) => {
   const currentStep = wizard[wizard.$.state.step] as Meta<any>
-  const currentValue = currentStep.$.value
   const labels = {
-    forwards: forwardsLabel(currentValue, currentStep),
-    backwards: backwardsLabel(currentValue, currentStep)
+    forwards: forwardsLabel(currentStep.$),
+    backwards: backwardsLabel(currentStep.$)
   }
 
   return html`
@@ -53,9 +52,9 @@ export const wizardStep: MetaView<any> = (value, wizard) => {
       </div>
       <div>
         ${currentStep
-          ? view()(currentValue, currentStep)
+          ? view()(currentStep)
           : notConfiguredWarning}
-        ${pageError(currentValue, currentStep)}
+        ${pageError(currentStep.$)}
       </div>
       ${currentStep.$.spec.wizard ? "" : html`
         <div class="mq-wizard-buttons">

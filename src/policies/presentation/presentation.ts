@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { meta, metaCall, MetaFn, metaSetups } from "../../meta"
+import { $Fn, $nf, IsMeta, meta$, metaSetups } from "../../meta"
 import { label } from "../terminology/terminology"
 import { review } from "../application/application"
 
@@ -32,7 +32,7 @@ declare module "../../policy" {
 export type SingularResult = TemplateResult | string
 export type ViewResult = SingularResult | ViewResult[]
 export type View<T> = (model: T) => ViewResult
-export type MetaView<T, P = any> = MetaFn<T, P, ViewResult>
+export type MetaView<T, P = any> = $Fn<T, P, any, ViewResult>
 export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 
 metaSetups.push(meta => {
@@ -56,8 +56,8 @@ export type Widget<T, P = any> = (...params: any[]) => MetaView<T, P>
  * The renderPage function, if specified as the review property from the app policy,
  * produces a global-state single page app.
  */
-export const renderPage: MetaFn<any> = (value, meta) => {
-  render(view()(value, meta), document.body)
+export const renderPage: $Fn<any> = ({ meta }) => {
+  render(view()(meta), document.body)
 }
 
 /**
@@ -74,13 +74,13 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
 }
 
 /**
- * Get a ViewResult for the given meta.
+ * Get a ViewResult for the given value or meta object.
  * If the view is not specified, will fall back to the spec view.
  * Calling `view(myView)(myValue, myMeta?)` has several advantages over calling `myView(myValue, myMeta)`:
  *
  * First, it can accommodate either a single view or an array of views - enabling the
- * view term of a meta to accomodate multiple views.
- * Second, it performs a review of all dynamic values on the meta, such as calcs and hidden.
+ * view term of a meta to accommodate multiple views.
+ * Second, it performs a review of all dynamic values on the meta, hidden.
  * Third, it automatically handles dynamic hide / show.
  * Fourth, if provided with only a value it will deduce the meta, except for primitive values.
  *
@@ -96,22 +96,23 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
  */
 export function view <T, P = any> (
   primary?: boolean | MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
-): MetaFn<T, P, ViewResult> {
-  return (v, m) => {
-    m = m || meta(v)
-    if (arguments.length === 0 || primary === true) primary = m.$.spec.view
-    if (fallback === true) fallback = m.$.spec.view
+): (hasMeta$: T | IsMeta<T>) => ViewResult {
+  return (hasMeta$) => {
+    const m = meta$(hasMeta$).meta
+    const specView = m.$.spec.view as MetaViewTerm<T>
+    if (arguments.length === 0 || primary === true) primary = specView
+    if (fallback === true) fallback = specView
     const metaView = (primary || fallback) as MetaViewTerm<T, P>
     if (m.$.parent) review(m) // Don't review on top level, this is auto done in renderPage
     if (!metaView) {
       return ""
     } else if (Array.isArray(metaView)) {
-      return metaView.map(mv => view(mv)(v, m))
+      return metaView.map(mv => view(mv)(m))
     } else {
       if (typeof m.$.spec.hidden === "function") {
-        return metaCall(hideShowWrapper(metaView))(m)
+        return $nf(hideShowWrapper(metaView))(m)
       } else {
-        return m.$.state.hidden ? "" : metaCall(metaView)(m)
+        return m.$.state.hidden ? "" : $nf(metaView)(m)
       }
     }
   }

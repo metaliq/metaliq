@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { FieldKey, fieldKeys, getAncestorSpecValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
+import { $nf, $Fn, FieldKey, fieldKeys, getAncestorSpecValue, Meta, metaSetups, MetaSpec, reset, IsMeta } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
 import { extendBootstrap } from "../application/application"
@@ -15,8 +15,8 @@ export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
   /**
    * Meta functions for application navigation events.
    */
-  onEnter?: MetaFn<T, P, RouteHandler<RP, RQ>>
-  onLeave?: MetaFn<T, P, RouteHandler<RP, RQ>>
+  onEnter?: $Fn<T, P, RouteHandler<RP, RQ>>
+  onLeave?: $Fn<T, P, RouteHandler<RP, RQ>>
 
   /**
    * Initial path for the top level spec,
@@ -32,7 +32,7 @@ export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
 }
 
 export type NavigationType = {
-  onNavigate?: (to: Meta<any>) => MaybeReturn<boolean>
+  onNavigate?: (to: IsMeta<any>) => MaybeReturn<boolean>
 }
 
 export interface NavigationState<T> {
@@ -59,7 +59,7 @@ declare module "../../policy" {
 }
 
 type NavigationPolicy = {
-  routeMetas: Map<Route<object>, Meta<any>>
+  routeMetas: Map<Route<object>, IsMeta<any>>
   selectedRouteMeta: Meta<any>
 }
 const policy: NavigationPolicy = {
@@ -75,13 +75,13 @@ metaSetups.push(meta => {
   if (spec?.route) {
     policy.routeMetas.set(spec.route, meta)
     if (typeof spec.onLeave === "function") {
-      spec.route.onLeave = metaCall(spec.onLeave)(meta)
+      spec.route.onLeave = $nf(spec.onLeave)(meta)
     }
     spec.route.onEnter = (params) => {
       up(async () => {
         let routeResult
         if (typeof spec.onEnter === "function") {
-          routeResult = await metaCall(spec.onEnter)(meta)(params)
+          routeResult = await $nf(spec.onEnter)(meta)(params)
           if (routeResult === false) return false
         }
         const navType = getAncestorSpecValue(meta, "navType")

@@ -1,4 +1,4 @@
-import { FieldKey, isMetaFn, Meta, metaCall, MetaFn, metaSetups, reset } from "../../meta"
+import { FieldKey, is$Fn, Meta, $nf, $Fn, metaSetups, reset } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
@@ -20,17 +20,17 @@ export interface WizardSpec<T, P = any> {
      * A function to run on completion of the step.
      * If it returns boolean `false` then navigation will not proceed.
      */
-    onComplete?: MetaFn<T, P>
+    onComplete?: $Fn<T, P>
 
     /**
      * Override the default label, or set to empty to hide the button.
      */
-    forwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
+    forwardsLabel?: StepLabel | $Fn<T, P, StepLabel>
 
     /**
      * Override the default label, or set to empty to hide the button.
      */
-    backwardsLabel?: StepLabel | MetaFn<T, P, StepLabel>
+    backwardsLabel?: StepLabel | $Fn<T, P, StepLabel>
   }
 }
 
@@ -50,15 +50,15 @@ declare module "../../policy" {
 
 // Can't use getSpecValue as it is nested
 // TODO: EITHER make a nested version of getSpecValue OR switch to a review-and-state model
-export const forwardsLabel: MetaFn<any, any, StepLabel> = (value, meta) => {
-  const label = meta.$.spec.wizardStep?.forwardsLabel
-  if (isMetaFn(label)) return label(value, meta)
+export const forwardsLabel: $Fn<any, any, StepLabel> = $ => {
+  const label = $.spec.wizardStep?.forwardsLabel
+  if (is$Fn(label)) return label($)
   else return label
 }
 
-export const backwardsLabel: MetaFn<any, any, StepLabel> = (value, meta) => {
-  const label = meta.$.spec.wizardStep?.backwardsLabel
-  if (isMetaFn(label)) return label(value, meta)
+export const backwardsLabel: $Fn<any, any, StepLabel> = $ => {
+  const label = $.spec.wizardStep?.backwardsLabel
+  if (is$Fn(label)) return label($)
   else return label
 }
 
@@ -142,7 +142,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta
 
   const onComplete = nowStep.$.spec.wizardStep?.onComplete
   if (typeof onComplete === "function") {
-    const completionResponse = await metaCall(onComplete)(nowStep)
+    const completionResponse = await $nf(onComplete)(nowStep)
     if (completionResponse === false) return
   }
   wizard.$.state.step = stepNames[nextIndex]

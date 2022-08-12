@@ -1,12 +1,12 @@
-import { fieldKeys, Meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
+import { $Fn, $nf, fieldKeys, IsMeta, Meta, MetaArray, metaSetups } from "../../meta"
 import { Policy } from "../../policy"
 import { labelOrKey } from "../terminology/terminology"
 
 export interface ValidationSpec<T, P = any> {
   validator?: Validator<T, P>
-  mandatory?: boolean | MetaFn<T, P, boolean>
-  disabled?: boolean | MetaFn<T, P, boolean>
-  hidden?: boolean | MetaFn<T, P, boolean>
+  mandatory?: boolean | $Fn<T, P, boolean>
+  disabled?: boolean | $Fn<T, P, boolean>
+  hidden?: boolean | $Fn<T, P, boolean>
 }
 
 export interface ValidationState {
@@ -42,7 +42,7 @@ declare module "../../policy" {
  * Note also that if a validator function does not return a value
  * (i.e. return is undefined), no error is reported.
  */
-export type Validator<T, P = any> = MetaFn<T, P, ValidationResult>
+export type Validator<T, P = any> = $Fn<T, P, any, ValidationResult>
 export type ValidationResult = string | boolean
 
 /**
@@ -55,11 +55,11 @@ metaSetups.push(<T>(meta: Meta<T>) => {
     ? { error: false, validated: false } // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
     : {}
 
-  const addDynamic = (meta: Meta<T>, name: string, getter: MetaFn<T>) => {
+  const addDynamic = (meta: Meta<T>, name: string, getter: $Fn<T>) => {
     Object.defineProperty(meta.$.state, name, {
       enumerable: true,
       get () {
-        return getter(meta.$.value, meta)
+        return getter(meta.$)
       }
     })
   }
@@ -92,10 +92,10 @@ metaSetups.push(<T>(meta: Meta<T>) => {
  * Establish a function for mandatory field errors.
  * See src for a basic example of an English language error.
  */
-export function setRequiredLabel (fn: MetaFn<any, any, string>) {
+export function setRequiredLabel (fn: $Fn<any, any, string>) {
   requiredLabelFn = fn
 }
-let requiredLabelFn: MetaFn<any, any, string> = (value, meta) =>
+let requiredLabelFn: $Fn<any, any, any, string> = ({ value, meta }) =>
   `${(meta ? labelOrKey(meta) : false) || "This field"} is required`
 
 /**
@@ -103,16 +103,16 @@ let requiredLabelFn: MetaFn<any, any, string> = (value, meta) =>
  * Sets the `validated` state to true and the `error` state according to the validation result.
  * Note: This is not recursive - use `validateAll` for that purpose.
  */
-export function validate (meta: Meta<any>) {
+export function validate (meta: IsMeta<any>) {
   meta.$.state.validated = true
   delete meta.$.state.error
   if (meta.$.state.hidden) return
   if (meta.$.state.mandatory && !hasValue(meta)) {
-    meta.$.state.error = metaCall(requiredLabelFn)(meta)
+    meta.$.state.error = $nf(requiredLabelFn)(meta)
   } else {
     const validator = meta.$.spec.validator
     if (typeof validator === "function") {
-      const result = metaCall(validator)(meta)
+      const result = $nf(validator)(meta)
       if (result === false) {
         meta.$.state.error = true
       } else if (typeof result === "string") {
@@ -122,9 +122,10 @@ export function validate (meta: Meta<any>) {
       }
     }
   }
+  return meta.$.state.error
 }
 
-export function hasValue (meta: Meta<any>) {
+export function hasValue (meta: IsMeta<any>) {
   const value = meta.$.value
   return !(
     value === "" ||
@@ -150,7 +151,7 @@ export function validateAll<T extends {}> (meta: Meta<T>, revalidate: boolean = 
     if (Array.isArray(sub)) {
       const subArr = sub as MetaArray<any>
       const subMeta = <unknown>sub as Meta<any>
-      childErrors = subArr.flatMap(child => validateAll(child, revalidate))
+      childErrors = subArr.flatMap(child => validateAll(child as Meta<any>, revalidate))
       validate(subMeta)
       if (sub.$.state.error) childErrors.push(subMeta)
     } else {

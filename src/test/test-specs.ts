@@ -47,7 +47,7 @@ export const contactSpec: MetaSpec<Contact, any> = {
     },
     isSelfEmployed: {
       label: "Is Self-Employed",
-      hidden: (_, contact) => parent(contact).age < 18
+      hidden: ({ meta: contact }) => parent(contact).age < 18
     }
   }
 }
@@ -60,7 +60,7 @@ export const organisationSpec: MetaSpec<Organisation> = {
         ...contactSpec.fields,
         age: {
           ...contactSpec.fields.age,
-          validator: age => age >= 18
+          validator: ({ v: age }) => age >= 18
         }
       }
     }

@@ -1,4 +1,4 @@
-import { MetaSpec } from "../../../meta"
+import { $fn, MetaSpec } from "../../../meta"
 import { closeModalChannel, showModalChannel } from "./modal-procs"
 import { ViewResult } from "../presentation"
 import { modal } from "./modal-view"
@@ -19,7 +19,7 @@ export type ModalButton = {
 
 export const modalSpec: MetaSpec<ModalInfo> = {
   label: "Modal Display",
-  view: modal,
+  view: $fn(modal),
   channels: [
     showModalChannel,
     closeModalChannel

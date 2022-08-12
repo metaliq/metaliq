@@ -1,6 +1,6 @@
 import { call } from "../../communication/communication"
 import { ModalButton, ModalInfo } from "./modal-spec"
-import { meta, reset } from "../../../meta"
+import { $fn, meta, reset } from "../../../meta"
 import { ViewResult } from "../presentation"
 
 export const modalDefaults = {
@@ -8,16 +8,19 @@ export const modalDefaults = {
   progressIndicator: "bi-arrow-repeat mq-modal-progress-indicator"
 }
 
-export const showModalChannel = (modalInfo: ModalInfo) => (newModalInfo: ModalInfo) => {
+const showModalInfo = (modalInfo: ModalInfo) => (newModalInfo: ModalInfo) => {
   reset(meta(modalInfo), newModalInfo)
 }
 
-export const closeModalChannel = (modalInfo: ModalInfo) => async () => {
+const closeModalInfo = (modalInfo: ModalInfo) => async () => {
   reset(meta(modalInfo), {
     body: "",
     title: ""
   })
 }
+
+export const showModalChannel = $fn(showModalInfo)
+export const closeModalChannel = $fn(closeModalInfo)
 
 export const showModal = call(showModalChannel)
 

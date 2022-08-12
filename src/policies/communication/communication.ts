@@ -1,4 +1,4 @@
-import { Meta, metaCall, MetaFn, metaSetups } from "../../meta"
+import { $Fn, $nf, IsMeta, metaSetups } from "../../meta"
 
 export interface CommunicationSpec<T, P> {
   /**
@@ -7,7 +7,7 @@ export interface CommunicationSpec<T, P> {
    * Designed primarily for use by singleton receivers (e.g. message logging or display).
    * Multicasting would need to be handled internally within the data payload, e.g. by ID.
    */
-  channels?: Array<MetaFn<T, P>>
+  channels?: Array<$Fn<T, P>>
 }
 
 declare module "../../policy" {
@@ -20,7 +20,7 @@ declare module "../../policy" {
  * Internal policy register.
  */
 type CommunicationPolicy = {
-  channelMap: Map<MetaFn<any>, Meta<any>>
+  channelMap: Map<$Fn<any>, IsMeta<any>>
 }
 const policy: CommunicationPolicy = { channelMap: new Map() }
 
@@ -39,7 +39,7 @@ export type ChannelCall<M> = (msg: M) => any
  * (a) Create a partially applied function that will call the channel and
  * (b) Use call (either directly or via partial application) from `up`.
  */
-export const call = <T, P, M> (channel: MetaFn<T, P, ChannelCall<M>>) => (msg?: M) => {
-  const meta = policy.channelMap.get(channel) as Meta<T, P>
-  if (meta) return metaCall(channel)(meta)(msg)
+export const call = <T, P, M> (channel: $Fn<T, P, ChannelCall<M>>) => (msg?: M) => {
+  const meta = policy.channelMap.get(channel) as IsMeta<T, P>
+  if (meta) return $nf(channel)(meta)(msg)
 }

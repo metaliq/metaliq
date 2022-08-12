@@ -1,12 +1,12 @@
 import { ViewResult } from "./presentation"
 import { html } from "lit"
-import { getSpecValue, meta, Meta, MetaFn } from "../../meta"
+import { $Fn, getSpecValue, meta, Meta } from "../../meta"
 import { up } from "@metaliq/up"
 
 export interface RepeatSpec<T, P = any> {
-  addLabel?: string | MetaFn<T, P, string>
-  removeLabel?: string | MetaFn<T, P, string>
-  newItem?: T extends Array<infer I> ? I | MetaFn<T, P, I> : T
+  addLabel?: string | $Fn<T, P, string>
+  removeLabel?: string | $Fn<T, P, string>
+  newItem?: T extends Array<infer I> ? I | $Fn<T, P, I> : T
 }
 
 declare module "../../policy" {
