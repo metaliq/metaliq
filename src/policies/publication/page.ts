@@ -7,6 +7,7 @@ export type PageScript = {
   type?: string
   src?: string
   content?: string
+  async?: boolean
 }
 
 export type ThemeColor = string | { light: string, dark: string }
@@ -54,7 +55,7 @@ const pageScript = (script: PageScript) => script.content
     </script>
   `
   : dedent`
-    <script ${ifDefinedAttr(script.type, "type")} ${ifDefinedAttr(script.src, "src")}></script>
+    <script ${script.async ? "async" : ""} ${ifDefinedAttr(script.type, "type")} ${ifDefinedAttr(script.src, "src")}></script>
   `
 
 const ifDefinedAttr = (value: string, name: string) =>
