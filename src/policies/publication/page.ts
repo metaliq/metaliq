@@ -9,6 +9,8 @@ export type PageScript = {
   content?: string
 }
 
+export type ThemeColor = string | { light: string, dark: string }
+
 export type PageInfo = {
   title?: string
   styles?: string[]
@@ -16,6 +18,7 @@ export type PageInfo = {
   body?: string
   baseHref?: string
   favIcon?: string
+  themeColor?: ThemeColor
 }
 
 export const page = (pageInfo: PageInfo) => dedent`
@@ -29,6 +32,14 @@ export const page = (pageInfo: PageInfo) => dedent`
       ${pageInfo.favIcon ? `<link rel="icon" href="${pageInfo.favIcon}">` : ""}
       ${pageInfo.styles.map(style => `<link href="${style}" rel="stylesheet">`).join("\n        ")}
       ${pageInfo.scripts?.map(pageScript).join("\n        ")}
+      ${typeof pageInfo.themeColor === "string"
+          ? `<meta name="theme-color" content="${pageInfo.themeColor}">`
+          : pageInfo.themeColor
+            ? dedent`
+               <meta name="theme-color" content="${pageInfo.themeColor.light} media="(prefers-color-scheme: light)">
+               <meta name="theme-color" content="${pageInfo.themeColor.dark} media="(prefers-color-scheme: dark)">
+            ` : ""
+      }
     </head>
     <body>
       ${pageInfo.body || ""}
