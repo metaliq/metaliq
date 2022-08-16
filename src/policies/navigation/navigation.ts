@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { fieldKeys, getAncestorValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
+import { FieldKey, fieldKeys, getAncestorSpecValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
 import { extendBootstrap } from "../application/application"
@@ -35,11 +35,11 @@ export type NavigationType = {
   onNavigate?: (to: Meta<any>) => MaybeReturn<boolean>
 }
 
-export interface NavigationState {
+export interface NavigationState<T> {
   /**
    * Field key of the currently selected option in this navigation level.
    */
-  selected?: string
+  selected?: FieldKey<T>
 
   /**
    * For dynamically shown menus.
@@ -53,7 +53,7 @@ declare module "../../policy" {
 
     interface State<T, P> {
       this?: State<T, P>
-      nav?: NavigationState
+      nav?: NavigationState<T>
     }
   }
 }
@@ -84,7 +84,7 @@ metaSetups.push(meta => {
           routeResult = await metaCall(spec.onEnter)(meta)(params)
           if (routeResult === false) return false
         }
-        const navType = getAncestorValue(meta, "navType")
+        const navType = getAncestorSpecValue(meta, "navType")
         if (typeof navType?.onNavigate === "function") {
           const navTypeResult = navType.onNavigate(meta)
           if (navTypeResult === false) return false
@@ -140,19 +140,24 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   return navModel
 }
 
+export const getNavSelection = <T>(navMeta: Meta<T>) => {
+  const key: FieldKey<T> = navMeta.$.state.nav?.selected
+  return navMeta[key]
+}
+
 /**
  * Set the navigation meta state.
  */
-export const setNavItem = (meta: Meta<any>, recursing = false) => {
-  const parent = meta.$.parent
-  if (!recursing) policy.selectedRouteMeta = meta
+export const setNavSelection = (selectedMeta: Meta<any>, recursing = false) => {
+  const parent = selectedMeta.$.parent
+  if (!recursing) policy.selectedRouteMeta = selectedMeta
   if (parent) {
     parent.$.state.nav = parent.$.state.nav || {}
-    parent.$.state.nav.selected = meta.$.key
+    parent.$.state.nav.selected = selectedMeta.$.key
     if (parent.$.state.nav.showMenu) {
       parent.$.state.nav.showMenu = false
     }
-    setNavItem(parent, true)
+    setNavSelection(parent, true)
   }
 }
 
@@ -170,7 +175,7 @@ export const goNavRoute = (item: Meta<any>) => {
 }
 
 export const freeNavigation: NavigationType = {
-  onNavigate: setNavItem
+  onNavigate: setNavSelection
 }
 
 export const toggleMenu = (m: Meta<any>) => {

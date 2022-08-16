@@ -334,7 +334,7 @@ export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(k
     else return specValue as V
   }
 
-export const getAncestorValue = <K extends SpecKey, V extends SpecValue<K>>(meta: HasMeta$<any>, key: K): V => {
+export const getAncestorSpecValue = <K extends SpecKey, V extends SpecValue<K>>(meta: HasMeta$<any>, key: K): V => {
   while (meta && typeof meta.$.spec[key] === "undefined") meta = meta.$.parent
   return meta?.$.spec[key]
 }
