@@ -17,8 +17,9 @@ export type ContactCalcs = {
   fullName?: string
 }
 
-export type Application = {
-  applicant: Contact
+export type Organisation = {
+  principal?: Contact
+  employees?: Contact[]
   deliveryAddress: Address
   billingAddress: Address
 }
