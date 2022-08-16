@@ -130,19 +130,24 @@ metaSetups.push(meta => {
 export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   spec = spec || this as MetaSpec<T>
   const navModel = {} as T
-  for (const key of fieldKeys(spec)) {
+  const keys = fieldKeys(spec)
+  for (const key of keys) {
     const childSpec = spec.fields?.[key] as unknown as MetaSpec<unknown>
-    const keyModel = childSpec.route
-      ? model
-      : mapNavModel(model)(childSpec)
+    const childKeys = fieldKeys(childSpec)
+    const keyModel = childKeys?.length
+      ? mapNavModel(model)(childSpec)
+      : model
     Object.assign(navModel, { [key]: keyModel })
   }
   return navModel
 }
 
+/**
+ * Get the Meta object for the current selection in the given navigation level.
+ */
 export const getNavSelection = <T>(navMeta: Meta<T>) => {
   const key: FieldKey<T> = navMeta.$.state.nav?.selected
-  return navMeta[key]
+  return navMeta[key] as Meta<any>
 }
 
 /**
