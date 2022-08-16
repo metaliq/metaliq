@@ -15,7 +15,7 @@ export const emptyAddress = (): Address => ({
   postcode: ""
 })
 
-export const emptyApplication = (): Organisation => ({
+export const emptyOrganisation = (): Organisation => ({
   principal: emptyContact(),
   deliveryAddress: emptyAddress(),
   billingAddress: null
@@ -49,8 +49,7 @@ export const contactSpec: MetaSpec<Contact, any> = {
       label: "Is Self-Employed",
       hidden: (_, contact) => parent(contact).age < 18
     }
-  },
-  init: emptyContact
+  }
 }
 
 export const organisationSpec: MetaSpec<Organisation> = {
@@ -66,5 +65,5 @@ export const organisationSpec: MetaSpec<Organisation> = {
       }
     }
   },
-  init: sampleOrganisation()
+  init: sampleOrganisation
 }

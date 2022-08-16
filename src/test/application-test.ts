@@ -12,7 +12,7 @@ describe("Application state processing", () => {
     const mApp = await run(organisationSpec)
     const app = mApp.$.value
 
-    app.principal.firstName.should.be.a("string").equal("")
+    app.principal.firstName.should.be.a("string").equal("Dexter")
 
     await up(contact => { contact.firstName = "Tim" }, app.principal)()
     await up(contact => { contact.lastName = "Stewart" }, app.principal)()
@@ -29,7 +29,7 @@ describe("Application state processing", () => {
 
     await up(application => { application.principal = null }, app)()
 
-    app.should.haveOwnProperty("applicant").equal(null)
+    app.should.haveOwnProperty("principal").equal(null)
 
     mApp.principal.should.be.an("object").with.ownProperty("$")
     mApp.principal.firstName.should.be.an("object").with.ownProperty("$")
