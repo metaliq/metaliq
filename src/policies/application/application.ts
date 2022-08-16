@@ -57,6 +57,10 @@ declare module "../../policy" {
 export type InitFunction<T> = ((spec?: MetaSpec<T>) => T) | ((spec?: MetaSpec<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 
+/**
+ * Run a spec - initialise its data value and set `up`
+ * state transition management with any specified logging.
+ */
 export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   let spec: MetaSpec<T>
   let meta: Meta<T>
