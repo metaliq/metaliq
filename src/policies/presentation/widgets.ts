@@ -3,7 +3,7 @@ import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up, Update } from "@metaliq/up"
 import { FieldKey, fieldKeys, isMetaArray, Meta, meta, MetaArray, metaCall, MetaFn, metaSetups } from "../../meta"
-import { validate } from "../validation/validation"
+import { hasValue, validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, view, ViewResult } from "./presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
@@ -144,7 +144,7 @@ export const fieldClasses: MetaFn<any> = (v, meta) => {
   return {
     "mq-mandatory": meta.$.state.mandatory,
     "mq-active": meta.$.state.active,
-    "mq-populated": !!meta.$.value,
+    "mq-populated": hasValue(meta),
     "mq-disabled": isDisabled(meta)
   }
 }
