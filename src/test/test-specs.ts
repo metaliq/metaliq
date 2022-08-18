@@ -1,5 +1,5 @@
-import { MetaSpec, parent } from "../meta"
-import { Address, Organisation, Contact } from "./test-types"
+import { MetaSpec } from "../meta"
+import { Address, Contact, Organisation } from "./test-types"
 
 export const emptyContact = (): Contact => ({
   age: null,
@@ -47,7 +47,7 @@ export const contactSpec: MetaSpec<Contact, any> = {
     },
     isSelfEmployed: {
       label: "Is Self-Employed",
-      hidden: (_, contact) => parent(contact).age < 18
+      hidden: (v, $) => $.parent.$.value.age < 18
     }
   }
 }

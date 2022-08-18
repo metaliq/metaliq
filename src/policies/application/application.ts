@@ -83,7 +83,7 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
         for (const eachReview of spec.review) {
           eachReview(meta.$.value, meta.$)
         }
-      } else {
+      } else if (typeof spec.review === "function") {
         spec.review(meta.$.value, meta.$)
       }
     },

@@ -162,13 +162,8 @@ export function metafy <T, P = any> (
       : new MetaArrayProto()
     : proto || Object.create(MetaProto)
 
-  // Create contextual meta information object
-  const $: Meta$<T, P> = Object.assign(proto?.$ || {}, {
-    spec,
-    parent,
-    key,
-    state: proto?.$?.state || {},
-    _value: value,
+  // Reuse existing Meta$ if present, otherwise create new one
+  const $ = proto?.$ || {
     get value () {
       if (typeof this._value === "object" || !this.parent) {
         return this._value
@@ -179,6 +174,15 @@ export function metafy <T, P = any> (
     set value (val) {
       reset(this.meta, val)
     }
+  }
+
+  // Add contextual meta information to Meta$
+  Object.assign($, {
+    spec,
+    parent,
+    key,
+    state: proto?.$?.state || {},
+    _value: value
   })
   const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
