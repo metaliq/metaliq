@@ -25,19 +25,19 @@ export type DatePickerOptions = {
   valueFormat?: string
 }
 
-export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, meta) => {
-  const disabled = isDisabled(meta)
+export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
+  const disabled = isDisabled($)
   return html`
     <label class="mq-field mq-text-field ${classMap({
       [options.classes]: !!options.classes,
-      "mq-mandatory": meta.$.state.mandatory,
-      "mq-active": meta.$.state.active,
+      "mq-mandatory": $.state.mandatory,
+      "mq-active": $.state.active,
       "mq-populated": !!value
     })}">
       <span class="mq-input-label">
-        ${label(meta)}
+        ${label($)}
       </span>
-      ${guard([meta, disabled], () => {
+      ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
         setTimeout(
           () => {
@@ -45,8 +45,8 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
               onClose (selectedDates, dateStr) {
                 if (selectedDates[0]) {
                   value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
-                  meta.$.value = value
-                  up(validate, meta)()
+                  $.value = value
+                  up(validate, $)()
                 }
               },
               defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
@@ -64,7 +64,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
           />
         `
       })}
-      ${fieldError(value, meta)}
+      ${fieldError(value, $)}
     </label>
   `
 }

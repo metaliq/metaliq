@@ -61,11 +61,11 @@ export class AnimatedHideShow extends LitElement {
   }
 }
 
-export const animatedHideShow = <T> (metaView: MetaView<T>): MetaView<T> => (value, meta) => {
-  const hidden = !!meta.$.state.hidden
+export const animatedHideShow = <T> (metaView: MetaView<T>): MetaView<T> => (value, $) => {
+  const hidden = !!$.state.hidden
   return html`
     <mq-animated-hide-show ?mqHidden=${hidden}>
-      ${metaView(value, meta)}
+      ${metaView(value, $)}
     </mq-animated-hide-show>
   `
 }

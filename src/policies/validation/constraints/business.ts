@@ -12,7 +12,7 @@ export const isEmail: Constraint<string> = () => value =>
 
 // TODO: Provide better internationalisation.
 // Developed to check Australian phone number format, with option to change or exclude country code.
-export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") => (phone, mPhone) => {
+export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") => (phone, $) => {
   if (!phone) return "Cannot be empty"
   const countryCodeEx = new RegExp(`^\\+${countryCode}`)
   if (countryCode && !phone.match(countryCodeEx)) {
@@ -37,9 +37,9 @@ export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") =>
     return "Too few digits"
   }
   if (rest.match(/^4/)) { // Mobile number
-    mPhone.$.value = `+${countryCode} ${rest.substr(0, 3)} ${rest.substr(3, 3)} ${rest.substr(6)}`
+    $.value = `+${countryCode} ${rest.substr(0, 3)} ${rest.substr(3, 3)} ${rest.substr(6)}`
   } else { // Land line
-    mPhone.$.value = `+${countryCode} ${rest.substr(0, 1)} ${rest.substr(1, 4)} ${rest.substr(5)}`
+    $.value = `+${countryCode} ${rest.substr(0, 1)} ${rest.substr(1, 4)} ${rest.substr(5)}`
   }
   return true // No error, potentially reformatted
 }

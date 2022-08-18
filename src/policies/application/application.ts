@@ -1,4 +1,4 @@
-import { Meta, metaCall, MetaFn, metafy, MetaSpec, reset } from "../../meta"
+import { Meta, Meta$, metaCall, MetaFn, metafy, MetaSpec, reset } from "../../meta"
 import { LogFunction, startUp, up, Up } from "@metaliq/up"
 
 /**
@@ -78,14 +78,20 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   const local = spec.local || false
   const up = await startUp({
     review: () => {
-      reset(meta)
-      review(meta)
+      reset(meta.$)
+      if (Array.isArray(spec.review)) {
+        for (const eachReview of spec.review) {
+          eachReview(meta.$.value, meta.$)
+        }
+      } else {
+        spec.review(meta.$.value, meta.$)
+      }
     },
     log,
     local
   })
   if (typeof spec.bootstrap === "function") {
-    await spec.bootstrap(meta.$.value, meta)
+    await spec.bootstrap(meta.$.value, meta.$)
   }
   await up()()
 
@@ -99,26 +105,6 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
  */
 export const mUp = <T, P> (handler: MetaFn<T, P>, data: T | Meta<T, P>) => up(metaCall(handler), data)
 
-export function review <T> (meta: Meta<T>) {
-  const specReview = meta?.$?.spec?.review
-  if (Array.isArray(specReview)) {
-    specReview.forEach(reviewFn => {
-      metaCall(reviewFn)(meta)
-    })
-  } else if (typeof specReview === "function") {
-    metaCall(specReview)(meta)
-  }
-}
-
-export function addReview <T> (meta: Meta<T>, review: MetaFn<T>) {
-  if (!meta.$.spec.review) {
-    meta.$.spec.review = []
-  } else if (typeof meta.$.spec.review === "function") {
-    meta.$.spec.review = [meta.$.spec.review]
-  }
-  meta.$.spec.review.push(review)
-}
-
 export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   const data: T = typeof spec.init === "function"
     ? await (spec.init as InitFunction<T>)(spec)
@@ -127,10 +113,10 @@ export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   return data
 }
 
-export const extendBootstrap = <T, P = any> (meta: Meta<T, P>, metaFn: MetaFn<T, P>) => {
-  const bootstrap = meta.$.spec.bootstrap || (() => {})
-  meta.$.spec.bootstrap = async (v, m) => {
-    await bootstrap(v, m)
-    await metaFn(v, m)
+export const extendBootstrap = <T, P = any> ($: Meta$<T, P>, metaFn: MetaFn<T, P>) => {
+  const bootstrap = $.spec.bootstrap || (() => {})
+  $.spec.bootstrap = async (v, $) => {
+    await bootstrap(v, $)
+    await metaFn(v, $)
   }
 }

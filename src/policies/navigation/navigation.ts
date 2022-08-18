@@ -1,5 +1,17 @@
 import { Route, RouteHandler, Router } from "./router"
-import { FieldKey, fieldKeys, getAncestorSpecValue, Meta, metaCall, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
+import {
+  FieldKey,
+  fieldKeys,
+  getAncestorSpecValue,
+  HasMeta$,
+  Meta,
+  Meta$,
+  metaCall,
+  MetaFn,
+  metaSetups,
+  MetaSpec,
+  reset
+} from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
 import { extendBootstrap } from "../application/application"
@@ -32,7 +44,7 @@ export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
 }
 
 export type NavigationType = {
-  onNavigate?: (to: Meta<any>) => MaybeReturn<boolean>
+  onNavigate?: MetaFn<any, any, MaybeReturn<boolean>>
 }
 
 export interface NavigationState<T> {
@@ -59,34 +71,34 @@ declare module "../../policy" {
 }
 
 type NavigationPolicy = {
-  routeMetas: Map<Route<object>, Meta<any>>
-  selectedRouteMeta: Meta<any>
+  routeMetas: Map<Route<object>, Meta$<any>>
+  selectedRoute$: Meta$<any>
 }
 const policy: NavigationPolicy = {
   routeMetas: new Map(),
-  selectedRouteMeta: null
+  selectedRoute$: null
 }
 
 export const routeMeta = (route: Route<object>) => policy.routeMetas.get(route)
 
-metaSetups.push(meta => {
-  const spec = meta.$.spec
+metaSetups.push($ => {
+  const spec = $.spec
   // If this spec has a route, initialise any route handling functions
   if (spec?.route) {
-    policy.routeMetas.set(spec.route, meta)
+    policy.routeMetas.set(spec.route, $)
     if (typeof spec.onLeave === "function") {
-      spec.route.onLeave = metaCall(spec.onLeave)(meta)
+      spec.route.onLeave = metaCall(spec.onLeave)($)
     }
     spec.route.onEnter = (params) => {
       up(async () => {
         let routeResult
         if (typeof spec.onEnter === "function") {
-          routeResult = await metaCall(spec.onEnter)(meta)(params)
+          routeResult = await metaCall(spec.onEnter)($)(params)
           if (routeResult === false) return false
         }
-        const navType = getAncestorSpecValue(meta, "navType")
+        const navType = getAncestorSpecValue($, "navType")
         if (typeof navType?.onNavigate === "function") {
-          const navTypeResult = navType.onNavigate(meta)
+          const navTypeResult = navType.onNavigate($)
           if (navTypeResult === false) return false
         }
         return routeResult
@@ -94,12 +106,12 @@ metaSetups.push(meta => {
     }
   }
   // If this is a nav container, set initial selection
-  if (meta.$.spec.navType) {
-    meta.$.state.nav = meta.$.state.nav || { selected: null }
-    meta.$.state.nav.selected = fieldKeys(meta.$.spec)[0]
+  if ($.spec.navType) {
+    $.state.nav = $.state.nav || { selected: null }
+    $.state.nav.selected = fieldKeys($.spec)[0]
   }
   // If this is the top-level meta and has routes specified then initialise navigation
-  if (!meta.$.parent) {
+  if (!$.parent) {
     if (spec?.urlPath &&
       typeof history !== "undefined" && typeof window !== "undefined" &&
       (!window.location?.pathname || window.location.pathname === "/")
@@ -108,13 +120,13 @@ metaSetups.push(meta => {
       history.pushState(null, null, spec.urlPath)
     }
     if (policy.routeMetas.size) {
-      extendBootstrap(meta, (v, m) => {
+      extendBootstrap($, (v, m) => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
           Array.from(policy.routeMetas.keys()),
           () => {
             // Reset the backlinks for the currently selected value
-            policy.selectedRouteMeta && reset(policy.selectedRouteMeta)
+            policy.selectedRoute$ && reset(policy.selectedRoute$)
           }
         ).start()
         router.catch(console.error)
@@ -147,23 +159,30 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
  */
 export const getNavSelection = <T>(navMeta: Meta<T>) => {
   const key: FieldKey<T> = navMeta.$.state.nav?.selected
-  return navMeta[key] as Meta<any>
+  return navMeta[key]
 }
 
 /**
- * Set the navigation meta state.
+ * Recursively set the navigation meta state.
  */
-export const setNavSelection = (selectedMeta: Meta<any>, recursing = false) => {
-  const parent = selectedMeta.$.parent
-  if (!recursing) policy.selectedRouteMeta = selectedMeta
-  if (parent) {
-    parent.$.state.nav = parent.$.state.nav || {}
-    parent.$.state.nav.selected = selectedMeta.$.key
-    if (parent.$.state.nav.showMenu) {
-      parent.$.state.nav.showMenu = false
+export const setNavSelection: MetaFn<any> = (v, $) => {
+  let recursing = false
+
+  const recurse: MetaFn<any> = (v, $) => {
+    const parent$ = $.parent.$
+    if (!recursing) policy.selectedRoute$ = $
+    if (parent$) {
+      parent$.state.nav = parent$.state.nav || {}
+      parent$.state.nav.selected = $.key
+      if (parent$.state.nav.showMenu) {
+        parent$.state.nav.showMenu = false
+      }
+      recursing = true
+      recurse(parent$.value, parent$)
     }
-    setNavSelection(parent, true)
   }
+
+  recurse(v, $)
 }
 
 /**
@@ -171,10 +190,10 @@ export const setNavSelection = (selectedMeta: Meta<any>, recursing = false) => {
  * otherwise find and go to its first child route.
  * This will in turn trigger any onNavigation, such as `selectMenuItem`.
  */
-export const goNavRoute = (item: Meta<any>) => {
+export const goNavRoute = (item: HasMeta$<object>) => {
   while (item && !item.$.spec.route) {
     const firstChildKey = fieldKeys(item.$.spec)[0]
-    item = item[firstChildKey] as Meta<any>
+    item = (item.$.meta as Meta<object>)[firstChildKey]
   }
   item.$.spec.route?.go()
 }

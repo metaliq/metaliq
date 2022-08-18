@@ -1,4 +1,4 @@
-import { getSpecValue, Meta, MetaFn } from "../../meta"
+import { getSpecValue, HasMeta$, m$, MetaFn } from "../../meta"
 
 export interface TerminologySpec<T, P = any> {
   /**
@@ -30,14 +30,14 @@ export const symbol = getSpecValue("symbol")
 /**
  * Return a full path string for the given meta within it's given ancestor.
  */
-export function labelPath (from: Meta<any>, to: Meta<any>) {
-  const labels = [label(to)]
+export function labelPath (from: HasMeta$<any>, to: HasMeta$<any>) {
+  const labels = [labelOrKey(to)]
   while (to.$.parent && to.$.parent !== from) {
     to = to.$.parent
-    const toLabel = label(to)
+    const toLabel = labelOrKey(to)
     if (toLabel) labels.unshift(toLabel)
   }
   return labels.join(" > ")
 }
 
-export const labelOrKey = (meta: Meta<any>) => label(meta) || meta.$.key
+export const labelOrKey: MetaFn<any> = (v, $ = m$(v)) => label(v, $) || $.key

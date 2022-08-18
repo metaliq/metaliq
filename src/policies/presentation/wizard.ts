@@ -1,4 +1,4 @@
-import { FieldKey, isMetaFn, Meta, metaCall, MetaFn, metaSetups, reset } from "../../meta"
+import { FieldKey, isMeta, isMetaFn, Meta, Meta$, metaCall, MetaFn, metaSetups, reset } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
@@ -50,15 +50,15 @@ declare module "../../policy" {
 
 // Can't use getSpecValue as it is nested
 // TODO: EITHER make a nested version of getSpecValue OR switch to a review-and-state model
-export const forwardsLabel: MetaFn<any, any, StepLabel> = (value, meta) => {
-  const label = meta.$.spec.wizardStep?.forwardsLabel
-  if (isMetaFn(label)) return label(value, meta)
+export const forwardsLabel: MetaFn<any, any, StepLabel> = (value, $) => {
+  const label = $.spec.wizardStep?.forwardsLabel
+  if (isMetaFn(label)) return label(value, $)
   else return label
 }
 
-export const backwardsLabel: MetaFn<any, any, StepLabel> = (value, meta) => {
-  const label = meta.$.spec.wizardStep?.backwardsLabel
-  if (isMetaFn(label)) return label(value, meta)
+export const backwardsLabel: MetaFn<any, any, StepLabel> = (value, $) => {
+  const label = $.spec.wizardStep?.backwardsLabel
+  if (isMetaFn(label)) return label(value, $)
   else return label
 }
 
@@ -81,51 +81,47 @@ export type WizardInfo<T> = {
   nowStep: Meta<any>
 }
 
-// Register of any metas that are configured as a wizard
-const wizardMetas: Array<Meta<any>> = []
-
-metaSetups.push(<T>(meta: Meta<T>) => {
-  if (meta.$.spec.wizard) {
-    wizardMetas.push(meta)
-    const stepNames = Object.keys(meta.$.spec.fields) as Array<FieldKey<T>>
+metaSetups.push(<T>($: Meta$<T>) => {
+  if ($.spec.wizard && isMeta($.meta)) {
+    const stepNames = Object.keys($.spec.fields) as Array<FieldKey<T>>
     for (const stepName of stepNames) {
-      const step = meta[stepName]
+      const step = $.meta[stepName]
       if (!step.$.spec.view) step.$.spec.view = <unknown>metaForm() as MetaView<any>
     }
     const firstStepName = stepNames[0]
-    const stepMeta = meta[firstStepName] as Meta<any>
-    reset(stepMeta)
+    const stepMeta = $.meta[firstStepName] as Meta<any>
+    reset(stepMeta.$)
     return {
       step: firstStepName
     }
   }
 })
 
-export const getWizardInfo = <T> (wizard: Meta<T>): WizardInfo<T> => {
-  const stepNames = Object.keys(wizard.$.spec.fields) as Array<FieldKey<T>>
-  const nowIndex = stepNames.indexOf(wizard.$.state.step)
-  const nowStep = wizard[stepNames[nowIndex]] as Meta<any>
+export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
+  const stepNames = Object.keys(wizard$.spec.fields) as Array<FieldKey<T>>
+  const nowIndex = stepNames.indexOf(wizard$.state.step)
+  const nowStep = (wizard$.meta as Meta<any>)[stepNames[nowIndex]] as Meta<any>
   return { stepNames, nowIndex, nowStep }
 }
 
-export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta<T>) => {
+export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Meta$<T>) => {
   // Deduce indices of current and next step
-  const { stepNames, nowIndex, nowStep } = getWizardInfo(wizard)
+  const { stepNames, nowIndex, nowStep } = getWizardInfo(wizard$)
 
   const nextIndex = stepChange.direction
     ? stepChange.direction === "forwards" ? nowIndex + 1 : nowIndex - 1
     : stepNames.indexOf(stepChange.stepName)
   if (nextIndex < 0 || nextIndex >= stepNames.length) { // Index out of bounds
-    if (wizard.$.parent?.$.spec.wizard) {
+    if (wizard$.parent?.$.spec.wizard) {
       const direction: StepDirection = nextIndex < 0 ? "backwards" : "forwards"
-      await changeStep({ direction })(wizard.$.parent as Meta<unknown>)
+      await changeStep({ direction })(wizard$.parent.$)
     }
     return
   }
 
-  if (!wizard.$.spec.wizard?.unconstrained) {
+  if (!wizard$.spec.wizard?.unconstrained) {
     // Perform validation unless wizard is unconstrained
-    const nextStep = wizard[stepNames[nextIndex]] as Meta<any>
+    const nextStep = (wizard$.meta as Meta<any>)[stepNames[nextIndex]] as Meta<any>
     if (nextIndex > nowIndex + 1 && !nextStep.$.state.validated) return
 
     const errorMetas = validateAll(nowStep)
@@ -136,7 +132,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta
   } else {
     // For an unconstrained wizard, count all steps up to the new one as validated
     for (const previousStep of stepNames.slice(0, nextIndex)) {
-      wizard[previousStep].$.state.validated = true
+      (wizard$.meta as Meta<any>)[previousStep].$.state.validated = true
     }
   }
 
@@ -145,15 +141,15 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard: Meta
     const completionResponse = await metaCall(onComplete)(nowStep)
     if (completionResponse === false) return
   }
-  wizard.$.state.step = stepNames[nextIndex]
+  wizard$.state.step = stepNames[nextIndex]
 
   window.history.pushState({}, label(nowStep))
   window.onpopstate = (evt: PopStateEvent) => {
-    up(changeStep({ stepName: stepNames[nowIndex] }), wizard)()
+    up(changeStep({ stepName: stepNames[nowIndex] }), wizard$)()
   }
 
-  wizard.$.state.stepChangeDirection = (nextIndex > nowIndex) ? "forwards" : "backwards"
+  wizard$.state.stepChangeDirection = (nextIndex > nowIndex) ? "forwards" : "backwards"
   window?.scrollTo?.({ top: 0, behavior: "smooth" })
   await wait(25) // Delay to allow transition
-  wizard.$.state.stepChangeDirection = null
+  wizard$.state.stepChangeDirection = null
 }

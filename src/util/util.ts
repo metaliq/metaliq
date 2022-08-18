@@ -72,6 +72,14 @@ export function pushTo<T> (array: T[], item: T) {
 }
 
 /**
+ * Append the second array to the first and return it.
+ */
+export function appendTo<T> (to: T[], append: T[]) {
+  to.splice(to.length, 0, ...append)
+  return to
+}
+
+/**
  * Is this the first item in the array?
  */
 export const isFirst = (item: any, array: any[]) => item === array[0]

@@ -23,7 +23,7 @@ describe("Underlying data value object", () => {
     mApp.principal.firstName.$.value.should.be.a("string").equals("")
 
     // Reset top-level meta (this is generally done automatically by the application policy)
-    reset(mApp)
+    reset(mApp.$)
 
     mApp.principal.firstName.$.value.should.be.a("string").equals("Tim")
   })
@@ -39,7 +39,7 @@ describe("Underlying data value object", () => {
     mApp.principal.firstName.$.value.should.be.a("string").equal("Tim")
 
     // Done automatically on conclusion of a application state update
-    reset(mApp)
+    reset(mApp.$)
     mApp.$.value.principal.should.haveOwnProperty("$").equal(mApp.principal.$)
 
     meta(mApp.$.value.principal).should.equal(mApp.principal)

@@ -1,7 +1,6 @@
 import { render, TemplateResult } from "lit"
-import { meta, metaCall, MetaFn, metaSetups } from "../../meta"
+import { MetaFn, metaSetups } from "../../meta"
 import { label } from "../terminology/terminology"
-import { review } from "../application/application"
 
 export interface PresentationSpec<T, P> {
   /**
@@ -35,14 +34,14 @@ export type View<T> = (model: T) => ViewResult
 export type MetaView<T, P = any> = MetaFn<T, P, ViewResult>
 export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 
-metaSetups.push(meta => {
+metaSetups.push($ => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
-  if (!meta.$.parent) {
+  if (!$.parent) {
     // TODO: These should go into runtime target
-    if (meta.$.spec.view || !meta.$.spec.publication?.target) {
-      meta.$.spec.review = meta.$.spec.review || renderPage
-      Object.assign(window, { meta })
-      document.title = label(meta)
+    if ($.spec.view || !$.spec.publication?.target) {
+      $.spec.review = $.spec.review || renderPage
+      Object.assign(window, { meta: $ })
+      document.title = label($)
     }
   }
 })
@@ -80,9 +79,8 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
  *
  * First, it can accommodate either a single view or an array of views - enabling the
  * view term of a meta to accomodate multiple views.
- * Second, it performs a review of all dynamic values on the meta, such as calcs and hidden.
- * Third, it automatically handles dynamic hide / show.
- * Fourth, if provided with only a value it will deduce the meta, except for primitive values.
+ * Second, it automatically handles dynamic hide / show.
+ * Third, if provided with only a value it will deduce the meta, except for primitive values.
  *
  * There is also handling provided for default views and fallbacks.
  *
@@ -97,21 +95,19 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
 export function view <T, P = any> (
   primary?: boolean | MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
 ): MetaFn<T, P, ViewResult> {
-  return (v, m) => {
-    m = m || meta(v)
-    if (arguments.length === 0 || primary === true) primary = m.$.spec.view
-    if (fallback === true) fallback = m.$.spec.view
+  return (v, $) => {
+    if (arguments.length === 0 || primary === true) primary = $.spec.view
+    if (fallback === true) fallback = $.spec.view
     const metaView = (primary || fallback) as MetaViewTerm<T, P>
-    if (m.$.parent) review(m) // Don't review on top level, this is auto done in renderPage
     if (!metaView) {
       return ""
     } else if (Array.isArray(metaView)) {
-      return metaView.map(mv => view(mv)(v, m))
+      return metaView.map(mv => view(mv)(v, $))
     } else {
-      if (typeof m.$.spec.hidden === "function") {
-        return metaCall(hideShowWrapper(metaView))(m)
+      if (typeof $.spec.hidden === "function") {
+        return hideShowWrapper(metaView)(v, $)
       } else {
-        return m.$.state.hidden ? "" : metaCall(metaView)(m)
+        return $.state.hidden ? "" : metaView(v, $)
       }
     }
   }

@@ -2,8 +2,9 @@ import { Policy } from "./policy"
 import { MaybeReturn } from "./util/util"
 
 /**
- * A Meta object with underlying value of type T,
+ * A meta object for an underlying value of type T,
  * optionally within parent of type P.
+ * T can be any type other than an array, for which MetaArrays are used.
  */
 export type Meta<T, P = any> = MetaFields<T> & HasMeta$<T, P>
 
@@ -23,31 +24,29 @@ export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
   : Meta<T[K], T>
 
 /**
- * The meta information for an array field,
+ * The meta object for an array field,
  * along with a collection of Meta objects associated with its content.
  */
 export type MetaArray<T, P = any> = Array<Meta<T, P>> & HasMeta$<T[], P>
 
 /**
- * An object that has a $ link to meta information.
+ * An object that has a $ property with meta information.
  * Both Meta and MetaArray implement this type.
  */
 export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
 
 /**
- * Dollar property containing additional info.
- * This is the full meta-structure for non-object types.
+ * Dollar property containing meta information.
  */
 export type Meta$<T, P = any> = {
   /**
-   * Link to the meta object or array containing this $ property.
+   * Link to the meta object containing this $ property.
    * Useful for backlinks from object values.
-   * Note that for MetaArrays this will need to be cast.
    */
   meta?: HasMeta$<T, P>
 
   /**
-   * Ancestry within meta graph (if applicable)
+   * Ancestry within meta graph (if applicable).
    */
   parent?: Meta<P>
 
@@ -57,7 +56,7 @@ export type Meta$<T, P = any> = {
   key?: FieldKey<P>
 
   /**
-   * The specification upon which this Meta was based.
+   * The specification applied to this meta object.
    */
   spec: MetaSpec<T, P>
 
@@ -69,7 +68,7 @@ export type Meta$<T, P = any> = {
   /**
    * The underlying data value getter / setter.
    */
-  value?: T | MetaValue<T>
+  value?: T
 
   /**
    * The internal (potentially transient) version of the data value.
@@ -94,22 +93,22 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
  * Setups should check the policy's term(s) in the meta spec to determine applicability of any such setup.
  */
-export type MetaSetup<T, P = any> = (meta: Meta<T, P>) => MaybeReturn<Policy.State<T, P>>
+export type MetaSetup<T, P = any> = (meta: Meta$<T, P>) => MaybeReturn<Policy.State<T, P>>
 
 export const metaSetups: Array<MetaSetup<any>> = []
 
-function setupMeta (meta: Meta<any>) {
+function setupMeta ($: Meta$<any>) {
   for (const maker of metaSetups) {
-    const state = maker(meta) || {}
-    Object.assign(meta.$.state, state)
+    const state = maker($) || {}
+    Object.assign($.state, state)
   }
 }
 
 /**
  * Return a path string for the given meta,
- * with the given root meta name which defaults to "Meta".
+ * with the given root meta name which defaults to "meta".
  */
-function metaPath (meta: HasMeta$<any>, root = "Meta"): string {
+function metaPath (meta: HasMeta$<any>, root = "meta"): string {
   let path = meta.$.key ?? root
   let parent = meta.$.parent
   while (parent) {
@@ -164,7 +163,7 @@ export function metafy <T, P = any> (
     : proto || Object.create(MetaProto)
 
   // Create contextual meta information object
-  const $: Meta$<T, P> = {
+  const $: Meta$<T, P> = Object.assign(proto?.$ || {}, {
     spec,
     parent,
     key,
@@ -174,13 +173,13 @@ export function metafy <T, P = any> (
       if (typeof this._value === "object" || !this.parent) {
         return this._value
       } else {
-        return this.parent[this.key].$._value
+        return this.parent[this.key]?.$._value
       }
     },
     set value (val) {
       reset(this.meta, val)
     }
-  }
+  })
   const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
   // Assign the meta object to itself - useful for backlinks from values
@@ -213,65 +212,72 @@ export function metafy <T, P = any> (
     }
   }
 
-  if (!hasProto) setupMeta(result) // Only do initial meta setup if no previous meta provided
+  if (!hasProto) setupMeta(result.$) // Only do initial meta setup if no previous meta provided
 
   return result
 }
 
 /**
- * Resets the Meta's data value, to any provided value else the original underlying data.
+ * Resets the Meta$'s data value, to any provided value else the original underlying data.
  * Example uses include:
  * (a) replacing a complete object value directly rather than via its parent, and
  * (b) to restore current backlinks to a value object that is referenced more than once in the meta-graph.
  */
-export function reset<T> (meta: HasMeta$<T>, value?: T) {
-  metafy(meta.$.spec,
-    typeof value === "undefined" ? meta.$.value : value,
-    meta.$.parent, meta.$.key, meta)
+export function reset<T> ($: Meta$<T>, value?: T) {
+  metafy($.spec,
+    typeof value === "undefined" ? $.value : value,
+    $.parent, $.key, $.meta)
 }
 
 /**
  * Apply a given spec to an existing meta.
  */
-export function applySpec<T> (meta: Meta<T>, spec: MetaSpec<T>) {
-  meta.$.spec = spec
-  setupMeta(meta)
-  for (const key of fieldKeys(spec)) {
-    const fieldSpec = <unknown>spec.fields[key] as MetaSpec<T[FieldKey<T>]>
-    const fieldMeta = <unknown>meta[key] as Meta<T[FieldKey<T>]>
-    applySpec(fieldMeta, fieldSpec)
+export function applySpec<T> ($: Meta$<T>, spec: MetaSpec<T>) {
+  $.spec = spec
+  setupMeta($)
+  if (isMeta($.meta)) {
+    for (const key of fieldKeys(spec)) {
+      const fieldSpec = <unknown>spec.fields[key] as MetaSpec<T[FieldKey<T>]>
+      const fieldMeta = <unknown>$.meta[key] as Meta<T[FieldKey<T>]>
+      applySpec(fieldMeta.$, fieldSpec)
+    }
   }
 }
 
 /**
  * Shortcut from a value object to the $ meta info.
  */
-export const m$ = <T>(value: T | Meta<T>): Meta$<T> => (<unknown>value as HasMeta$<T>)?.$
-
-/**
- * Typed shortcut from a value object to its associated meta.
- */
-export const meta = <T, P = any> (value: T | MetaValue<T, P> | Meta<T, P>) => {
-  if (!(value ?? false) || typeof value !== "object") {
-    throw new Error(`Attempt to obtain meta from primitive value: ${value}`)
+export const m$ = <T>(value: T | HasMeta$<T>): Meta$<T> => {
+  if (typeof value !== "object") {
+    throw new Error(`Cannot obtain Meta$ from primitive value: ${value}`)
   }
-  return m$(value)?.meta as Meta<T, P>
+  return (value as HasMeta$<T>)?.$
 }
 
 /**
- * Typed shortcut from a value array to its associated meta array.
+ * Typed shortcut from a value object to its associated meta object.
  */
-export const metarr = <T>(value: T[]): MetaArray<T> => (m$(value)?.meta as MetaArray<T>)
+export const meta = <T, P = any> (value: T | HasMeta$<T, P>) => {
+  if (!(value ?? false) || typeof value !== "object") {
+    throw new Error(`Cannot obtain meta from primitive value: ${value}`)
+  }
+  return m$(value)?.meta
+}
 
 /**
- * A type guard to narrow a meta field to either a Meta or a MetaArray.
+ * A type guard to narrow a meta field to a Meta.
  */
-export const isMetaArray = (m: Meta<any> | MetaArray<any>): m is MetaArray<any> => Array.isArray(m)
+export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => !Array.isArray(m)
+
+/**
+ * A type guard to narrow a meta field to a MetaArray.
+ */
+export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> => Array.isArray(m)
 
 /**
  * Shortcut to a proxy object for the parent.
  */
-export const parent = <T extends object, P = any> (m: T | Meta<T, P>) => meta(m)?.$?.parent?.$.value
+export const parent = <T extends object, P = any> (value: T | HasMeta$<T, P>) => m$(value)?.parent?.$.value
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -291,17 +297,12 @@ export const fieldKeys = <T>(spec: MetaSpec<T>) =>
  * which works on a single parameter of the underlying data type.
  * The second parameter is the associated object from the meta-graph.
  */
-export type MetaFn<T, P = any, R = any> = (value: T | MetaValue<T, P>, meta?: Meta<T, P>) => R
-
-/**
- * The underlying value, either a primitive value or an object enhanced with the meta info.
- */
-export type MetaValue<T, P = any> = T extends object ? T & HasMeta$<T, P> : T
+export type MetaFn<T, P = any, R = any> = (value: T, $?: Meta$<T, P>) => R
 
 /**
  * Shortcut to call a metaFn with both parameters
  * by passing just the Meta or the MetaValue of an object type.
- * This is intended for use at the policy level.
+ * This is primarily for use at the policy level.
  */
 export const metaCall = <T, P = any, R = any> (
   fn: MetaFn<T, P, R>
@@ -309,13 +310,13 @@ export const metaCall = <T, P = any, R = any> (
     if (typeof (on ?? false) !== "object") {
       throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
     }
-    const m = meta(on)
-    const value = m.$.value as MetaValue<T>
-    return fn(value, m)
+    const $ = m$(on)
+    return fn($.value, $)
   }
 
 /**
- * A simple type guard for values that may or may not be a meta function.
+ * A simple type guard for values that may or may not be a meta function,
+ * such as when a spec term can be static or derived.
  */
 export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
 
@@ -327,14 +328,14 @@ export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<a
  * Return the value of a spec term that is defined as being
  * either a particular type or a MetaFn that returns that type.
  */
-export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K) =>
-  (meta: HasMeta$<any>): V => {
-    const specValue = meta.$.spec[key]
+export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K): MetaFn<any> =>
+  (v, $ = m$(v)): V => {
+    const specValue = $.spec[key]
     if (isMetaFn(specValue)) return metaCall(specValue)(meta)
     else return specValue as V
   }
 
-export const getAncestorSpecValue = <K extends SpecKey, V extends SpecValue<K>>(meta: HasMeta$<any>, key: K): V => {
-  while (meta && typeof meta.$.spec[key] === "undefined") meta = meta.$.parent
-  return meta?.$.spec[key]
+export const getAncestorSpecValue = <K extends SpecKey, V extends SpecValue<K>>($: Meta$<any>, key: K): V => {
+  while ($ && typeof $.spec[key] === "undefined") $ = $.parent?.$
+  return $?.spec[key]
 }

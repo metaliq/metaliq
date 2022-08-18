@@ -1,6 +1,6 @@
 {
   "name": "metaliq",
-  "version": "0.30.6",
+  "version": "1.0.0-alpha.17",
   "type": "module",
   "main": "lib/meta.js",
   "types": "lib/meta.d.ts",
@@ -12,7 +12,8 @@
     "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
     "dev": "npm run clean && npm run prep-css && tsc --watch",
     "prepare": "npm run clean && npm run prep-css && tsc",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/",
+    "publish-alpha": "pnpm publish --tag alpha"
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",

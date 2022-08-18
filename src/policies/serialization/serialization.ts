@@ -36,7 +36,7 @@ export function stringify (meta: Meta<any>, statePredicate = defaultStatePredica
  */
 export function parse<T> (serialisation: string, spec?: MetaSpec<T>): Meta<T> {
   const meta: Meta<T> = flat_parse(serialisation)
-  if (spec) applySpec(meta, spec)
+  if (spec) applySpec(meta.$, spec)
   return meta
 }
 

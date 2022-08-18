@@ -3,7 +3,6 @@ import chai from "chai"
 import { organisationSpec } from "./test-specs"
 import { run } from "../policies/application/application"
 import { up } from "@metaliq/up"
-import { meta } from "../meta"
 
 chai.should()
 
@@ -17,11 +16,11 @@ describe("Hide / Show rules", () => {
     await up(contact => {
       contact.age = 15
     }, appVal.principal)()
-    meta(appVal.principal).isSelfEmployed.$.state.hidden.should.be.a("boolean").equal(true)
+    mApplication.principal.isSelfEmployed.$.state.hidden.should.be.a("boolean").equal(true)
 
     await up(contact => {
       contact.age = 21
     }, appVal.principal)()
-    meta(appVal.principal).isSelfEmployed.$.state.hidden.should.be.a("boolean").equal(false)
+    mApplication.principal.isSelfEmployed.$.state.hidden.should.be.a("boolean").equal(false)
   })
 })

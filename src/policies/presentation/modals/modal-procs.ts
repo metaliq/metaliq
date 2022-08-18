@@ -1,6 +1,6 @@
 import { call } from "../../communication/communication"
 import { ModalButton, ModalInfo } from "./modal-spec"
-import { meta, reset } from "../../../meta"
+import { m$, reset } from "../../../meta"
 import { ViewResult } from "../presentation"
 
 export const modalDefaults = {
@@ -9,11 +9,11 @@ export const modalDefaults = {
 }
 
 export const showModalChannel = (modalInfo: ModalInfo) => (newModalInfo: ModalInfo) => {
-  reset(meta(modalInfo), newModalInfo)
+  reset(m$(modalInfo), newModalInfo)
 }
 
 export const closeModalChannel = (modalInfo: ModalInfo) => async () => {
-  reset(meta(modalInfo), {
+  reset(m$(modalInfo), {
     body: "",
     title: ""
   })

@@ -1,4 +1,4 @@
-import { Meta, metaCall, MetaFn, metaSetups } from "../../meta"
+import { Meta$, MetaFn, metaSetups } from "../../meta"
 
 export interface CommunicationSpec<T, P> {
   /**
@@ -20,13 +20,13 @@ declare module "../../policy" {
  * Internal policy register.
  */
 type CommunicationPolicy = {
-  channelMap: Map<MetaFn<any>, Meta<any>>
+  channelMap: Map<MetaFn<any>, Meta$<any>>
 }
 const policy: CommunicationPolicy = { channelMap: new Map() }
 
-metaSetups.push(meta => {
-  for (const channel of meta.$.spec.channels || []) {
-    policy.channelMap.set(channel, meta)
+metaSetups.push($ => {
+  for (const channel of $.spec.channels || []) {
+    policy.channelMap.set(channel, $)
   }
 })
 
@@ -40,6 +40,6 @@ export type ChannelCall<M> = (msg: M) => any
  * (b) Use call (either directly or via partial application) from `up`.
  */
 export const call = <T, P, M> (channel: MetaFn<T, P, ChannelCall<M>>) => (msg?: M) => {
-  const meta = policy.channelMap.get(channel) as Meta<T, P>
-  if (meta) return metaCall(channel)(meta)(msg)
+  const $ = policy.channelMap.get(channel)
+  if ($) return channel($.value, $)(msg)
 }
