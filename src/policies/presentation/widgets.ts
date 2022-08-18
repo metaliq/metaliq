@@ -2,20 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import {
-  FieldKey,
-  fieldKeys,
-  HasMeta$,
-  isMeta,
-  isMetaArray,
-  m$,
-  Meta,
-  meta,
-  Meta$,
-  metaCall,
-  MetaFn,
-  metaSetups
-} from "../../meta"
+import { FieldKey, fieldKeys, HasMeta$, isMeta, isMetaArray, m$, meta, Meta$, MetaFn, metaSetups } from "../../meta"
 import { hasValue, validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, view, ViewResult } from "./presentation"
@@ -54,9 +41,9 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
           .map(key => {
             const fieldMeta = meta[key] as HasMeta$<any>
             if (isMetaArray(fieldMeta)) {
-              return metaCall(view(true, repeatView))(<unknown>fieldMeta as Meta<T[]>)
+              return view(true, repeatView)(fieldMeta.$.value, fieldMeta.$)
             } else {
-              const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta as Meta<any>)
+              const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta.$)
               return view(itemView)(fieldMeta)
             }
           })}
@@ -67,7 +54,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
 
 export const repeatView: MetaView<any[]> = (v, $) => {
   if (isMetaArray($.meta)) {
-    const itemView = view($.spec.items?.view || defaultFieldView($.meta[0]))
+    const itemView = view($.spec.items?.view || defaultFieldView($.meta[0].$))
 
     return $.meta.map(({ $ }) => {
       return itemView($.value, $)
@@ -78,14 +65,14 @@ export const repeatView: MetaView<any[]> = (v, $) => {
 /**
  * Return a default view for a meta based upon its value type.
  */
-const defaultFieldView = <T> (meta: HasMeta$<T>): MetaView<T> => {
+const defaultFieldView = <T> ($: Meta$<T>): MetaView<T> => {
   if (!meta) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
-  } else if (meta.$.value && typeof meta.$.value === "object") {
+  } else if ($.value && typeof $.value === "object") {
     return metaForm()
-  } else if (typeof meta.$.value === "boolean") {
+  } else if (typeof $.value === "boolean") {
     return <unknown>checkboxField() as MetaView<T>
-  } else if (typeof meta.$.value === "number") {
+  } else if (typeof $.value === "number") {
     return inputField({ type: "number" })
   } else return inputField()
 }
@@ -187,7 +174,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (v,
 export const fieldLabel = <T>(options?: InputOptions<T>): MetaView<T> => (value, $) =>
   typeof options?.labelView === "function"
     ? options.labelView(value, $)
-    : html`<span class="mq-input-label">${labelOrKey(meta)}</span>`
+    : html`<span class="mq-input-label">${labelOrKey(value, $)}</span>`
 
 /**
  * Input field with default options for a validated checkbox

@@ -1,4 +1,4 @@
-import { getSpecValue, HasMeta$, m$, MetaFn } from "../../meta"
+import { addDynamicState, HasMeta$, m$, Meta$, MetaFn, metaSetups } from "../../meta"
 
 export interface TerminologySpec<T, P = any> {
   /**
@@ -17,15 +17,26 @@ export interface TerminologySpec<T, P = any> {
   symbol?: string | MetaFn<T, P, string>
 }
 
+export interface TerminologyState {
+  label?: string
+  helpText?: string
+  symbol?: string
+}
+
 declare module "../../policy" {
   namespace Policy {
     interface Specification<T, P> extends TerminologySpec<T, P> {}
+    interface State<T, P> extends TerminologyState {
+      this?: State<T, P>
+    }
   }
 }
 
-export const label = getSpecValue("label")
-export const helpText = getSpecValue("helpText")
-export const symbol = getSpecValue("symbol")
+metaSetups.push(<T>($: Meta$<T>) => {
+  addDynamicState($, "label")
+  addDynamicState($, "helpText")
+  addDynamicState($, "symbol")
+})
 
 /**
  * Return a full path string for the given meta within it's given ancestor.
@@ -40,4 +51,4 @@ export function labelPath (from: HasMeta$<any>, to: HasMeta$<any>) {
   return labels.join(" > ")
 }
 
-export const labelOrKey: MetaFn<any> = (v, $ = m$(v)) => label(v, $) || $.key
+export const labelOrKey: MetaFn<any> = (v, $ = m$(v)) => $.state.label || $.key

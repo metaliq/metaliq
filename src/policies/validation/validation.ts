@@ -1,4 +1,4 @@
-import { fieldKeys, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "../../meta"
+import { addDynamicState, fieldKeys, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "../../meta"
 import { Policy } from "../../policy"
 import { labelOrKey } from "../terminology/terminology"
 import { appendTo } from "../../util/util"
@@ -54,35 +54,9 @@ metaSetups.push(<T>($: Meta$<T>) => {
     ? { error: false, validated: false } // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
     : {}
 
-  const addDynamic = ($: Meta$<T>, name: string, getter: MetaFn<T>) => {
-    Object.defineProperty($.state, name, {
-      enumerable: true,
-      get () {
-        return getter($.value, $)
-      }
-    })
-  }
-
-  const hiddenSpec = $.spec.hidden
-  if (typeof hiddenSpec === "function") {
-    addDynamic($, "hidden", hiddenSpec)
-  } else if (typeof hiddenSpec === "boolean") {
-    state.hidden = hiddenSpec
-  }
-
-  const disabledSpec = $.spec.disabled
-  if (typeof disabledSpec === "function") {
-    addDynamic($, "disabled", disabledSpec)
-  } else if (typeof disabledSpec === "boolean") {
-    state.disabled = disabledSpec
-  }
-
-  const mandatorySpec = $.spec.mandatory
-  if (typeof mandatorySpec === "function") {
-    addDynamic($, "mandatory", mandatorySpec)
-  } else if (typeof mandatorySpec === "boolean") {
-    state.mandatory = mandatorySpec
-  }
+  addDynamicState($, "hidden")
+  addDynamicState($, "disabled")
+  addDynamicState($, "mandatory")
 
   return state
 })

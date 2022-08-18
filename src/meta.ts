@@ -105,6 +105,24 @@ function setupMeta ($: Meta$<any>) {
 }
 
 /**
+ * Use within a metaSetup to establish a possibly dynamic state value based on a
+ * specification term that is either a literal or a meta function returning the literal.
+ */
+export const addDynamicState = <T>($: Meta$<T>, name: SpecKey) => {
+  const specValue = $.spec[name]
+  if (isMetaFn(specValue)) {
+    Object.defineProperty($.state, name, {
+      enumerable: true,
+      get () {
+        return specValue($.value, $)
+      }
+    })
+  } else {
+    Object.assign($.state, { [name]: specValue })
+  }
+}
+
+/**
  * Return a path string for the given meta,
  * with the given root meta name which defaults to "meta".
  */
@@ -251,21 +269,34 @@ export function applySpec<T> ($: Meta$<T>, spec: MetaSpec<T>) {
 /**
  * Shortcut from a value object to the $ meta info.
  */
-export const m$ = <T>(value: T | HasMeta$<T>): Meta$<T> => {
+export const m$ = <T>(value: T): Meta$<T> => {
   if (typeof value !== "object") {
     throw new Error(`Cannot obtain Meta$ from primitive value: ${value}`)
   }
-  return (value as HasMeta$<T>)?.$
+  return (<unknown>value as HasMeta$<T>)?.$
 }
 
 /**
- * Typed shortcut from a value object to its associated meta object.
+ * Shortcut from a Meta$ to the $ meta info of one of its child keys.
  */
-export const meta = <T, P = any> (value: T | HasMeta$<T, P>) => {
+export const m$Key = <T, K extends FieldKey<T>>($: Meta$<T>, key: K) => {
+  const valueMeta = $.meta as Meta<any>
+  const keyMeta = valueMeta[key]
+  const key$ = <unknown>keyMeta?.$ as Meta$<T[K]>
+  return key$
+}
+
+/**
+ * Typed shortcut from a value or Meta$ object to its associated meta object,
+ * or optionally the meta object of one of its properties.
+ */
+export const meta = <T, P = any> (value: T | Meta$<T, P>, key?: FieldKey<T>) => {
   if (!(value ?? false) || typeof value !== "object") {
     throw new Error(`Cannot obtain meta from primitive value: ${value}`)
   }
-  return m$(value)?.meta
+  const $ = (m$(value) || value) as Meta$<T, P>
+  const valueMeta = $?.meta as Meta<T, P>
+  return key ? valueMeta[key] : valueMeta
 }
 
 /**
@@ -310,7 +341,7 @@ export type MetaFn<T, P = any, R = any> = (value: T, $?: Meta$<T, P>) => R
  */
 export const metaCall = <T, P = any, R = any> (
   fn: MetaFn<T, P, R>
-) => (on: T | Meta<T, P>): R => {
+) => (on: T): R => {
     if (typeof (on ?? false) !== "object") {
       throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
     }

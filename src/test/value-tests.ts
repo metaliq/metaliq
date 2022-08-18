@@ -42,7 +42,8 @@ describe("Underlying data value object", () => {
     reset(mApp.$)
     mApp.$.value.principal.should.haveOwnProperty("$").equal(mApp.principal.$)
 
-    meta(mApp.$.value.principal).should.equal(mApp.principal)
+    const mPrincipal = meta(mApp.$.value.principal)
+    mPrincipal.should.equal(mApp.principal)
     mApp.principal.firstName.$.value.should.be.a("string").equal("Bob")
   })
 })

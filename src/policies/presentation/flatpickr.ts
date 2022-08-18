@@ -7,7 +7,6 @@ import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
 import { validate } from "../validation/validation"
 import { fieldError, isDisabled } from "./widgets"
-import { label } from "../terminology/terminology"
 
 export type DatePickerOptions = {
   classes?: string
@@ -35,7 +34,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
       "mq-populated": !!value
     })}">
       <span class="mq-input-label">
-        ${label($)}
+        ${$.state.label}
       </span>
       ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`

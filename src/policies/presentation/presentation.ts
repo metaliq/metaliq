@@ -1,6 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { MetaFn, metaSetups } from "../../meta"
-import { label } from "../terminology/terminology"
+import { FieldKey, m$, m$Key, Meta$, MetaFn, metaSetups } from "../../meta"
 
 export interface PresentationSpec<T, P> {
   /**
@@ -41,7 +40,7 @@ metaSetups.push($ => {
     if ($.spec.view || !$.spec.publication?.target) {
       $.spec.review = $.spec.review || renderPage
       Object.assign(window, { meta: $ })
-      document.title = label($)
+      document.title = $.state.label
     }
   }
 })
@@ -75,7 +74,7 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
 /**
  * Get a ViewResult for the given meta.
  * If the view is not specified, will fall back to the spec view.
- * Calling `view(myView)(myValue, myMeta?)` has several advantages over calling `myView(myValue, myMeta)`:
+ * Calling `view(myView)(myValue, myMeta$?)` has several advantages over calling `myView(myValue, myMeta$)`:
  *
  * First, it can accommodate either a single view or an array of views - enabling the
  * view term of a meta to accomodate multiple views.
@@ -95,7 +94,7 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
 export function view <T, P = any> (
   primary?: boolean | MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
 ): MetaFn<T, P, ViewResult> {
-  return (v, $) => {
+  return (v, $ = m$(v)) => {
     if (arguments.length === 0 || primary === true) primary = $.spec.view
     if (fallback === true) fallback = $.spec.view
     const metaView = (primary || fallback) as MetaViewTerm<T, P>
@@ -112,3 +111,9 @@ export function view <T, P = any> (
     }
   }
 }
+
+/**
+ * Shortcut to a view for a property key within the given object.
+ */
+export const viewKey = <T, K extends FieldKey<T>> ($: Meta$<T>, key: K, metaView?: MetaViewTerm<T[K]>) =>
+  view(metaView)($.value[key], m$Key($, key))

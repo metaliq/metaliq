@@ -4,7 +4,6 @@ import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
 import { up } from "@metaliq/up"
 import { MetaView } from "./presentation"
-import { label } from "../terminology/terminology"
 
 export type StepLabel = string | boolean
 
@@ -143,7 +142,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
   }
   wizard$.state.step = stepNames[nextIndex]
 
-  window.history.pushState({}, label(nowStep))
+  window.history.pushState({}, nowStep.$.state.label)
   window.onpopstate = (evt: PopStateEvent) => {
     up(changeStep({ stepName: stepNames[nowIndex] }), wizard$)()
   }

@@ -3,8 +3,8 @@ import {
   FieldKey,
   fieldKeys,
   getAncestorSpecValue,
-  HasMeta$,
-  Meta,
+  m$Key,
+  meta,
   Meta$,
   metaCall,
   MetaFn,
@@ -98,7 +98,7 @@ metaSetups.push($ => {
         }
         const navType = getAncestorSpecValue($, "navType")
         if (typeof navType?.onNavigate === "function") {
-          const navTypeResult = navType.onNavigate($)
+          const navTypeResult = navType.onNavigate($.value, $)
           if (navTypeResult === false) return false
         }
         return routeResult
@@ -157,9 +157,9 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
 /**
  * Get the Meta object for the current selection in the given navigation level.
  */
-export const getNavSelection = <T>(navMeta: Meta<T>) => {
-  const key: FieldKey<T> = navMeta.$.state.nav?.selected
-  return navMeta[key]
+export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
+  const key: FieldKey<T> = navMeta$.state.nav?.selected
+  return m$Key(navMeta$, key)
 }
 
 /**
@@ -169,7 +169,7 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
   let recursing = false
 
   const recurse: MetaFn<any> = (v, $) => {
-    const parent$ = $.parent.$
+    const parent$ = $.parent?.$
     if (!recursing) policy.selectedRoute$ = $
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
@@ -190,29 +190,30 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
  * otherwise find and go to its first child route.
  * This will in turn trigger any onNavigation, such as `selectMenuItem`.
  */
-export const goNavRoute = (item: HasMeta$<object>) => {
-  while (item && !item.$.spec.route) {
-    const firstChildKey = fieldKeys(item.$.spec)[0]
-    item = (item.$.meta as Meta<object>)[firstChildKey]
+export const goNavRoute = (item$: Meta$<any>) => {
+  while (item$ && !item$.spec.route) {
+    const firstChildKey = fieldKeys(item$.spec)[0]
+    const itemMeta = meta(item$, firstChildKey).$
+    item$ = itemMeta
   }
-  item.$.spec.route?.go()
+  item$.spec.route?.go()
 }
 
 export const freeNavigation: NavigationType = {
   onNavigate: setNavSelection
 }
 
-export const toggleMenu = (m: Meta<any>) => {
-  m.$.state.nav = m.$.state.nav || {}
-  m.$.state.nav.showMenu = !m.$.state.nav.showMenu
+export const toggleMenu = ($: Meta$<any>) => {
+  $.state.nav = $.state.nav || {}
+  $.state.nav.showMenu = !$.state.nav.showMenu
 }
 
-export const openMenu = (m: Meta<any>) => {
-  m.$.state.nav = m.$.state.nav || {}
-  m.$.state.nav.showMenu = true
+export const openMenu = ($: Meta$<any>) => {
+  $.state.nav = $.state.nav || {}
+  $.state.nav.showMenu = true
 }
 
-export const closeMenu = (m: Meta<any>) => {
-  m.$.state.nav = m.$.state.nav || {}
-  m.$.state.nav.showMenu = false
+export const closeMenu = ($: Meta$<any>) => {
+  $.state.nav = $.state.nav || {}
+  $.state.nav.showMenu = false
 }
