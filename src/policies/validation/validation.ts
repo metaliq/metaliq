@@ -125,13 +125,13 @@ export const validateAll: MetaFn<any> = (v, $ = m$(v)) => {
     const { meta } = $
     if (isMetaArray(meta)) {
       for (const sub of meta) {
-        appendTo(result, validateAll(sub.$.value))
+        appendTo(result, validateAll(sub.$.value, sub.$))
       }
     } else if (isMeta(meta)) {
       const keys = fieldKeys($.spec)
       for (const key of keys) {
         const sub = meta[key]
-        appendTo(result, validateAll(sub.$.value))
+        appendTo(result, validateAll(sub.$.value, sub.$))
       }
     }
   }

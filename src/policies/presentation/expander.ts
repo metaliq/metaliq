@@ -1,6 +1,6 @@
 import { MetaView } from "./presentation"
 import { html, LitElement } from "lit"
-import { metaCall } from "../../meta"
+import { m$ } from "../../meta"
 import { customElement, property, state } from "lit/decorators.js"
 
 @customElement("mq-expander")
@@ -62,6 +62,6 @@ export class Expander extends LitElement {
 
 export const expander = <T> (expandedFn: MetaView<T>) => (content: MetaView<T>) => (data: T) => html`
   <mq-expander>
-    ${metaCall(expandedFn)(data) ? content(data) : ""}
+    ${expandedFn(data, m$(data)) ? content(data) : ""}
   </mq-expander>
 `

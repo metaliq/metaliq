@@ -108,17 +108,18 @@ function setupMeta ($: Meta$<any>) {
  * Use within a metaSetup to establish a possibly dynamic state value based on a
  * specification term that is either a literal or a meta function returning the literal.
  */
-export const addDynamicState = <T>($: Meta$<T>, name: SpecKey) => {
-  const specValue = $.spec[name]
+export const addDynamicState = <T, P = any, K extends SpecKey = any>($: Meta$<T, P>, specKey: K) => {
+  const specValue = $.spec[specKey]
   if (isMetaFn(specValue)) {
-    Object.defineProperty($.state, name, {
+    const specValueFn = specValue as MetaFn<T, P, DerivedSpecValue<K>>
+    Object.defineProperty($.state, specKey, {
       enumerable: true,
       get () {
-        return specValue($.value, $)
+        return specValueFn($.value, $)
       }
     })
   } else {
-    Object.assign($.state, { [name]: specValue })
+    Object.assign($.state, { [specKey]: specValue })
   }
 }
 
@@ -126,9 +127,9 @@ export const addDynamicState = <T>($: Meta$<T>, name: SpecKey) => {
  * Return a path string for the given meta,
  * with the given root meta name which defaults to "meta".
  */
-function metaPath (meta: HasMeta$<any>, root = "meta"): string {
-  let path = meta.$.key ?? root
-  let parent = meta.$.parent
+function metaPath ($: HasMeta$<any>, root = "meta"): string {
+  let path = $.$.key ?? root
+  let parent = $.$.parent
   while (parent) {
     path = `${parent.$.key ?? root}.${path}`
     parent = parent.$.parent
@@ -190,7 +191,7 @@ export function metafy <T, P = any> (
       }
     },
     set value (val) {
-      reset(this.meta, val)
+      reset(this, val)
     }
   }
 
@@ -287,29 +288,15 @@ export const child$ = <
   const keyMeta = valueMeta[key]
   const key$ = <unknown>keyMeta?.$ as Meta$<T, P>
   return key$
-
 }
 
 /**
- * Typed shortcut from a value or Meta$ object to its associated meta object,
- * or optionally the meta object of one of its properties.
- */
-export const meta = <T, P = any> (value: T | Meta$<T, P>, key?: FieldKey<T>) => {
-  if (!(value ?? false) || typeof value !== "object") {
-    throw new Error(`Cannot obtain meta from primitive value: ${value}`)
-  }
-  const $ = (m$(value) || value) as Meta$<T, P>
-  const valueMeta = $?.meta as Meta<T, P>
-  return key ? valueMeta[key] : valueMeta
-}
-
-/**
- * A type guard to narrow a meta field to a Meta.
+ * A type guard to narrow a MetaField to a Meta.
  */
 export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => !Array.isArray(m)
 
 /**
- * A type guard to narrow a meta field to a MetaArray.
+ * A type guard to narrow a MetaField to a MetaArray.
  */
 export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> => Array.isArray(m)
 
@@ -347,21 +334,6 @@ export type MetaFn<Type, Parent = any, Result = any> =
   ) =>
   Result
 
-/**
- * Shortcut to call a metaFn with both parameters
- * by passing just the Meta or the MetaValue of an object type.
- * This is primarily for use at the policy level.
- */
-export const metaCall = <T, P = any, R = any> (
-  fn: MetaFn<T, P, R>
-) => (on: T): R => {
-    if (typeof (on ?? false) !== "object") {
-      throw new Error(`Cannot perform metaCall on primitive value: ${on}`)
-    }
-    const $ = m$(on)
-    return fn($.value, $)
-  }
-
 export type SpecKey = keyof Policy.Specification<any>
 export type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
 export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
@@ -375,14 +347,18 @@ export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "fun
  * Return the value of a spec term that is defined as being
  * either a particular type or a MetaFn that returns that type.
  */
-export const getDynamicTerm = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K): MetaFn<any, any, V> =>
-  (v, $ = m$(v)): V => {
+export const getDynamicTerm = <K extends SpecKey>(key: K): MetaFn<any, any, DerivedSpecValue<K>> =>
+  (v, $ = m$(v)) => {
     const specValue = $.spec[key]
-    if (isMetaFn(specValue)) return specValue(v, $) as V
-    else return specValue as V
+    if (isMetaFn(specValue)) return specValue(v, $)
+    else return specValue
   }
 
-export const getAncestorTerm = <K extends SpecKey, V extends SpecValue<K>>($: Meta$<any>, key: K): V => {
-  while ($ && typeof $.spec[key] === "undefined") $ = $.parent?.$
-  return $?.spec[key]
-}
+export const getAncestorTerm = <K extends SpecKey>(
+  key: K, dynamic: boolean = false
+): MetaFn<any, any, SpecValue<K>> =>
+    (v, $ = m$(v)) => {
+      while ($ && typeof $.spec[key] === "undefined") $ = $.parent?.$
+      const termValue = $.spec[key]
+      return termValue
+    }

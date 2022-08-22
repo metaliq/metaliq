@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { FieldKey, fieldKeys, HasMeta$, isMeta, isMetaArray, m$, meta, Meta$, MetaFn, metaSetups } from "../../meta"
+import { FieldKey, fieldKeys, HasMeta$, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "../../meta"
 import { hasValue, validate } from "../validation/validation"
 import { labelOrKey, labelPath } from "../terminology/terminology"
 import { MetaView, view, ViewResult } from "./presentation"
@@ -216,7 +216,7 @@ const onInput = <T>({ unvalidated, type }: InputOptions<T>) =>
       : type === "number"
         ? parseFloat(target.value)
         : target.value) as T
-    if (!unvalidated) validate(meta)
+    if (!unvalidated) validate($.value, $)
   }
 
 export const errorsBlock: MetaView<any> = (v, $ = m$(v)) => {

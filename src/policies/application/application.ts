@@ -1,5 +1,5 @@
-import { Meta, Meta$, metaCall, MetaFn, metafy, MetaSpec, reset } from "../../meta"
-import { LogFunction, startUp, up, Up } from "@metaliq/up"
+import { Meta, Meta$, MetaFn, metafy, MetaSpec, reset } from "../../meta"
+import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
  * Policy module to define general specification and operation of a Metaliq application.
@@ -97,13 +97,6 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
 
   return meta
 }
-
-/**
- * A version of up that wraps the default, framework agnostic implementation
- * to provide consistent calling of meta-functions as updates.
- * Note this is currently incompatible with message (event) passing in standard updates.
- */
-export const mUp = <T, P> (handler: MetaFn<T, P>, data: T | Meta<T, P>) => up(metaCall(handler), data)
 
 export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   const data: T = typeof spec.init === "function"

@@ -1,4 +1,4 @@
-import { FieldKey, isMeta, isMetaFn, Meta, Meta$, metaCall, MetaFn, metaSetups, reset } from "../../meta"
+import { child$, FieldKey, isMeta, isMetaFn, Meta, Meta$, MetaFn, metaSetups, reset } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
@@ -77,7 +77,7 @@ export type StepChange<T> = {
 export type WizardInfo<T> = {
   stepNames: Array<FieldKey<T>>
   nowIndex: number
-  nowStep: Meta<any>
+  nowStep$: Meta$<any>
 }
 
 metaSetups.push(<T>($: Meta$<T>) => {
@@ -99,13 +99,13 @@ metaSetups.push(<T>($: Meta$<T>) => {
 export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
   const stepNames = Object.keys(wizard$.spec.fields) as Array<FieldKey<T>>
   const nowIndex = stepNames.indexOf(wizard$.state.step)
-  const nowStep = (wizard$.meta as Meta<any>)[stepNames[nowIndex]] as Meta<any>
-  return { stepNames, nowIndex, nowStep }
+  const nowStep$ = child$(wizard$, stepNames[nowIndex])
+  return { stepNames, nowIndex, nowStep$ }
 }
 
 export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Meta$<T>) => {
   // Deduce indices of current and next step
-  const { stepNames, nowIndex, nowStep } = getWizardInfo(wizard$)
+  const { stepNames, nowIndex, nowStep$ } = getWizardInfo(wizard$)
 
   const nextIndex = stepChange.direction
     ? stepChange.direction === "forwards" ? nowIndex + 1 : nowIndex - 1
@@ -123,7 +123,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
     const nextStep = (wizard$.meta as Meta<any>)[stepNames[nextIndex]] as Meta<any>
     if (nextIndex > nowIndex + 1 && !nextStep.$.state.validated) return
 
-    const errorMetas = validateAll(nowStep)
+    const errorMetas = validateAll(nowStep$)
     if (errorMetas.length && nextIndex > nowIndex) {
       window?.scrollTo?.({ top: 0, behavior: "smooth" })
       return
@@ -135,14 +135,14 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
     }
   }
 
-  const onComplete = nowStep.$.spec.wizardStep?.onComplete
+  const onComplete = nowStep$.spec.wizardStep?.onComplete
   if (typeof onComplete === "function") {
-    const completionResponse = await metaCall(onComplete)(nowStep)
+    const completionResponse = await onComplete(nowStep$.value, nowStep$)
     if (completionResponse === false) return
   }
   wizard$.state.step = stepNames[nextIndex]
 
-  window.history.pushState({}, nowStep.$.state.label)
+  window.history.pushState({}, nowStep$.state.label)
   window.onpopstate = (evt: PopStateEvent) => {
     up(changeStep({ stepName: stepNames[nowIndex] }), wizard$)()
   }

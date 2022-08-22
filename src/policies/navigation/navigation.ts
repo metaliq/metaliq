@@ -1,17 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import {
-  FieldKey,
-  fieldKeys,
-  getAncestorTerm,
-  child$,
-  meta,
-  Meta$,
-  metaCall,
-  MetaFn,
-  metaSetups,
-  MetaSpec,
-  reset
-} from "../../meta"
+import { child$, FieldKey, fieldKeys, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
 import { extendBootstrap } from "../application/application"
@@ -87,16 +75,19 @@ metaSetups.push($ => {
   if (spec?.route) {
     policy.routeMetas.set(spec.route, $)
     if (typeof spec.onLeave === "function") {
-      spec.route.onLeave = metaCall(spec.onLeave)($)
+      spec.route.onLeave = async () => {
+        const result = await spec.onLeave($.value, $)
+        return result
+      }
     }
     spec.route.onEnter = (params) => {
       up(async () => {
         let routeResult
         if (typeof spec.onEnter === "function") {
-          routeResult = await metaCall(spec.onEnter)($)(params)
+          routeResult = await spec.onEnter($.value, $)(params)
           if (routeResult === false) return false
         }
-        const navType = getAncestorTerm($, "navType")
+        const navType = getAncestorTerm("navType")($.value, $)
         if (typeof navType?.onNavigate === "function") {
           const navTypeResult = navType.onNavigate($.value, $)
           if (navTypeResult === false) return false
@@ -191,12 +182,8 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
  * This will in turn trigger any onNavigation, such as `selectMenuItem`.
  */
 export const goNavRoute = (item$: Meta$<any>) => {
-  while (item$ && !item$.spec.route) {
-    const firstChildKey = fieldKeys(item$.spec)[0]
-    const itemMeta = meta(item$, firstChildKey).$
-    item$ = itemMeta
-  }
-  item$.spec.route?.go()
+  const route = getAncestorTerm("route")(item$.value, item$)
+  route?.go()
 }
 
 export const freeNavigation: NavigationType = {

@@ -1,6 +1,6 @@
 import { ViewResult } from "./presentation"
 import { html } from "lit"
-import { getDynamicTerm, meta, Meta, MetaFn } from "../../meta"
+import { getDynamicTerm, m$, Meta, MetaFn } from "../../meta"
 import { up } from "@metaliq/up"
 
 export interface RepeatSpec<T, P = any> {
@@ -30,6 +30,6 @@ export const repeatControls = <T, P>(value: T[], meta: Meta<T[], P>): ViewResult
 }
 
 export const addItem = <T>(arr: T[]) => {
-  const newItem = getDynamicTerm("newItem")(meta(arr))
+  const newItem = getDynamicTerm("newItem")(arr, m$(arr))
   arr.push(newItem)
 }

@@ -1,7 +1,7 @@
 import chai from "chai"
 import { describe } from "mocha"
-import { meta, metafy, reset } from "../meta"
-import { organisationSpec, emptyOrganisation } from "./test-specs"
+import { metafy, reset } from "../meta"
+import { emptyOrganisation, organisationSpec } from "./test-specs"
 
 chai.should()
 
@@ -42,8 +42,8 @@ describe("Underlying data value object", () => {
     reset(mApp.$)
     mApp.$.value.principal.should.haveOwnProperty("$").equal(mApp.principal.$)
 
-    const mPrincipal = meta(mApp.$.value.principal)
-    mPrincipal.should.equal(mApp.principal)
-    mApp.principal.firstName.$.value.should.be.a("string").equal("Bob")
+    const principal = mApp.$.value.principal
+    principal.should.equal(mApp.principal.$.value)
+    principal.firstName.should.be.a("string").equal("Bob")
   })
 })

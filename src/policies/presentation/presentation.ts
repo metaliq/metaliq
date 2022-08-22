@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { child$, FieldKey, FieldType, m$, MetaFn, metaSetups } from "../../meta"
+import { child$, FieldKey, FieldType, m$, Meta$, MetaFn, metaSetups } from "../../meta"
 
 export interface PresentationSpec<T, P> {
   /**
@@ -92,21 +92,21 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
  * First, it can accommodate either a single view or an array of views - enabling the
  * view term of a meta to accomodate multiple views.
  * Second, it automatically handles dynamic hide / show.
- * Third, if provided with only a value it will deduce the meta, except for primitive values.
- *
- * There is also handling provided for default views and fallbacks.
+ * Third, it returns a meta view that, if provided with only a value,
+ * will attempt to deduce the meta info,
+ * so the "inner" view function does not necessarily have to.
+ * As with other meta functions, meta info deduction does not work for primitives
+ * and may be unreliable where the same value object is shared by multiple meta objects / specs.
  *
  * ```
  * view()(myValue) // View myValue with the view from the spec, if present
- * view(maybeView)(myValue) // View using maybeView if present, otherwise nothing (no fallback)
- * view(true, maybeView)(myValue) // Use the view from the spec if present, else fall back to maybeView
- * view(maybeView, true)(myValue) // View myValue with maybeView if it exists, else view from spec if present
- * view(maybeView, otherView)(myValue) // View myValue with maybeView if it exists, else use otherView (no fallback to spec view)
+ * view(maybeView)(myValue) // View using maybeView if present, otherwise fall back to spec view if present
+ * view([firstView, secondView])(myValue) // View myValue using two different views sequentially
  * ```
  */
 export function view <T, P = any> (
   metaViewTerm?: MetaViewTerm<T, P>
-): MetaFn<T, P, ViewResult> {
+): MetaView<T, P> {
   return (v, $ = m$(v)) => {
     metaViewTerm = metaViewTerm ?? $.spec.view
     if (!metaViewTerm) {
@@ -124,14 +124,11 @@ export function view <T, P = any> (
 }
 
 /**
- * Display a field for the given parent and key.
- * Optionally specify the meta view to use, otherwise defaults to spec view.
- * Handles dynamic and potentially animated hide/show
- * based on `hidden` spec term from validation policy.
+ * Similar to `view`
  */
 export const field = <P, K extends FieldKey<P>> (
-  parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
+  parent: P | Meta$<P>, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
 ) => {
-  const field$ = child$(m$(parent), key)
+  const field$ = child$(parent, key)
   return view(fieldView)(field$.value, field$)
 }
