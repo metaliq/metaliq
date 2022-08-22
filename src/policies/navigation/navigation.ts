@@ -2,8 +2,8 @@ import { Route, RouteHandler, Router } from "./router"
 import {
   FieldKey,
   fieldKeys,
-  getAncestorSpecValue,
-  m$Key,
+  getAncestorTerm,
+  child$,
   meta,
   Meta$,
   metaCall,
@@ -96,7 +96,7 @@ metaSetups.push($ => {
           routeResult = await metaCall(spec.onEnter)($)(params)
           if (routeResult === false) return false
         }
-        const navType = getAncestorSpecValue($, "navType")
+        const navType = getAncestorTerm($, "navType")
         if (typeof navType?.onNavigate === "function") {
           const navTypeResult = navType.onNavigate($.value, $)
           if (navTypeResult === false) return false
@@ -159,7 +159,7 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
  */
 export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
   const key: FieldKey<T> = navMeta$.state.nav?.selected
-  return m$Key(navMeta$, key)
+  return child$(navMeta$, key)
 }
 
 /**

@@ -1,6 +1,6 @@
 import { ViewResult } from "./presentation"
 import { html } from "lit"
-import { getSpecValue, meta, Meta, MetaFn } from "../../meta"
+import { getDynamicTerm, meta, Meta, MetaFn } from "../../meta"
 import { up } from "@metaliq/up"
 
 export interface RepeatSpec<T, P = any> {
@@ -24,12 +24,12 @@ export const defaultRepeatSpec: RepeatSpec<any> = {
 export const repeatControls = <T, P>(value: T[], meta: Meta<T[], P>): ViewResult => {
   return html`
     <div>
-      <button class="mq-button" @click=${up(addItem, value)}>${getSpecValue("addLabel")(meta)}</button>
+      <button class="mq-button" @click=${up(addItem, value)}>${getDynamicTerm("addLabel")(meta)}</button>
     </div>
   `
 }
 
 export const addItem = <T>(arr: T[]) => {
-  const newItem = getSpecValue("newItem")(meta(arr))
+  const newItem = getDynamicTerm("newItem")(meta(arr))
   arr.push(newItem)
 }

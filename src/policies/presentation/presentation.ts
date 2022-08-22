@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, m$, m$Key, Meta$, MetaFn, metaSetups } from "../../meta"
+import { child$, FieldKey, FieldType, m$, MetaFn, metaSetups } from "../../meta"
 
 export interface PresentationSpec<T, P> {
   /**
@@ -25,12 +25,25 @@ declare module "../../policy" {
 }
 
 /**
- * A view function takes a meta-object and returns a template result.
+ * A view is a meta function for a data type that returns a view result for rendering.
  */
-export type SingularResult = TemplateResult | string
-export type ViewResult = SingularResult | ViewResult[]
-export type View<T> = (model: T) => ViewResult
 export type MetaView<T, P = any> = MetaFn<T, P, ViewResult>
+
+/**
+ * A view result can be either singular or plural
+ * (in which case they are rendered in sequence).
+ */
+export type ViewResult = SingularViewResult | ViewResult[]
+
+/**
+ * An individual view result can be a simple string or a dynamic template.
+ */
+export type SingularViewResult = TemplateResult | string
+
+/**
+ * Term to specify meta views, can be either singular or plural
+ * (in which case each view result (which themselves may be singular or plural) is rendered in sequence).
+ */
 export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 
 metaSetups.push($ => {
@@ -92,28 +105,33 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
  * ```
  */
 export function view <T, P = any> (
-  primary?: boolean | MetaViewTerm<T, P>, fallback?: boolean | MetaViewTerm<T, P>
+  metaViewTerm?: MetaViewTerm<T, P>
 ): MetaFn<T, P, ViewResult> {
   return (v, $ = m$(v)) => {
-    if (arguments.length === 0 || primary === true) primary = $.spec.view
-    if (fallback === true) fallback = $.spec.view
-    const metaView = (primary || fallback) as MetaViewTerm<T, P>
-    if (!metaView) {
+    metaViewTerm = metaViewTerm ?? $.spec.view
+    if (!metaViewTerm) {
       return ""
-    } else if (Array.isArray(metaView)) {
-      return metaView.map(mv => view(mv)(v, $))
+    } else if (Array.isArray(metaViewTerm)) {
+      return metaViewTerm.map(mv => view(mv)(v, $))
     } else {
       if (typeof $.spec.hidden === "function") {
-        return hideShowWrapper(metaView)(v, $)
+        return hideShowWrapper(metaViewTerm)(v, $)
       } else {
-        return $.state.hidden ? "" : metaView(v, $)
+        return $.state.hidden ? "" : metaViewTerm(v, $)
       }
     }
   }
 }
 
 /**
- * Shortcut to a view for a property key within the given object.
+ * Display a field for the given parent and key.
+ * Optionally specify the meta view to use, otherwise defaults to spec view.
+ * Handles dynamic and potentially animated hide/show
+ * based on `hidden` spec term from validation policy.
  */
-export const viewKey = <T, K extends FieldKey<T>> ($: Meta$<T>, key: K, metaView?: MetaViewTerm<T[K]>) =>
-  view(metaView)($.value[key], m$Key($, key))
+export const field = <P, K extends FieldKey<P>> (
+  parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
+) => {
+  const field$ = child$(m$(parent), key)
+  return view(fieldView)(field$.value, field$)
+}

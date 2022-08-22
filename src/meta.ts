@@ -2,32 +2,32 @@ import { Policy } from "./policy"
 import { MaybeReturn } from "./util/util"
 
 /**
- * A meta object for an underlying value of type T,
- * optionally within parent of type P.
- * T can be any type other than an array, for which MetaArrays are used.
+ * A meta object for an underlying value of a particular Type,
+ * optionally within parent of type Parent.
+ * Type can be any type other than an array, for which MetaArrays are used.
  */
-export type Meta<T, P = any> = MetaFields<T> & HasMeta$<T, P>
+export type Meta<Type, Parent = any> = MetaFields<Type> & HasMeta$<Type, Parent>
 
 /**
  * The mapped fields component of a Meta object.
  */
-export type MetaFields<T> = {
-  [K in FieldKey<T>]: MetaField<T, K>
+export type MetaFields<Type> = {
+  [Key in FieldKey<Type>]: MetaField<Type, Key>
 }
 
 /**
  * An individual field within a Meta.
  * Can be another Meta, or a MetaArray.
  */
-export type MetaField<T, K extends FieldKey<T>> = T[K] extends Array<infer I>
-  ? MetaArray<I, T>
-  : Meta<T[K], T>
+export type MetaField<Type, Key extends FieldKey<Type>> = Type[Key] extends Array<infer I>
+  ? MetaArray<I, Type>
+  : Meta<Type[Key], Type>
 
 /**
  * The meta object for an array field,
  * along with a collection of Meta objects associated with its content.
  */
-export type MetaArray<T, P = any> = Array<Meta<T, P>> & HasMeta$<T[], P>
+export type MetaArray<Type, Parent = any> = Array<Meta<Type, Parent>> & HasMeta$<Type[], Parent>
 
 /**
  * An object that has a $ property with meta information.
@@ -277,13 +277,17 @@ export const m$ = <T>(value: T): Meta$<T> => {
 }
 
 /**
- * Shortcut from a Meta$ to the $ meta info of one of its child keys.
+ * Shortcut from a parent (either its value or its Meta$) to the $ meta info of one of its child keys.
  */
-export const m$Key = <T, K extends FieldKey<T>>($: Meta$<T>, key: K) => {
-  const valueMeta = $.meta as Meta<any>
+export const child$ = <
+  P, K extends FieldKey<P>, T extends FieldType<P, K>
+> (parent: P | Meta$<P>, key: K) => {
+  const parent$ = (m$(parent) || parent) as Meta$<P>
+  const valueMeta = parent$.meta as Meta<any>
   const keyMeta = valueMeta[key]
-  const key$ = <unknown>keyMeta?.$ as Meta$<T[K]>
+  const key$ = <unknown>keyMeta?.$ as Meta$<T, P>
   return key$
+
 }
 
 /**
@@ -320,19 +324,28 @@ export const parent = <T extends object, P = any> (value: T | HasMeta$<T, P>) =>
 export type FieldKey<T> = Exclude<Extract<keyof T, string>, "__typename">
 
 /**
+ * The type of a field of a given key in a given parent type.
+ */
+export type FieldType<Parent, Key extends FieldKey<Parent>> = Parent[Key]
+
+/**
  * Return the keys of a field spec.
  */
 export const fieldKeys = <T>(spec: MetaSpec<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**
- * The primary pattern for defining a data function in MetaliQ.
- * A MetaFn receives two parameters - the underlying data value and the meta.
- * The first parameter is the data value itself, and often you can specify a function
- * which works on a single parameter of the underlying data type.
- * The second parameter is the associated object from the meta-graph.
+ * The primary pattern for providing a processing function to MetaliQ.
+ * The first parameter is the data value to be processed.
+ * The second parameter is the data value's associated meta info object.
  */
-export type MetaFn<T, P = any, R = any> = (value: T, $?: Meta$<T, P>) => R
+export type MetaFn<Type, Parent = any, Result = any> =
+  (
+    value: Type,
+    $?: Meta$<Type, Parent>,
+    event?: Event
+  ) =>
+  Result
 
 /**
  * Shortcut to call a metaFn with both parameters
@@ -349,28 +362,27 @@ export const metaCall = <T, P = any, R = any> (
     return fn($.value, $)
   }
 
-/**
- * A simple type guard for values that may or may not be a meta function,
- * such as when a spec term can be static or derived.
- */
-export const isMetaFn = (value: any): value is MetaFn<any> => typeof value === "function"
-
 export type SpecKey = keyof Policy.Specification<any>
 export type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
 export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
 
 /**
+ * A simple type guard for terms that may or may not be a meta function.
+ */
+export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "function"
+
+/**
  * Return the value of a spec term that is defined as being
  * either a particular type or a MetaFn that returns that type.
  */
-export const getSpecValue = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K): MetaFn<any> =>
+export const getDynamicTerm = <K extends SpecKey, V extends DerivedSpecValue<K>>(key: K): MetaFn<any, any, V> =>
   (v, $ = m$(v)): V => {
     const specValue = $.spec[key]
-    if (isMetaFn(specValue)) return metaCall(specValue)(meta)
+    if (isMetaFn(specValue)) return specValue(v, $) as V
     else return specValue as V
   }
 
-export const getAncestorSpecValue = <K extends SpecKey, V extends SpecValue<K>>($: Meta$<any>, key: K): V => {
+export const getAncestorTerm = <K extends SpecKey, V extends SpecValue<K>>($: Meta$<any>, key: K): V => {
   while ($ && typeof $.spec[key] === "undefined") $ = $.parent?.$
   return $?.spec[key]
 }
