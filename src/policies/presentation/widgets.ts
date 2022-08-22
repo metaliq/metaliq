@@ -44,7 +44,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
               return view(repeatView)(fieldMeta.$.value, fieldMeta.$)
             } else {
               const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta.$)
-              return view(itemView)(fieldMeta)
+              return view(itemView)(fieldMeta.$.value, fieldMeta.$)
             }
           })}
       </div>

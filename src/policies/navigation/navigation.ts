@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { child$, FieldKey, fieldKeys, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaSpec, reset } from "../../meta"
+import { child$, FieldKey, fieldKeys, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaSpec } from "../../meta"
 import { MaybeReturn } from "../../util/util"
 import { up } from "@metaliq/up"
 import { extendBootstrap } from "../application/application"
@@ -114,11 +114,7 @@ metaSetups.push($ => {
       extendBootstrap($, (v, m) => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
-          Array.from(policy.routeMetas.keys()),
-          () => {
-            // Reset the backlinks for the currently selected value
-            policy.selectedRoute$ && reset(policy.selectedRoute$)
-          }
+          Array.from(policy.routeMetas.keys())
         ).start()
         router.catch(console.error)
       })

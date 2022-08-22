@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { child$, FieldKey, FieldType, m$, Meta$, MetaFn, metaSetups } from "../../meta"
+import { child$, FieldKey, FieldType, m$, MetaFn, metaSetups } from "../../meta"
 
 export interface PresentationSpec<T, P> {
   /**
@@ -97,6 +97,10 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
  * so the "inner" view function does not necessarily have to.
  * As with other meta functions, meta info deduction does not work for primitives
  * and may be unreliable where the same value object is shared by multiple meta objects / specs.
+ * Fourth, if both a value and meta info are provided,
+ * the $ backlink on the value object will be re-established.
+ * This can assist in situations where a single value object is being shared
+ * (with possibly different specifications) across multiple points in the meta graph.
  *
  * ```
  * view()(myValue) // View myValue with the view from the spec, if present
@@ -108,6 +112,10 @@ export function view <T, P = any> (
   metaViewTerm?: MetaViewTerm<T, P>
 ): MetaView<T, P> {
   return (v, $ = m$(v)) => {
+    if (typeof (v ?? false) === "object") {
+      // Check correct value/meta link prior to viewing
+      Object.assign(v, { $ })
+    }
     metaViewTerm = metaViewTerm ?? $.spec.view
     if (!metaViewTerm) {
       return ""
@@ -127,7 +135,7 @@ export function view <T, P = any> (
  * Similar to `view`
  */
 export const field = <P, K extends FieldKey<P>> (
-  parent: P | Meta$<P>, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
+  parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
 ) => {
   const field$ = child$(parent, key)
   return view(fieldView)(field$.value, field$)

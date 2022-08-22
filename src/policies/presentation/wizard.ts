@@ -1,4 +1,4 @@
-import { child$, FieldKey, isMeta, isMetaFn, Meta, Meta$, MetaFn, metaSetups, reset } from "../../meta"
+import { child$, FieldKey, isMeta, isMetaFn, Meta, Meta$, MetaFn, metaSetups } from "../../meta"
 import { validateAll } from "../validation/validation"
 import { metaForm } from "./widgets"
 import { wait } from "../../util/util"
@@ -88,8 +88,6 @@ metaSetups.push(<T>($: Meta$<T>) => {
       if (!step.$.spec.view) step.$.spec.view = <unknown>metaForm() as MetaView<any>
     }
     const firstStepName = stepNames[0]
-    const stepMeta = $.meta[firstStepName] as Meta<any>
-    reset(stepMeta.$)
     return {
       step: firstStepName
     }
