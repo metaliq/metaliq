@@ -102,7 +102,7 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   const cssDest = spa?.build?.css?.dest || cssSrc
 
   // Produce HTML
-  const html = indexHtml(spa, jsDest, cssDest, typeof spec.label === "string" ? spec.label : undefined)
+  const html = indexHtml(spa, jsDest, cssDest, typeof spec.label === "string" ? spec.label : "")
   await ensureAndWriteFile(join(destDir, htmlDest), html)
 
   // Produce JS

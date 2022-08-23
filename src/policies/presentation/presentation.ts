@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { child$, FieldKey, FieldType, m$, MetaFn, metaSetups } from "../../meta"
+import { child$, FieldKey, FieldType, getDynamicTerm, m$, MetaFn, metaSetups } from "../../meta"
 
 export interface PresentationSpec<T, P> {
   /**
@@ -53,7 +53,7 @@ metaSetups.push($ => {
     if ($.spec.view || !$.spec.publication?.target) {
       $.spec.review = $.spec.review || renderPage
       Object.assign(window, { meta: $ })
-      document.title = $.state.label
+      document.title = getDynamicTerm("label")($.value, $)
     }
   }
 })
