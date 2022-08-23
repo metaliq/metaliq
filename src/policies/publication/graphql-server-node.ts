@@ -9,6 +9,7 @@ import { ensureAndWriteFile } from "./util"
 import { join } from "path"
 import { makeProdJs } from "./prod-js"
 import { dedent } from "ts-dedent"
+import "dotenv/config"
 
 const { readFile, remove } = fsExtra
 
