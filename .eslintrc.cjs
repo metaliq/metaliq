@@ -1,7 +1,11 @@
+const { readdirSync } = require("fs")
+
+const packages = readdirSync("packages")
+
 module.exports = {
   extends: "standard-with-typescript",
   parserOptions: {
-    project: "./tsconfig.json"
+    project: packages.map(p => `packages/${p}/tsconfig.json`)
   },
   ignorePatterns: [ "**/*.js", "**/*.cjs" ],
   // Add specific overrides to tweak StandardJS defaults to match our usage

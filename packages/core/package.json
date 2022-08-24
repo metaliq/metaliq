@@ -8,12 +8,8 @@
     "metaliq": "bin/cli-es6.js"
   },
   "scripts": {
-    "clean": "rm -rf ./lib",
     "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
-    "dev": "npm run clean && npm run prep-css && tsc --watch",
-    "prepare": "npm run clean && npm run prep-css && tsc",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/",
-    "publish-alpha": "pnpm publish --tag alpha"
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",

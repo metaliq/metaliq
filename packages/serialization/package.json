@@ -4,11 +4,7 @@
   "type": "module",
   "main": "lib/serialization.js",
   "types": "lib/serialization.d.ts",
-  "scripts": {
-    "clean": "rm -rf ./lib",
-    "prepare": "npm run clean && tsc",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
-  },
+  "scripts": {},
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
   "description": "MetaliQ meta graph serialization",

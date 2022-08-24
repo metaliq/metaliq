@@ -2,6 +2,13 @@
   "name": "metaliq-monorepo",
   "version": "1.0.0-bravo.1",
   "scripts": {
+    "clean": "npm run clean-lib && npm run clean-buildinfo",
+    "clean-lib": "find . -name 'lib' -type d -not -path '*/node_modules/*' -prune -exec rm -rf {} +",
+    "clean-buildinfo": "find . -name 'tsconfig.tsbuildinfo' -not -path '*/node_modules/*' -exec rm -f {} +",
+    "dev": "npm run clean && tsc -b --watch",
+    "prepare": "npm run clean && tsc -b",
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/",
+    "publish-alpha": "pnpm publish --tag alpha"
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
@@ -23,5 +30,7 @@
     "source-map-support": "^0.5.21",
     "typescript": "^4.7.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/node": "^16.10.3"
+  }
 }
