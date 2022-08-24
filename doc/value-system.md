@@ -1,2 +1,0 @@
-## The MetaliQ Value System
-

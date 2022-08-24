@@ -7,12 +7,8 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "outDir": "./lib",
-    "rootDir": "./src",
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "declarationDir": "./lib"
-  },
-  "include": ["./src/**/*"]
+  }
 }
