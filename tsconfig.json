@@ -10,5 +10,9 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-  }
+  },
+  "references": [
+    { "path": "packages/core" },
+    { "path":  "packages/serialization" }
+  ]
 }
