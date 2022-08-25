@@ -15,19 +15,14 @@
   "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
   "repository": "https://github.com/metaliq/metaliq",
   "devDependencies": {
-    "@types/chai": "^4.3.0",
-    "@types/mocha": "^9.1.0",
     "@typescript-eslint/eslint-plugin": "4",
     "@typescript-eslint/parser": "^4.0.0",
-    "chai": "^4.3.6",
     "eslint": "7",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-plugin-import": "2",
     "eslint-plugin-node": "11",
     "eslint-plugin-promise": "5",
     "madge": "^5.0.1",
-    "mocha": "^9.2.2",
-    "source-map-support": "^0.5.21",
     "typescript": "^4.7.3"
   },
   "dependencies": {

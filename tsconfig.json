@@ -13,6 +13,19 @@
   },
   "references": [
     { "path": "packages/core" },
-    { "path":  "packages/serialization" }
+    { "path": "packages/util" },
+    { "path": "packages/up" },
+    { "path": "packages/terminology" },
+    { "path": "packages/publication" },
+    { "path": "packages/publish-single-page-app" },
+    { "path": "packages/publish-graphql-server" },
+    { "path": "packages/cli" },
+    { "path": "packages/application" },
+    { "path": "packages/navigation" },
+    { "path": "packages/communication" },
+    { "path": "packages/serialization" },
+    { "path": "packages/validation" },
+    { "path": "packages/presentation" },
+    { "path": "packages/ui" }
   ]
 }

@@ -1,10 +1,10 @@
 {
-  "name": "@metaliq/serialization",
-  "description": "MetaliQ meta graph serialization",
-  "version": "1.0.0-bravo.1",
+  "name": "@metaliq/publish-web-component",
+  "description": "Framework-agnostic state management",
+  "main": "lib/publish-web-component.js",
+  "types": "lib/publish-web-component.d.ts",
+  "version": "1.0.0-alpha.30",
   "type": "module",
-  "main": "lib/serialization.js",
-  "types": "lib/serialization.d.ts",
   "scripts": {},
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
@@ -17,9 +17,5 @@
     "source-map-support": "^0.5.21",
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "flatted": "^3.2.2",
-    "metaliq": "workspace:*",
-    "@metaliq/util": "workspace:*"
-  }
+  "dependencies": {}
 }

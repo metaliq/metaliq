@@ -1,6 +1,6 @@
 import { parse as flat_parse, stringify as flat_stringify } from "flatted"
 import { applySpec, Meta, MetaSpec } from "metaliq"
-import { filterObject } from "metaliq/lib/util/util"
+import { filterObject } from "@metaliq/util"
 
 /**
  * This module supports serialising Meta objects along with their meta-state.

@@ -1,0 +1,18 @@
+{
+  "name": "@metaliq/communication",
+  "description": "Framework-agnostic state management",
+  "main": "lib/communication.js",
+  "types": "lib/communication.d.ts",
+  "version": "1.0.0-alpha.30",
+  "type": "module",
+  "scripts": {},
+  "author": "tstewart@klaudhaus.com",
+  "license": "MIT",
+  "repository": "https://github.com/metaliq/metaliq",
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "metaliq": "workspace:*"
+  }
+}
