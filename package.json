@@ -7,6 +7,7 @@
     "clean-buildinfo": "find . -name 'tsconfig.tsbuildinfo' -not -path '*/node_modules/*' -exec rm -f {} +",
     "dev": "npm run clean && tsc -b --watch",
     "prepare": "npm run clean && tsc -b",
+    "reinstall": "pnpm install -r --prefer-offline",
     "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/",
     "publish-alpha": "pnpm publish --tag alpha"
   },
