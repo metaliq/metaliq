@@ -5,7 +5,7 @@ import { copy, pathExists, remove } from "fs-extra"
 import CleanCSS from "clean-css"
 
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
-import { SinglePageAppConfig } from "./single-page-app"
+import { WebPageAppConfig } from "./web-page-app"
 import { page } from "@metaliq/publication/lib/page"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
@@ -17,9 +17,10 @@ let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
-export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
-  const spa: SinglePageAppConfig = spec?.spa
-  const port = spa?.run?.port || 8400
+export const webPageAppRunner = (
+  config: WebPageAppConfig = {}
+): Runner => async ({ specName, simplePath, spec }) => {
+  const port = config.run?.port || 8400
   console.log(`Starting MetaliQ SPA server on port ${port}`)
 
   const devServerConfig: DevServerConfig = {
@@ -64,8 +65,8 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
         if (ctx.path === "/bin/index.js") {
           ctx.body = indexJs(specName, simplePath)
         } else if (ctx.path === "/" || ctx.path === "/index.html") {
-          const { src: cssSrc } = spa?.build?.css || { src: "css/index.css" }
-          ctx.body = indexHtml(spa, jsSrc, cssSrc)
+          const { src: cssSrc } = config?.build?.css || { src: "css/index.css" }
+          ctx.body = indexHtml(config, jsSrc, cssSrc)
         }
         ctx.type = mime.lookup(ctx.path) || ""
         return await next()
@@ -84,27 +85,28 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
   return true
 }
 
-export const spaCleaner: Cleaner = async ({ spec }) => {
-  const spa: SinglePageAppConfig = spec.spa
-  const destDir = spa?.build?.destDir || "www"
+export const webPageAppCleaner = (
+  config: WebPageAppConfig = {}
+): Cleaner => async ({ spec }) => {
+  const destDir = config.build?.destDir || "www"
 
   // Clean previous build
   await remove(destDir)
   return true
 }
 
-export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
-  const spa: SinglePageAppConfig = spec.spa
-
+export const webPageAppBuilder = (
+  config: WebPageAppConfig = {}
+): Builder => async ({ specName, simplePath, spec }) => {
   // Deduce locations
-  const destDir = spa?.build?.destDir || "www"
-  const htmlDest = spa?.build?.html?.dest || "index.html"
-  const jsDest = spa?.build?.js?.dest || jsSrc
-  const { src: cssSrc } = spa?.build?.css || { src: "css/index.css" }
-  const cssDest = spa?.build?.css?.dest || cssSrc
+  const destDir = config.build?.destDir || "www"
+  const htmlDest = config.build?.html?.dest || "index.html"
+  const jsDest = config.build?.js?.dest || jsSrc
+  const { src: cssSrc } = config.build?.css || { src: "css/index.css" }
+  const cssDest = config.build?.css?.dest || cssSrc
 
   // Produce HTML
-  const html = indexHtml(spa, jsDest, cssDest, typeof spec.label === "string" ? spec.label : "")
+  const html = indexHtml(config, jsDest, cssDest, typeof spec.label === "string" ? spec.label : "")
   await ensureAndWriteFile(join(destDir, htmlDest), html)
 
   // Produce JS
@@ -129,7 +131,7 @@ export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
   }
 
   // Copy additional files
-  const copies = spa?.build?.copy || []
+  const copies = config.build?.copy || []
   const hasRes = await pathExists("res")
   if (hasRes && !copies.includes("res")) copies.push("res")
   for (const entry of copies) {
@@ -149,7 +151,7 @@ const indexJs = (specName: string, specPath: string) => dedent`
   run(${specName})
 `
 
-const indexHtml = (spaConfig: SinglePageAppConfig, jsPath: string, cssPath?: string, title?: string) => {
+const indexHtml = (spaConfig: WebPageAppConfig, jsPath: string, cssPath?: string, title?: string) => {
   // Add in the default js and css index files from the build
   const scripts = [
     ...(spaConfig?.pageInfo?.scripts || []),

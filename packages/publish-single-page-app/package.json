@@ -1,8 +1,8 @@
 {
-  "name": "@metaliq/publish-single-page-app",
+  "name": "@metaliq/publish-web-page-app",
   "description": "Framework-agnostic state management",
-  "main": "lib/single-page-app.js",
-  "types": "lib/single-page-app.d.ts",
+  "main": "lib/web-page-app.js",
+  "types": "lib/web-page-app.d.ts",
   "version": "1.0.0-alpha.30",
   "type": "module",
   "scripts": {},

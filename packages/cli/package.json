@@ -22,6 +22,6 @@
     "commander": "^8.2.0",
     "metaliq": "workspace:*",
     "@metaliq/publication": "workspace:*",
-    "@metaliq/publish-single-page-app": "workspace:*"
+    "@metaliq/publish-web-page-app": "workspace:*"
   }
 }

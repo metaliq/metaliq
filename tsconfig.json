@@ -18,7 +18,7 @@
     { "path": "packages/up" },
     { "path": "packages/terminology" },
     { "path": "packages/publication" },
-    { "path": "packages/publish-single-page-app" },
+    { "path": "packages/publish-web-page-app" },
     { "path": "packages/publish-web-component" },
     { "path": "packages/publish-graphql-server" },
     { "path": "packages/cli" },

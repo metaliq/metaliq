@@ -1,11 +1,10 @@
-import { Builder, PublicationTarget, Runner } from "@metaliq/publication"
+import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
 export type GraphQLServerSpec<T> = {
   /**
    * Service resolvers.
    */
   resolvers?: T
-  graphQLServer?: GraphQLServerConfig
 }
 
 declare module "metaliq" {
@@ -75,22 +74,36 @@ export type CloudFnOptions = {
 
 const nodeModule = "./graphql-server-node.js"
 
-export const graphQLServer: PublicationTarget = {
+export const graphQLServer = (config: GraphQLServerConfig): PublicationTarget => ({
   name: "GraphQL Server",
 
   /**
-   * A wrapper around a dynamically imported builder, in order that Node packages are not linked in a browser context
+   * A wrapper around a dynamically imported runner, in order that Node packages are not linked in a browser context.
    */
-  async builder (context) {
-    const { builder }: { builder: Builder } = await import (nodeModule)
-    return await builder(context)
+  async runner (context) {
+    const { graphQLServerRunner }: {
+      graphQLServerRunner: (config: GraphQLServerConfig) => Runner
+    } = await import (nodeModule)
+    return await graphQLServerRunner(config)(context)
   },
 
   /**
-   * A wrapper around a dynamically imported runner, in order that Node packages are not linked in a browser context
+   * A wrapper around a dynamically imported builder, in order that Node packages are not linked in a browser context.
    */
-  async runner (context) {
-    const { runner }: { runner: Runner } = await import (nodeModule)
-    return await runner(context)
+  async cleaner (context) {
+    const { graphQLServerCleaner }: {
+      graphQLServerCleaner: (config: GraphQLServerConfig) => Cleaner
+    } = await import (nodeModule)
+    return await graphQLServerCleaner(config)(context)
+  },
+
+  /**
+   * A wrapper around a dynamically imported builder, in order that Node packages are not linked in a browser context.
+   */
+  async builder (context) {
+    const { graphQLServerBuilder }: {
+      graphQLServerBuilder: (config: GraphQLServerConfig) => Builder
+    } = await import (nodeModule)
+    return await graphQLServerBuilder(config)(context)
   }
-}
+})

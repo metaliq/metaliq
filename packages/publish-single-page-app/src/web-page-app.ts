@@ -5,7 +5,6 @@ declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> {
       this?: Specification<T, P>
-      spa?: SinglePageAppConfig
     }
   }
 }
@@ -15,7 +14,7 @@ type CopyEntry = string | {
   dest?: string // Within destDir. Defaults to same as src
 }
 
-export type SinglePageAppConfig = {
+export type WebPageAppConfig = {
   /**
    * Details for the development runtime.
    */
@@ -50,30 +49,36 @@ export type SinglePageAppConfig = {
 
 const nodeModule = "./spa-node.js"
 
-export const singlePageApp: PublicationTarget = {
+export const webPageApp = (config: WebPageAppConfig): PublicationTarget => ({
   name: "Single Page Application",
 
   /**
-   * A wrapper around a dynamically imported builder, in order that Node packages are not linked in a browser context
+   * A wrapper around a dynamically imported runner, in order that Node packages are not linked in a browser context
    */
-  async builder (context) {
-    const { spaBuilder }: { spaBuilder: Builder } = await import (nodeModule)
-    return await spaBuilder(context)
+  async runner (context) {
+    const { webPageAppRunner }: {
+      webPageAppRunner: (config: WebPageAppConfig) => Runner
+    } = await import (nodeModule)
+    return await webPageAppRunner(config)(context)
   },
 
   /**
    * A wrapper around a dynamically imported cleaner, in order that Node packages are not linked in a browser context
    */
   async cleaner (context) {
-    const { spaCleaner }: { spaCleaner: Cleaner } = await import (nodeModule)
-    return await spaCleaner(context)
+    const { webPageAppCleaner }: {
+      webPageAppCleaner: (config: WebPageAppConfig) => Cleaner
+    } = await import (nodeModule)
+    return await webPageAppCleaner(config)(context)
   },
 
   /**
-   * A wrapper around a dynamically imported runner, in order that Node packages are not linked in a browser context
+   * A wrapper around a dynamically imported builder, in order that Node packages are not linked in a browser context
    */
-  async runner (context) {
-    const { spaRunner }: { spaRunner: Runner } = await import (nodeModule)
-    return await spaRunner(context)
+  async builder (context) {
+    const { webPageAppBuilder }: {
+      webPageAppBuilder: (config: WebPageAppConfig) => Builder
+    } = await import (nodeModule)
+    return await webPageAppBuilder(config)(context)
   }
-}
+})

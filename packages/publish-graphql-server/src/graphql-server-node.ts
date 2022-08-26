@@ -17,8 +17,10 @@ let apolloServer: ApolloServerExpress
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
-export const runner: Runner = async ({ specName, simplePath, spec }) => {
-  const port = spec.graphQLServer?.run?.port || 8940
+export const graphQLServerRunner = (
+  config: GraphQLServerConfig = {}
+): Runner => async ({ specName, simplePath, spec }) => {
+  const port = config.run?.port || 8940
   const hostname = "localhost" // TODO: Make configurable
 
   // Stop any previous running servers
@@ -55,26 +57,28 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
   return true
 }
 
-export const cleaner: Cleaner = async ({ spec }) => {
-  const gql: GraphQLServerConfig = spec.graphQLServer
-  const destDir = gql?.build?.destDir || "prod/api"
+export const graphQLServerCleaner = (
+  config: GraphQLServerConfig = {}
+): Cleaner => async ({ spec }) => {
+  const destDir = config.build?.destDir || "prod/api"
 
   // Clean previous build
   await remove(destDir)
   return true
 }
 
-export const builder: Builder = async ({ spec, simplePath, specName }) => {
-  const graphQLServer = spec.graphQLServer
-  const destDir = graphQLServer?.build?.destDir || "prod/api"
-  const cloud = graphQLServer?.build?.cloud || "firebase"
-  const useDomShim = !!graphQLServer?.build?.useDomShim
+export const graphQLServerBuilder = (
+  config: GraphQLServerConfig = {}
+): Builder => async ({ spec, simplePath, specName }) => {
+  const destDir = config.build?.destDir || "prod/api"
+  const cloud = config.build?.cloud || "firebase"
+  const useDomShim = !!config.build?.useDomShim
 
   // Make production javascript
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, graphQLServer?.build?.cloudFnOptions, useDomShim))
+  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
