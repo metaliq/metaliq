@@ -1,9 +1,10 @@
 import { PageInfo } from "@metaliq/publication/lib/page"
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
-declare module "@metaliq/publication" {
-  namespace Publication {
-    interface PublicationSpec {
+declare module "metaliq" {
+  namespace Policy {
+    interface Specification<T, P> {
+      this?: Specification<T, P>
       spa?: SinglePageAppConfig
     }
   }
@@ -34,7 +35,7 @@ export type SinglePageAppConfig = {
       dest?: string // Within destDir. Defaults to bin/index.js (same as generated file runtime entry point)
     }
     css?: {
-      src?: string // Within project dir. Defaults to css/index.css. Set blank to do no style compileation
+      src?: string // Within project dir. Defaults to css/index.css. Set blank to do no style compilation
       dest?: string // Within destDir. Defaults to same as src.
     }
     copy?: CopyEntry[] // Files to copy into destination. If a folder called "res" exists, it will be copied by default.

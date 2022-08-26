@@ -10,6 +10,7 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
+    "declarationMap": true
   },
   "references": [
     { "path": "packages/core" },
@@ -18,6 +19,7 @@
     { "path": "packages/terminology" },
     { "path": "packages/publication" },
     { "path": "packages/publish-single-page-app" },
+    { "path": "packages/publish-web-component" },
     { "path": "packages/publish-graphql-server" },
     { "path": "packages/cli" },
     { "path": "packages/application" },
@@ -26,6 +28,7 @@
     { "path": "packages/serialization" },
     { "path": "packages/validation" },
     { "path": "packages/presentation" },
-    { "path": "packages/ui" }
+    { "path": "packages/ui" },
+    { "path": "packages/test" }
   ]
 }

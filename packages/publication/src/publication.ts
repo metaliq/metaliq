@@ -1,20 +1,14 @@
 import { MetaSpec } from "metaliq"
 
-export declare namespace Publication {
-  /**
-   * Extend this interface within individual publication target modules to add named targets
-   * and their expected configuration.
-   */
-  interface PublicationSpec {
-    target?: PublicationTarget
-  }
+interface PublicationSpec {
+  publicationTarget?: PublicationTarget
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> {
+    interface Specification<T, P> extends PublicationSpec {
       this?: Specification<T, P>
-      publication?: Publication.PublicationSpec
+      publicationTarget?: PublicationTarget
     }
   }
 }

@@ -20,7 +20,7 @@ export type MetaFormOptions<T> = {
 
 metaSetups.push($ => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
-  if (!$.parent && !$.spec.publication?.target && !$.spec.view) {
+  if (!$.parent && !$.spec.publicationTarget && !$.spec.view) {
     $.spec.view = metaForm()
   }
 })

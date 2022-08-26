@@ -24,6 +24,7 @@
     "clean-css": "^4.2.3",
     "fs-extra": "^10.0.0",
     "mime-types": "^2.1.33",
-    "ts-dedent": "^2.2.0"
+    "ts-dedent": "^2.2.0",
+    "metaliq": "workspace:*"
   }
 }

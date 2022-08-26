@@ -1,5 +1,4 @@
 import { addDynamicState, fieldKeys, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "metaliq"
-import { Policy } from "metaliq/lib/policy"
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
@@ -23,7 +22,7 @@ export interface ValidationState {
   showing?: boolean // Support animated hide/show
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends ValidationSpec<T, P> {
     }
@@ -52,15 +51,14 @@ export type ValidationResult = string | boolean
 export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
 metaSetups.push(<T>($: Meta$<T>) => {
-  const state: Policy.State<T> = $.spec.validator
-    ? { error: false, validated: false } // Error state is NOT initialised to match the current value, to enable initially invalid unentered fields
-    : {}
+  if ($.spec.validator) {
+    $.state.error = false
+    $.state.validated = false
+  }
 
   addDynamicState($, "hidden")
   addDynamicState($, "disabled")
   addDynamicState($, "mandatory")
-
-  return state
 })
 
 /**

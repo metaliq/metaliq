@@ -47,7 +47,7 @@ export interface NavigationState<T> {
   showMenu?: boolean
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends NavigationSpec<T, P> {}
 

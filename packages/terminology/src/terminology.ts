@@ -23,7 +23,7 @@ export interface TerminologyState {
   symbol?: string
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends TerminologySpec<T, P> {}
     interface State<T, P> extends TerminologyState {

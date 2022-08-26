@@ -97,7 +97,7 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
     return console.error(`Specification not found: ${simplePath}.ts > ${specName}`)
   }
 
-  const pubTarget = spec?.publication?.target || singlePageApp
+  const pubTarget = spec?.publicationTarget || singlePageApp
   if (!pubTarget?.runner) {
     console.log("Specified publication target has no runner")
   }
@@ -126,7 +126,7 @@ async function build (specNames: string[], options: BuildOptions = {}) {
     }
     bundles.push({
       specName,
-      target: spec.publication?.target || singlePageApp,
+      target: spec.publicationTarget || singlePageApp,
       context: { specName, simplePath, spec }
     })
   }

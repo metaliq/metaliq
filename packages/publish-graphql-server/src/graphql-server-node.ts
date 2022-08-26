@@ -18,7 +18,7 @@ let apolloServer: ApolloServerExpress
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
 export const runner: Runner = async ({ specName, simplePath, spec }) => {
-  const port = spec.publication?.graphQLServer?.run?.port || 8940
+  const port = spec.graphQLServer?.run?.port || 8940
   const hostname = "localhost" // TODO: Make configurable
 
   // Stop any previous running servers
@@ -56,7 +56,7 @@ export const runner: Runner = async ({ specName, simplePath, spec }) => {
 }
 
 export const cleaner: Cleaner = async ({ spec }) => {
-  const gql: GraphQLServerConfig = spec.publication?.graphQLServer
+  const gql: GraphQLServerConfig = spec.graphQLServer
   const destDir = gql?.build?.destDir || "prod/api"
 
   // Clean previous build
@@ -65,7 +65,7 @@ export const cleaner: Cleaner = async ({ spec }) => {
 }
 
 export const builder: Builder = async ({ spec, simplePath, specName }) => {
-  const graphQLServer = spec.publication?.graphQLServer
+  const graphQLServer = spec.graphQLServer
   const destDir = graphQLServer?.build?.destDir || "prod/api"
   const cloud = graphQLServer?.build?.cloud || "firebase"
   const useDomShim = !!graphQLServer?.build?.useDomShim

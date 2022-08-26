@@ -9,7 +9,7 @@ export interface RepeatSpec<T, P = any> {
   newItem?: T extends Array<infer I> ? I | MetaFn<T, P, I> : T
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends RepeatSpec<T, P> { }
   }

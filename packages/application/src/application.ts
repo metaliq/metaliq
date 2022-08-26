@@ -44,7 +44,7 @@ export interface ApplicationState<T> {
   up?: Up<Meta<T>>
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends ApplicationSpec<T, P> {}
 

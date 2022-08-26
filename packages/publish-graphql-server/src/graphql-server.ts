@@ -5,20 +5,13 @@ export type GraphQLServerSpec<T> = {
    * Service resolvers.
    */
   resolvers?: T
+  graphQLServer?: GraphQLServerConfig
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends GraphQLServerSpec<T> {
       this?: Specification<T, P>
-    }
-  }
-}
-
-declare module "@metaliq/publication" {
-  namespace Publication {
-    interface PublicationSpec {
-      graphQLServer?: GraphQLServerConfig
     }
   }
 }

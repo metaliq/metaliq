@@ -10,7 +10,7 @@ export interface CommunicationSpec<T, P> {
   channels?: Array<MetaFn<T, P>>
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends CommunicationSpec<T, P> {}
   }

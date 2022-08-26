@@ -2,8 +2,8 @@
   "name": "metaliq",
   "version": "1.0.0-bravo.1",
   "type": "module",
-  "main": "lib/meta.js",
-  "types": "lib/meta.d.ts",
+  "main": "lib/metaliq.js",
+  "types": "lib/metaliq.d.ts",
 
   "scripts": {
     "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",

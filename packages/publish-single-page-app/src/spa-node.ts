@@ -18,7 +18,7 @@ let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
 export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
-  const spa: SinglePageAppConfig = spec?.publication?.spa
+  const spa: SinglePageAppConfig = spec?.spa
   const port = spa?.run?.port || 8400
   console.log(`Starting MetaliQ SPA server on port ${port}`)
 
@@ -85,7 +85,7 @@ export const spaRunner: Runner = async ({ specName, simplePath, spec }) => {
 }
 
 export const spaCleaner: Cleaner = async ({ spec }) => {
-  const spa: SinglePageAppConfig = spec.publication?.spa
+  const spa: SinglePageAppConfig = spec.spa
   const destDir = spa?.build?.destDir || "www"
 
   // Clean previous build
@@ -94,7 +94,7 @@ export const spaCleaner: Cleaner = async ({ spec }) => {
 }
 
 export const spaBuilder: Builder = async ({ specName, simplePath, spec }) => {
-  const spa: SinglePageAppConfig = spec.publication?.spa
+  const spa: SinglePageAppConfig = spec.spa
 
   // Deduce locations
   const destDir = spa?.build?.destDir || "www"

@@ -38,7 +38,7 @@ export interface WizardState<T> {
   stepChangeDirection?: StepDirection
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends WizardSpec<T, P> {}
     interface State<T, P> extends WizardState<T>{

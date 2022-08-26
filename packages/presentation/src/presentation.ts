@@ -23,7 +23,7 @@ export interface PresentationSpec<T, P> {
   statusView?: MetaViewTerm<T, P>
 }
 
-declare module "metaliq/lib/policy" {
+declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends PresentationSpec<T, P> { }
   }
@@ -55,7 +55,7 @@ metaSetups.push($ => {
   // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
   if (!$.parent) {
     // TODO: These should go into runtime target
-    if ($.spec.view || !$.spec.publication?.target) {
+    if ($.spec.view || !$.spec.publicationTarget) {
       $.spec.review = $.spec.review || renderPage
       Object.assign(window, { meta: $ })
       document.title = getDynamicTerm("label")($.value, $)
