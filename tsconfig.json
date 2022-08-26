@@ -10,25 +10,30 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "composite": true
   },
   "references": [
-    { "path": "packages/core" },
-    { "path": "packages/util" },
-    { "path": "packages/up" },
-    { "path": "packages/terminology" },
-    { "path": "packages/publication" },
-    { "path": "packages/publish-web-page-app" },
-    { "path": "packages/publish-web-component" },
-    { "path": "packages/publish-graphql-server" },
-    { "path": "packages/cli" },
-    { "path": "packages/application" },
-    { "path": "packages/navigation" },
-    { "path": "packages/communication" },
-    { "path": "packages/serialization" },
-    { "path": "packages/validation" },
-    { "path": "packages/presentation" },
-    { "path": "packages/ui" },
-    { "path": "packages/test" }
+    { "path": "core/metaliq"},
+    { "path": "core/util"},
+    { "path": "core/up"},
+
+    { "path": "policies/terminology" },
+    { "path": "policies/publication" },
+    { "path": "policies/application" },
+    { "path": "policies/navigation" },
+    { "path": "policies/communication" },
+    { "path": "policies/serialization" },
+    { "path": "policies/validation" },
+    { "path": "policies/presentation" },
+
+    { "path": "ui" },
+
+    { "path": "targets/web-page-app"},
+    { "path": "targets/web-component"},
+    { "path": "targets/graphql-server"},
+
+    { "path": "cli"},
+    { "path": "test" }
   ]
 }
