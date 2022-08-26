@@ -49,7 +49,7 @@ export type WebPageAppConfig = {
 
 const nodeModule = "./spa-node.js"
 
-export const webPageApp = (config: WebPageAppConfig): PublicationTarget => ({
+export const webPageApp = (config: WebPageAppConfig = {}): PublicationTarget => ({
   name: "Single Page Application",
 
   /**

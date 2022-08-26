@@ -7,7 +7,7 @@ import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 
 import { MetaSpec } from "metaliq"
-import { singlePageApp } from "@metaliq/publish-web-page-app"
+import { webPageApp } from "@metaliq/publish-web-page-app"
 import { PublicationContext, PublicationTarget } from "@metaliq/publication"
 
 const pExec = promisify(exec)
@@ -97,7 +97,7 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
     return console.error(`Specification not found: ${simplePath}.ts > ${specName}`)
   }
 
-  const pubTarget = spec?.publicationTarget || singlePageApp
+  const pubTarget = spec?.publicationTarget || webPageApp()
   if (!pubTarget?.runner) {
     console.log("Specified publication target has no runner")
   }
@@ -126,7 +126,7 @@ async function build (specNames: string[], options: BuildOptions = {}) {
     }
     bundles.push({
       specName,
-      target: spec.publicationTarget || singlePageApp,
+      target: spec.publicationTarget || webPageApp(),
       context: { specName, simplePath, spec }
     })
   }

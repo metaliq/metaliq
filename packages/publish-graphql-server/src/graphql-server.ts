@@ -74,7 +74,7 @@ export type CloudFnOptions = {
 
 const nodeModule = "./graphql-server-node.js"
 
-export const graphQLServer = (config: GraphQLServerConfig): PublicationTarget => ({
+export const graphQLServer = (config: GraphQLServerConfig = {}): PublicationTarget => ({
   name: "GraphQL Server",
 
   /**
