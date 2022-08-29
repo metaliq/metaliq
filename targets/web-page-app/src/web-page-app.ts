@@ -39,7 +39,7 @@ export type WebPageAppConfig = {
   pageInfo?: PageInfo
 }
 
-const nodeModule = "./spa-node.js"
+const nodeModule = "./web-page-app-node.js"
 
 export const webPageApp = (config: WebPageAppConfig = {}): PublicationTarget => ({
   name: "Single Page Application",

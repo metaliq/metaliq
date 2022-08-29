@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/modals",
   "description": "Basic modal display for MetaliQ",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/communication": "workspace:*",
@@ -14,9 +14,9 @@
     "typescript": "^4.7.3"
   },
   "license": "MIT",
-  "main": "lib/graphql-server.js",
+  "main": "lib/modals.js",
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/graphql-server.d.ts"
+  "types": "lib/modals.d.ts"
 }

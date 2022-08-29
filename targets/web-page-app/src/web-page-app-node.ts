@@ -145,7 +145,7 @@ export const webPageAppBuilder = (
 }
 
 const indexJs = (specName: string, specPath: string) => dedent`
-  import { run } from "metaliq/lib/policies/application/application"
+  import { run } from "@metaliq/application"
   import { ${specName} } from "./${specPath}.js"
   
   run(${specName})
