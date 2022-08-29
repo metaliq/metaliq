@@ -58,12 +58,12 @@ program
 
 program
   .command("dev-local-link")
-  .description("For MetaliQ devs - link all packages from a local copy of the metaliq monorepo to a client project")
+  .description("For MetaliQ devs - link all packages from a local copy of the metaliq monorepo to a client project. They should be in same base dir.")
   .action(link)
 
 program
   .command("dev-local-unlink")
-  .description("For MetaliQ devs - unlink all packages from a local copy of the metaliq monorepo from a client project")
+  .description("For MetaliQ devs - unlink all packages from a local copy of the metaliq monorepo from a client project. They should be in same base dir.")
   .action(unlink)
 
 program.parse()
