@@ -8,8 +8,8 @@ import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { MetaView, view, ViewResult } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 
-export { expander } from "./expander"
-export { AnimatedHideShow } from "./animated-hide-show"
+export { expander } from "@metaliq/elements"
+export { AnimatedHideShow } from "@metaliq/elements"
 
 export type MetaFormOptions<T> = {
   baseClass?: string // Base class defaults to mq-form

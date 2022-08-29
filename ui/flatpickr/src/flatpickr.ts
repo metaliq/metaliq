@@ -6,7 +6,7 @@ import flatpickr from "flatpickr"
 import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
 import { validate } from "@metaliq/validation"
-import { fieldError, isDisabled } from "./widgets"
+import { fieldError, isDisabled } from "@metaliq/forms"
 
 export type DatePickerOptions = {
   classes?: string

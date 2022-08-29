@@ -4,7 +4,7 @@ import { fieldKeys, Meta, Meta$ } from "metaliq"
 import { up } from "@metaliq/up"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
-import { pageError } from "./widgets"
+import { pageError } from "@metaliq/forms"
 import { MetaView, view } from "@metaliq/presentation"
 
 export const wizardView: MetaView<any> = (value, $) => [

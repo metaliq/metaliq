@@ -1,6 +1,6 @@
 import { child$, FieldKey, isMeta, isMetaFn, Meta, Meta$, MetaFn, metaSetups } from "metaliq"
 import { validateAll } from "@metaliq/validation"
-import { metaForm } from "./widgets"
+import { metaForm } from "@metaliq/forms"
 import { wait } from "@metaliq/util"
 import { up } from "@metaliq/up"
 import { MetaView } from "@metaliq/presentation"

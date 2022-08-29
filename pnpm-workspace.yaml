@@ -1,7 +1,7 @@
 packages:
   - "core/*"
   - "policies/*"
-  - "ui"
+  - "ui/*"
   - "targets/*"
   - "cli"
   - "test"

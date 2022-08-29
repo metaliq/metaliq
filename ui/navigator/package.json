@@ -1,0 +1,20 @@
+{
+  "name": "@metaliq/navigator",
+  "description": "Basic navigator for MetaliQ",
+  "main": "lib/navigator.js",
+  "types": "lib/navigator.d.ts",
+  "version": "1.0.0-alpha.30",
+  "type": "module",
+  "scripts": {},
+  "author": "tstewart@klaudhaus.com",
+  "license": "MIT",
+  "repository": "https://github.com/metaliq/metaliq",
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "lit": "2.3.1",
+    "metaliq": "workspace:*",
+    "@metaliq/presentation": "workspace:*"
+  }
+}

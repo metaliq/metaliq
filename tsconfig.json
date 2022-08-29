@@ -27,7 +27,13 @@
     { "path": "policies/validation" },
     { "path": "policies/presentation" },
 
-    { "path": "ui" },
+    { "path": "ui/elements" },
+    { "path": "ui/forms" },
+    { "path": "ui/choices" },
+    { "path": "ui/flatpickr" },
+    { "path": "ui/modals" },
+    { "path": "ui/repeat" },
+    { "path": "ui/wizard" },
 
     { "path": "targets/web-page-app"},
     { "path": "targets/web-component"},
