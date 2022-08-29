@@ -9,7 +9,6 @@
   },
   "license": "MIT",
   "main": "lib/metaliq.js",
-  "peerDependencies": {},
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
     "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
