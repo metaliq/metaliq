@@ -1,21 +1,8 @@
 {
   "name": "metaliq-monorepo",
-  "version": "1.0.0-bravo.1",
-  "scripts": {
-    "clean": "npm run clean-lib && npm run clean-buildinfo",
-    "clean-lib": "find . -name 'lib' -type d -not -path '*/node_modules/*' -prune -exec rm -rf {} +",
-    "clean-buildinfo": "find . -name 'tsconfig.tsbuildinfo' -not -path '*/node_modules/*' -exec rm -f {} +",
-    "clean-node-modules": "find . -name 'node_modules' -type d -exec rm -rf {} +",
-    "dev": "npm run clean && tsc -b --watch",
-    "prepare": "npm run clean && tsc -b",
-    "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/",
-    "publish-alpha": "pnpm publish --tag alpha"
-  },
-  "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
   "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
-  "repository": "https://github.com/metaliq/metaliq",
+  "version": "1.0.0-beta.1",
+  "author": "tstewart@klaudhaus.com",
   "devDependencies": {
     "@types/node": "^16.10.3",
     "@typescript-eslint/eslint-plugin": "4",
@@ -27,7 +14,21 @@
     "eslint-plugin-promise": "5",
     "madge": "^5.0.1",
     "source-map-support": "^0.5.21",
+    "syncpack": "^8.2.4",
     "typescript": "^4.7.3"
   },
-  "dependencies": {}
+  "license": "MIT",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {
+    "check-package-versions": "syncpack list-mismatches -pdP",
+    "clean": "npm run clean-lib && npm run clean-buildinfo",
+    "clean-buildinfo": "find . -name 'tsconfig.tsbuildinfo' -not -path '*/node_modules/*' -exec rm -f {} +",
+    "clean-lib": "find . -name 'lib' -type d -not -path '*/node_modules/*' -prune -exec rm -rf {} +",
+    "clean-node-modules": "find . -name 'node_modules' -type d -exec rm -rf {} +",
+    "dev": "npm run clean && tsc -b --watch",
+    "prepare": "npm run clean && tsc -b",
+    "publish-alpha": "pnpm publish --tag alpha",
+    "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
+  }
 }

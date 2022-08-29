@@ -7,7 +7,7 @@ import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 
 import { MetaSpec } from "metaliq"
-import { webPageApp } from "@metaliq/configweb-page-app"
+import { webPageApp } from "@metaliq/web-page-app"
 import { PublicationContext, PublicationTarget } from "@metaliq/publication"
 
 const pExec = promisify(exec)

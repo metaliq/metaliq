@@ -1,20 +1,20 @@
 {
   "name": "@metaliq/photo",
   "description": "Photo and image field for MetaliQ",
-  "main": "lib/photo.js",
-  "types": "lib/photo.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
-  "scripts": {},
+  "version": "1.0.0-beta.1",
   "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@metaliq/presentation": "workspace:*",
+    "lit": "2.3.1",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "lit": "2.3.1",
-    "metaliq": "workspace:*",
-    "@metaliq/presentation": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/photo.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/photo.d.ts"
 }

@@ -1,19 +1,19 @@
 {
   "name": "@metaliq/application",
   "description": "MetaliQ application policy",
-  "main": "lib/application.js",
-  "types": "lib/application.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
-  "scripts": {},
+  "version": "1.0.0-beta.1",
   "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@metaliq/up": "workspace:*",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "metaliq": "workspace:*",
-    "@metaliq/up": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/application.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/application.d.ts"
 }

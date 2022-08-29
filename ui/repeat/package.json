@@ -1,21 +1,21 @@
 {
   "name": "@metaliq/repeat",
   "description": "Repeat view and controls for MetaliQ",
-  "main": "lib/repeat.js",
-  "types": "lib/repeat.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
-  "scripts": {},
+  "version": "1.0.0-beta.1",
   "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@metaliq/presentation": "workspace:*",
+    "@metaliq/up": "workspace:*",
+    "lit": "2.3.1",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "lit": "2.3.1",
-    "metaliq": "workspace:*",
-    "@metaliq/presentation": "workspace:*",
-    "@metaliq/up": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/repeat.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/repeat.d.ts"
 }

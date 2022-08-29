@@ -1,22 +1,22 @@
 {
   "name": "@metaliq/modals",
   "description": "Basic modal display for MetaliQ",
-  "main": "lib/graphql-server.js",
-  "types": "lib/graphql-server.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
-  "scripts": {},
+  "version": "1.0.0-beta.1",
   "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@metaliq/communication": "workspace:*",
+    "@metaliq/presentation": "workspace:*",
+    "@metaliq/up": "workspace:*",
+    "lit": "2.3.1",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "lit": "2.3.1",
-    "metaliq": "workspace:*",
-    "@metaliq/communication": "workspace:*",
-    "@metaliq/presentation": "workspace:*",
-    "@metaliq/up": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/graphql-server.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/graphql-server.d.ts"
 }

@@ -1,22 +1,20 @@
 {
   "name": "metaliq",
   "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
-  "version": "1.0.0-bravo.1",
-  "type": "module",
+  "version": "1.0.0-beta.1",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
   "main": "lib/metaliq.js",
-  "types": "lib/metaliq.d.ts",
-
+  "peerDependencies": {},
+  "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
     "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
     "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
   },
-  "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
-  "devDependencies": {
-    "typescript": "^4.7.3"
-  },
-  "peerDependencies": {},
-  "dependencies": {
-  }
+  "type": "module",
+  "types": "lib/metaliq.d.ts"
 }

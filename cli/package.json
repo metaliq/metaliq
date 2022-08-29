@@ -1,27 +1,27 @@
 {
   "name": "@metaliq/cli",
   "description": "MetaliQ command line tools",
-  "main": "lib/cli.js",
-  "types": "lib/cli.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
+  "version": "1.0.0-beta.1",
+  "author": "tstewart@klaudhaus.com",
   "bin": {
     "metaliq": "./bin/cli-es6.js"
   },
-  "scripts": {},
-  "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@lit-labs/ssr": "^1.0.0",
+    "@metaliq/publication": "workspace:*",
+    "@metaliq/web-page-app": "workspace:*",
+    "@web/dev-server": "^0.1.25",
+    "commander": "^8.2.0",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^16.10.3",
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "@lit-labs/ssr": "^1.0.0",
-    "@web/dev-server": "^0.1.25",
-    "commander": "^8.2.0",
-    "metaliq": "workspace:*",
-    "@metaliq/publication": "workspace:*",
-    "@metaliq/configweb-page-app": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/cli.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/cli.d.ts"
 }

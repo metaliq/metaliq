@@ -1,23 +1,23 @@
 {
   "name": "@metaliq/presentation",
   "description": "MetaliQ presentation policy",
-  "main": "lib/presentation.js",
-  "types": "lib/presentation.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
-  "scripts": {},
+  "version": "1.0.0-beta.1",
   "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@metaliq/application": "workspace:*",
+    "@metaliq/publication": "workspace:*",
+    "@metaliq/terminology": "workspace:*",
+    "@metaliq/validation": "workspace:*",
+    "lit": "2.3.1",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "lit": "^2.1.3",
-    "metaliq": "workspace:*",
-    "@metaliq/application": "workspace:*",
-    "@metaliq/terminology": "workspace:*",
-    "@metaliq/validation": "workspace:*",
-    "@metaliq/publication": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/presentation.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/presentation.d.ts"
 }

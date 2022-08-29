@@ -1,14 +1,13 @@
 {
   "name": "@metaliq/validation",
   "description": "Framework-agnostic state management",
-  "main": "lib/validation.js",
-  "types": "lib/validation.d.ts",
-  "version": "1.0.0-alpha.30",
-  "type": "module",
-  "scripts": {},
+  "version": "1.0.0-beta.1",
   "author": "tstewart@klaudhaus.com",
-  "license": "MIT",
-  "repository": "https://github.com/metaliq/metaliq",
+  "dependencies": {
+    "@metaliq/terminology": "workspace:*",
+    "@metaliq/util": "workspace:*",
+    "metaliq": "workspace:*"
+  },
   "devDependencies": {
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",
@@ -17,9 +16,10 @@
     "source-map-support": "^0.5.21",
     "typescript": "^4.7.3"
   },
-  "dependencies": {
-    "metaliq": "workspace:*",
-    "@metaliq/terminology": "workspace:*",
-    "@metaliq/util": "workspace:*"
-  }
+  "license": "MIT",
+  "main": "lib/validation.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/validation.d.ts"
 }
