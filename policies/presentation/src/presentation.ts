@@ -118,7 +118,7 @@ export function view <T, P = any> (
 ): MetaView<T, P> {
   return (v, $ = m$(v)) => {
     if (typeof (v ?? false) === "object") {
-      // Check correct value/meta link prior to viewing
+      // Establish correct value/meta link prior to viewing
       Object.assign(v, { $ })
     }
     metaViewTerm = metaViewTerm ?? $.spec.view
@@ -137,7 +137,7 @@ export function view <T, P = any> (
 }
 
 /**
- * Similar to `view`
+ * Display a field for the given parent and key, optionally with a specific view.
  */
 export const field = <P, K extends FieldKey<P>> (
   parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>

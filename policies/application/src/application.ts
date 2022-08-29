@@ -5,7 +5,6 @@ import { LogFunction, startUp, Up } from "@metaliq/up"
  * Policy module to define general specification and operation of a Metaliq application.
  * This establishes an update and review mechanism.
  */
-
 export interface ApplicationSpec<T, P = any> {
   /**
    * Data initialisation term, containing
@@ -19,7 +18,7 @@ export interface ApplicationSpec<T, P = any> {
    * Runs after data initialisation and metafication.
    * Not recursive unless internally implemented.
    */
-  bootstrap?: MetaFn<T>
+  bootstrap?: MetaFnOrFns<T, P>
 
   /**
    * Log function to be called on each update - passed as `log` to `up`.
@@ -29,7 +28,7 @@ export interface ApplicationSpec<T, P = any> {
   /**
    * Review function to be called after each update - passed as `review` to `up`.
    */
-  review?: MetaFn<T, P> | Array<MetaFn<T, P>>
+  review?: MetaFnOrFns<T, P>
 
   /**
    * Flag to create a localised context with state updates isolated from the rest of an application.
@@ -56,6 +55,7 @@ declare module "metaliq" {
 
 export type InitFunction<T> = ((spec?: MetaSpec<T>) => T) | ((spec?: MetaSpec<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
+export type MetaFnOrFns<T, P = any> = MetaFn<T, P> | Array<MetaFn<T, P>>
 
 /**
  * Run a spec - initialise its data value and set `up`
@@ -77,27 +77,42 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   const log = spec.log || false
   const local = spec.local || false
   const up = await startUp({
-    review: () => {
+    review: async () => {
       reset(meta.$)
-      if (Array.isArray(spec.review)) {
-        for (const eachReview of spec.review) {
-          eachReview(meta.$.value, meta.$)
-        }
-      } else if (typeof spec.review === "function") {
-        spec.review(meta.$.value, meta.$)
-      }
+      await callMetaFnOrFns(meta.$, spec.review)
     },
     log,
     local
   })
-  if (typeof spec.bootstrap === "function") {
-    await spec.bootstrap(meta.$.value, meta.$)
-  }
+  await callMetaFnOrFns(meta.$, spec.bootstrap)
   await up()()
 
   return meta
 }
 
+/**
+ * Call a single meta function or array of meta functions.
+ * Return a single result or array of results.
+ */
+export const callMetaFnOrFns = async <T, P> (
+  $: Meta$<T, P>, fnOrFns: MetaFn<T, P> | Array<MetaFn<T, P>>
+) => {
+  if (Array.isArray(fnOrFns)) {
+    const results = []
+    for (const fn of fnOrFns) {
+      const result = await fn($.value, $)
+      results.push(result)
+    }
+    return results
+  } else if (typeof fnOrFns === "function") {
+    const result = await fnOrFns($.value, $)
+    return result
+  }
+}
+
+/**
+ * Get the initial value from the specification's `init` provider.
+ */
 export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   const data: T = typeof spec.init === "function"
     ? await (spec.init as InitFunction<T>)(spec)
@@ -106,10 +121,26 @@ export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
   return data
 }
 
+/**
+ * Extend the specification's bootstrap process.
+ */
 export const extendBootstrap = <T, P = any> ($: Meta$<T, P>, metaFn: MetaFn<T, P>) => {
-  const bootstrap = $.spec.bootstrap || (() => {})
-  $.spec.bootstrap = async (v, $) => {
-    await bootstrap(v, $)
-    await metaFn(v, $)
+  if (!$.spec.bootstrap) {
+    $.spec.bootstrap = []
+  } else if (typeof $.spec.bootstrap === "function") {
+    $.spec.bootstrap = [$.spec.bootstrap]
   }
+  $.spec.bootstrap.push(metaFn)
+}
+
+/**
+ * Extend the specification's review process.
+ */
+export function extendReview <T> ($: Meta$<T>, metaFn: MetaFn<T>) {
+  if (!$.spec.review) {
+    $.spec.review = []
+  } else if (typeof $.spec.review === "function") {
+    $.spec.review = [$.spec.review]
+  }
+  $.spec.review.push(metaFn)
 }

@@ -39,7 +39,6 @@ program
 program
   .command("run [specName]")
   .option("-f --file <file>", "Spec file location within source dir, with or without .ts extension", "specs")
-  .option("-c --conf <conf>", "File location within source dir, with or without .ts extension", "policy")
   .description("Start the MetaliQ development server for the given path/spec (defaults to appSpec)")
   .action(run)
 
@@ -58,12 +57,12 @@ program
 
 program
   .command("dev-local-link")
-  .description("For MetaliQ devs - link all packages from a local copy of the metaliq monorepo to a client project. They should be in same base dir.")
+  .description("For MetaliQ devs - `pnpm link` all packages in a local copy of the metaliq monorepo to a client project. They should be in same base dir.")
   .action(link)
 
 program
   .command("dev-local-unlink")
-  .description("For MetaliQ devs - unlink all packages from a local copy of the metaliq monorepo from a client project. They should be in same base dir.")
+  .description("For MetaliQ devs - `pnpm unlink` all packages in a local copy of the metaliq monorepo from a client project. They should be in same base dir.")
   .action(unlink)
 
 program.parse()
