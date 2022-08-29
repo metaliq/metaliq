@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/terminology",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ terminology policy",
   "main": "lib/terminology.js",
   "types": "lib/terminology.d.ts",
   "version": "1.0.0-alpha.30",

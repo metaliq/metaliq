@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/publication",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ publication policy",
   "main": "lib/publication.js",
   "types": "lib/publication.d.ts",
   "version": "1.0.0-alpha.30",

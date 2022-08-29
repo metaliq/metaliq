@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/communication",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ communication policy",
   "main": "lib/communication.js",
   "types": "lib/communication.d.ts",
   "version": "1.0.0-alpha.30",

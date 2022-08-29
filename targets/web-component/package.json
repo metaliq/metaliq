@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/configweb-component",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ web component publication target",
   "main": "lib/configweb-component.js",
   "types": "lib/configweb-component.d.ts",
   "version": "1.0.0-alpha.30",

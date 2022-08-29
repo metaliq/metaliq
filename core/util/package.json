@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/util",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ general utilities",
   "main": "lib/util.js",
   "types": "lib/util.d.ts",
   "version": "1.0.0-alpha.30",

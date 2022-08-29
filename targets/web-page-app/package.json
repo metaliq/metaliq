@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/configweb-page-app",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ publication target for a web-based single-page-app",
   "main": "lib/web-page-app.js",
   "types": "lib/web-page-app.d.ts",
   "version": "1.0.0-alpha.30",

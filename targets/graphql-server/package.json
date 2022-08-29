@@ -1,6 +1,6 @@
 {
-  "name": "@metaliq/configgraphql-server",
-  "description": "Framework-agnostic state management",
+  "name": "@metaliq/graphql-server",
+  "description": "MetaliQ GraphQL server publication target",
   "main": "lib/graphql-server.js",
   "types": "lib/graphql-server.d.ts",
   "version": "1.0.0-alpha.30",

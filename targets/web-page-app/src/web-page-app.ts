@@ -1,14 +1,6 @@
 import { PageInfo } from "@metaliq/publication/lib/page"
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
-declare module "metaliq" {
-  namespace Policy {
-    interface Specification<T, P> {
-      this?: Specification<T, P>
-    }
-  }
-}
-
 type CopyEntry = string | {
   src: string // Within project dir.
   dest?: string // Within destDir. Defaults to same as src

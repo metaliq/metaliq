@@ -1,5 +1,6 @@
 {
   "name": "metaliq",
+  "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
   "version": "1.0.0-bravo.1",
   "type": "module",
   "main": "lib/metaliq.js",
@@ -11,7 +12,6 @@
   },
   "author": "tstewart@klaudhaus.com",
   "license": "MIT",
-  "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
   "repository": "https://github.com/metaliq/metaliq",
   "devDependencies": {
     "typescript": "^4.7.3"

@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/navigation",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ navigation policy",
   "main": "lib/navigation.js",
   "types": "lib/navigation.d.ts",
   "version": "1.0.0-alpha.30",

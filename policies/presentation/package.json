@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/presentation",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ presentation policy",
   "main": "lib/presentation.js",
   "types": "lib/presentation.d.ts",
   "version": "1.0.0-alpha.30",
