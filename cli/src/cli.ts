@@ -9,6 +9,7 @@ import { DevServerConfig, startDevServer } from "@web/dev-server"
 import { MetaSpec } from "metaliq"
 import { webPageApp } from "@metaliq/web-page-app"
 import { PublicationContext, PublicationTarget } from "@metaliq/publication"
+import { link, unlink } from "./linker"
 
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
@@ -54,6 +55,16 @@ program
   .option("-p --port <port>", "Port to serve on", "8888")
   .description("Start a static server for the given location (useful for checking prod builds)")
   .action(serve)
+
+program
+  .command("dev-local-link")
+  .description("For MetaliQ devs - link all packages from a local copy of the metaliq monorepo to a client project")
+  .action(link)
+
+program
+  .command("dev-local-unlink")
+  .description("For MetaliQ devs - unlink all packages from a local copy of the metaliq monorepo from a client project")
+  .action(unlink)
 
 program.parse()
 
