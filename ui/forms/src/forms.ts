@@ -145,6 +145,8 @@ export const isDisabled = <T, P>(v$: T | Meta$<T, P>): boolean => {
 
 /**
  * A standard set of field classes for the meta.
+ * Can pass the meta info $ object (recommended)
+ * or its associated data value (not a primitive).
  */
 export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
   const $ = (m$(v$) || v$) as Meta$<T, P>

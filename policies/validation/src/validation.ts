@@ -106,9 +106,12 @@ export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
   }
 }
 
+/**
+ * Indicates whether the field has a value from a validation perspective.
+ * Can accept either a value (including a primitive) or its meta info $ object.
+ */
 export const hasValue = <T, P> (v$: T | Meta$<T, P>) => {
-  const $ = m$(v$) as Meta$<T, P>
-  const value = ($?.value || v$) as any
+  const value: any = typeof (v$ ?? false) === "object" ? (<Meta$<T, P>>(m$(v$) || v$)).value : v$
   return !(
     value === "" ||
     (Array.isArray(value) && !value.length) ||
