@@ -107,7 +107,7 @@ export type InputOptions<T> = {
  * To get full use of all options use `inputField`.
  */
 export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) => {
-  const disabled = isDisabled(v, $)
+  const disabled = isDisabled($)
   return html`
     <input type=${options.type || "text"}
       ?disabled=${disabled}
@@ -126,12 +126,16 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) =
 }
 
 /**
- * Return the first explicitly defined disabled state by searching on the meta
+ * Test whether the field is disabled.
+ * Can accept the meta info $ (recommended)
+ * or the associated data value (not a primitive).
+ *
+ * Returns the first explicitly defined disabled state by searching on the meta
  * and then ascending through its ancestors. If none is found, return false.
  */
-export const isDisabled: MetaFn<any> = (v, $): boolean => {
-  if (!$) $ = m$(v)
-  let parent = $.meta
+export const isDisabled = <T, P>(v$: T | Meta$<T, P>): boolean => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
+  let parent: HasMeta$<any> = $.meta
   while (parent) {
     if (typeof parent.$.state.disabled === "boolean") return parent.$.state.disabled
     parent = parent.$.parent
@@ -142,12 +146,13 @@ export const isDisabled: MetaFn<any> = (v, $): boolean => {
 /**
  * A standard set of field classes for the meta.
  */
-export const fieldClasses: MetaFn<any> = (v, $) => {
+export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
   return {
     "mq-mandatory": $.state.mandatory,
     "mq-active": $.state.active,
-    "mq-populated": hasValue(v, $),
-    "mq-disabled": isDisabled(v, $)
+    "mq-populated": hasValue($),
+    "mq-disabled": isDisabled($)
   }
 }
 
@@ -159,7 +164,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (v,
   <label class="mq-field ${classMap({
     [options.classes]: !!options.classes,
     [`mq-${options.type || "text"}-field`]: true,
-    ...fieldClasses(v, $)
+    ...fieldClasses($)
   })}" >
     ${!options.labelAfter ? fieldLabel(options)(v, $) : ""}
     ${input({ type: "text", ...options })(v, $)}
@@ -174,7 +179,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (v,
 export const fieldLabel = <T>(options?: InputOptions<T>): MetaView<T> => (value, $) =>
   typeof options?.labelView === "function"
     ? options.labelView(value, $)
-    : html`<span class="mq-input-label">${labelOrKey(value, $)}</span>`
+    : html`<span class="mq-input-label">${labelOrKey($)}</span>`
 
 /**
  * Input field with default options for a validated checkbox
@@ -216,7 +221,7 @@ const onInput = <T>({ unvalidated, type }: InputOptions<T>) =>
       : type === "number"
         ? parseFloat(target.value)
         : target.value) as T
-    if (!unvalidated) validate($.value, $)
+    if (!unvalidated) validate($)
   }
 
 export const errorsBlock: MetaView<any> = (v, $ = m$(v)) => {

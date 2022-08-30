@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { child$, FieldKey, fieldKeys, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
+import { child$, FieldKey, fieldKeys, getAncestorTerm, m$, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 import { extendBootstrap } from "@metaliq/application"
@@ -152,7 +152,7 @@ export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
 /**
  * Recursively set the navigation meta state.
  */
-export const setNavSelection: MetaFn<any> = (v, $) => {
+export const setNavSelection: MetaFn<any> = (v, $ = m$(v)) => {
   let recursing = false
 
   const recurse: MetaFn<any> = (v, $) => {

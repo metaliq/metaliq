@@ -1,5 +1,5 @@
 import { Constraint, Validator } from "../validation"
-import { FieldKey, m$, Meta, MetaFn } from "metaliq"
+import { child$, FieldKey, m$, MetaFn } from "metaliq"
 
 /**
  * Checks equality with the given value.
@@ -11,8 +11,8 @@ export const equals = (equalTo: any, msg?: string): Validator<any> => value =>
  * Checks equality with another field in the same parent.
  */
 export const sameAs = <T, P>(other: FieldKey<P>, msg?: string): Validator<T, P> => (value, $ = m$(value)) => {
-  const otherMeta = $.parent[other] as Meta<any>
-  return value === otherMeta.$.value || msg || `Does not match ${otherMeta.$.spec.label}`
+  const otherMeta$ = child$($.parent.$, other)
+  return value === otherMeta$.value as any || msg || `Does not match ${otherMeta$.spec.label}`
 }
 
 export const transform = <T> (fn: MetaFn<T, any, T>): Validator<T> => (value, $ = m$(value)) => {
@@ -38,7 +38,7 @@ export const blankOr = (other: Validator<string>): Validator<string> => (value, 
   !value || other(value, meta)
 
 export const siblingsBlankOr = <T, P>(siblings: Array<FieldKey<P>>, other: Validator<T>): Validator<T, P> => (v, $ = m$(v)) =>
-  !siblings.map(key => $.parent[key].$.value).filter(Boolean).length || other(v, $)
+  !siblings.map(key => child$($.parent.$, key).value).filter(Boolean).length || other(v, $)
 
 export const matchRegex = (regex: RegExp, msg?: string): Validator<string> => value =>
   !!value.match(regex) || msg || "Does not match required pattern"

@@ -51,4 +51,7 @@ export function labelPath (from: HasMeta$<any>, to: HasMeta$<any>) {
   return labels.join(" > ")
 }
 
-export const labelOrKey: MetaFn<any> = (v, $ = m$(v)) => $.state.label || $.key
+export const labelOrKey = <T, P>(v$: T | Meta$<T, P>) => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
+  return $.state.label || $.key
+}

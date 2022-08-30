@@ -26,17 +26,17 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (v, $)
     sort: true,
     ...options
   }
-  const disabled = isDisabled(v, $)
+  const disabled = isDisabled($)
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
-      ...fieldClasses(v, $),
-      "mq-populated": hasValue(v, $)
+      ...fieldClasses($),
+      "mq-populated": hasValue($)
     })}">
       ${guard($, () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
         options.choices.forEach(choice => { delete choice.selected })
-        if (hasValue(v, $)) {
+        if (hasValue($)) {
           const values = Array.isArray(v) ? v : [v]
           for (const val of values) {
             const selected = options.choices.find(c => c.value === val)
@@ -120,7 +120,7 @@ const onChange = (options: SelectorOptions) => ($: Meta$<any>, event: Event) => 
       $.value = ""
     }
   }
-  validate($.meta)
+  validate($)
   state.proposedChange = null
 }
 

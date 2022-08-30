@@ -69,10 +69,12 @@ export function setRequiredLabel (fn: MetaFn<any, any, string>) {
   requiredLabelFn = fn
 }
 let requiredLabelFn: MetaFn<any, any, string> = (v, $ = m$(v)) =>
-  `${labelOrKey(v, $) || "This field"} is required`
+  `${labelOrKey($) || "This field"} is required`
 
 /**
- * Run the validation for the individual meta provided.
+ * Run the validation for the individual object provided.
+ * Can send either the $ meta info (recommended),
+ * or its associated data value (not a primitive).
  * Sets the `validated` state to true and the `error` state according to the validation result.
  * Note that a boolean result from a Validator is reversed for the value of `error` on the state properties.
  * i.e. a Validator result of `false` (no error) produces a `props.error` value of `true`.
@@ -81,16 +83,17 @@ let requiredLabelFn: MetaFn<any, any, string> = (v, $ = m$(v)) =>
  *
  * Note: This is not recursive - use `validateAll` for that purpose.
  */
-export const validate: MetaFn<any, any, ValidationResult> = (v, $ = m$(v)) => {
+export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
   $.state.validated = true
   delete $.state.error
   if ($.state.hidden) return
-  if ($.state.mandatory && !hasValue($.value, $)) {
-    return ($.state.error = requiredLabelFn(v, $))
+  if ($.state.mandatory && !hasValue($)) {
+    return ($.state.error = requiredLabelFn($.value, $))
   } else {
     const validator = $.spec.validator
     if (typeof validator === "function") {
-      const result = validator(v, $)
+      const result = validator($.value, $)
       if (result === false) {
         $.state.error = true
       } else if (typeof result === "string") {
@@ -103,35 +106,39 @@ export const validate: MetaFn<any, any, ValidationResult> = (v, $ = m$(v)) => {
   }
 }
 
-export const hasValue: MetaFn<any> = (v, $) => {
-  $ = $ || m$(v)
+export const hasValue = <T, P> (v$: T | Meta$<T, P>) => {
+  const $ = m$(v$) as Meta$<T, P>
+  const value = ($?.value || v$) as any
   return !(
-    v === "" ||
-    (Array.isArray(v) && !v.length) ||
-    (v ?? null) === null
+    value === "" ||
+    (Array.isArray(value) && !value.length) ||
+    (value ?? null) === null
   )
 }
 
 /**
  * Validate the entire object recursively.
+ * Can send either the $ meta info (recommended),
+ * or its associated data value (not a primitive).
  * Returns an array of the Meta$s that are in an error state,
  * from which a cumulative error presentation may be constructed.
  */
-export const validateAll: MetaFn<any> = (v, $ = m$(v)) => {
+export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
   const result: Array<Meta$<any>> = []
   if (!$.state.hidden) {
-    validate(v, $)
+    validate($)
     if ($.state.error) result.push($)
     const { meta } = $
     if (isMetaArray(meta)) {
       for (const sub of meta) {
-        appendTo(result, validateAll(sub.$.value, sub.$))
+        appendTo(result, validateAll(sub.$))
       }
     } else if (isMeta(meta)) {
       const keys = fieldKeys($.spec)
       for (const key of keys) {
         const sub = meta[key]
-        appendTo(result, validateAll(sub.$.value, sub.$))
+        appendTo(result, validateAll(sub.$ as Meta$<any>))
       }
     }
   }

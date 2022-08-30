@@ -79,7 +79,7 @@ export type Meta$<T, P = any> = {
   /**
    * Ancestry within meta graph (if applicable).
    */
-  parent?: Meta<P>
+  parent?: HasMeta$<P>
 
   /**
    * Key within parent meta (if applicable).
@@ -276,10 +276,11 @@ export function metafy <T, P = any> (
  * (a) replacing a complete object value directly rather than via its parent, and
  * (b) to restore current backlinks to a value object that is referenced more than once in the meta-graph.
  */
-export function reset<T> ($: Meta$<T>, value?: T) {
+export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
+  const $ = (m$(valueOr$) || valueOr$) as Meta$<T>
   metafy($.spec,
     typeof value === "undefined" ? $.value : value,
-    $.parent, $.key, $.meta)
+    $.parent as Meta<any>, $.key, $.meta)
 }
 
 /**
