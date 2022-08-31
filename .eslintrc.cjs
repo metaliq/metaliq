@@ -1,7 +1,7 @@
 const { readdirSync } = require("fs")
 
-const topLevel = ["cli", "test", "ui"]
-const containers = ["core", "policies", "targets"]
+const topLevel = ["cli", "test"]
+const containers = ["core", "policies", "targets", "ui"]
 const nextLevel = containers.flatMap(c => readdirSync(c).map(p => `${c}/${p}`))
 
 const packages = [...topLevel, ...nextLevel]

@@ -1,4 +1,4 @@
-import { Meta, Meta$, MetaFn, metafy, MetaSpec, reset } from "metaliq"
+import { Meta, MetaFn, metafy, MetaSpec, reset } from "metaliq"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
