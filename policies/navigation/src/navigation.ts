@@ -1,10 +1,11 @@
 import { Route, RouteHandler, Router } from "./router"
-import { child$, FieldKey, fieldKeys, getAncestorTerm, m$, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
+import { child$, FieldKey, fieldKeys, fns, getAncestorTerm, m$, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
-import { extendBootstrap } from "@metaliq/application"
 
 export { route } from "./router"
+
+export { ApplicationSpec } from "@metaliq/application"
 
 export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
   /**
@@ -111,13 +112,13 @@ metaSetups.push($ => {
       history.pushState(null, null, spec.urlPath)
     }
     if (policy.routeMetas.size) {
-      extendBootstrap($, (v, m) => {
+      $.spec.bootstrap = fns([$.spec.bootstrap, () => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
           Array.from(policy.routeMetas.keys())
         ).start()
         router.catch(console.error)
-      })
+      }])
     }
   }
 })

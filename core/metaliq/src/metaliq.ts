@@ -385,6 +385,11 @@ export const getDynamicTerm = <K extends SpecKey>(key: K): MetaFn<any, any, Deri
     else return specValue
   }
 
+/**
+ * Return the value of a spec term by searching the
+ * immediate meta object and then stepping back through ancestors
+ * until a value is found.
+ */
 export const getAncestorTerm = <K extends SpecKey>(
   key: K, dynamic: boolean = false
 ): MetaFn<any, any, SpecValue<K>> =>
@@ -393,3 +398,19 @@ export const getAncestorTerm = <K extends SpecKey>(
       const termValue = $.spec[key]
       return termValue
     }
+
+/**
+ * Combine an array of meta functions into a single meta function
+ * which returns the result of the last function.
+ * Can be used recursively, i.e. `fns(fns(...), ...)`.
+ * Useful for combining functionality in a single MetaFn spec term.
+ */
+export const fns = <T, P = any, R = any> (
+  metaFns: [...Array<MetaFn<T, P>>, MetaFn<T, P, R>]
+): MetaFn<T, P, R> => (v, $) => {
+    let result: R
+    for (const fn of metaFns) {
+      if (typeof fn === "function") result = fn(v, $)
+    }
+    return result
+  }

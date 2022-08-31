@@ -18,7 +18,7 @@ export interface ApplicationSpec<T, P = any> {
    * Runs after data initialisation and metafication.
    * Not recursive unless internally implemented.
    */
-  bootstrap?: MetaFnOrFns<T, P>
+  bootstrap?: MetaFn<T, P>
 
   /**
    * Log function to be called on each update - passed as `log` to `up`.
@@ -28,7 +28,7 @@ export interface ApplicationSpec<T, P = any> {
   /**
    * Review function to be called after each update - passed as `review` to `up`.
    */
-  review?: MetaFnOrFns<T, P>
+  review?: MetaFn<T, P>
 
   /**
    * Flag to create a localised context with state updates isolated from the rest of an application.
@@ -79,35 +79,19 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
   const up = await startUp({
     review: async () => {
       reset(meta.$)
-      await callMetaFnOrFns(meta.$, spec.review)
+      if (typeof spec.review === "function") {
+        await spec.review(meta.$.value, meta.$)
+      }
     },
     log,
     local
   })
-  await callMetaFnOrFns(meta.$, spec.bootstrap)
+  if (typeof spec.bootstrap === "function") {
+    await spec.bootstrap(meta.$.value, meta.$)
+  }
   await up()()
 
   return meta
-}
-
-/**
- * Call a single meta function or array of meta functions.
- * Return a single result or array of results.
- */
-export const callMetaFnOrFns = async <T, P> (
-  $: Meta$<T, P>, fnOrFns: MetaFn<T, P> | Array<MetaFn<T, P>>
-) => {
-  if (Array.isArray(fnOrFns)) {
-    const results = []
-    for (const fn of fnOrFns) {
-      const result = await fn($.value, $)
-      results.push(result)
-    }
-    return results
-  } else if (typeof fnOrFns === "function") {
-    const result = await fnOrFns($.value, $)
-    return result
-  }
 }
 
 /**
@@ -119,28 +103,4 @@ export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
     : spec.init ?? {} as T
 
   return data
-}
-
-/**
- * Extend the specification's bootstrap process.
- */
-export const extendBootstrap = <T, P = any> ($: Meta$<T, P>, metaFn: MetaFn<T, P>) => {
-  if (!$.spec.bootstrap) {
-    $.spec.bootstrap = []
-  } else if (typeof $.spec.bootstrap === "function") {
-    $.spec.bootstrap = [$.spec.bootstrap]
-  }
-  $.spec.bootstrap.push(metaFn)
-}
-
-/**
- * Extend the specification's review process.
- */
-export function extendReview <T> ($: Meta$<T>, metaFn: MetaFn<T>) {
-  if (!$.spec.review) {
-    $.spec.review = []
-  } else if (typeof $.spec.review === "function") {
-    $.spec.review = [$.spec.review]
-  }
-  $.spec.review.push(metaFn)
 }
