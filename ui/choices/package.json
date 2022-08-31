@@ -21,7 +21,9 @@
   "peerDependencies": {
   },
   "repository": "https://github.com/metaliq/metaliq",
-  "scripts": {},
+  "scripts": {
+    "prepare": "mkdir ./css && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/"
+  },
   "type": "module",
   "types": "lib/choices.d.ts"
 }

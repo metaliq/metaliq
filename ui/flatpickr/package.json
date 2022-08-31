@@ -18,7 +18,9 @@
   "license": "MIT",
   "main": "lib/flatpickr.js",
   "repository": "https://github.com/metaliq/metaliq",
-  "scripts": {},
+  "scripts": {
+    "prepare": "mkdir ./css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/"
+  },
   "type": "module",
   "types": "lib/flatpickr.d.ts"
 }
