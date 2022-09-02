@@ -1,7 +1,7 @@
 {
   "name": "metaliq-monorepo",
   "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "author": "tstewart@klaudhaus.com",
   "devDependencies": {
     "@types/node": "^16.10.3",
@@ -30,7 +30,7 @@
     "clean-buildinfo": "find . -name 'tsconfig.tsbuildinfo' -not -path '*/node_modules/*' -exec rm -f {} +",
     "clean-lib": "find . -name 'lib' -type d -not -path '*/node_modules/*' -prune -exec rm -rf {} +",
     "clean-node-modules": "find . -name 'node_modules' -type d -exec rm -rf {} +",
-    "dev": "npm run clean && tsc -b --watch",
+    "dev": "npm run clean && pnpm run -r pkg-prepare && tsc -b --watch",
     "prepare": "npm run clean && tsc -b",
     "publish-beta": "pnpm publish -r --tag beta --access public",
     "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",

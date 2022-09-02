@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/choices",
   "description": "MetaliQ wrapper for the choices.js selector library",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/forms": "workspace:*",
@@ -22,7 +22,8 @@
   },
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
-    "prepare": "cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/"
+    "pkg-prepare": "mkdir -p lib && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/",
+    "prepare": "pnpm run pkg-prepare"
   },
   "type": "module",
   "types": "lib/choices.d.ts"
