@@ -134,7 +134,10 @@ export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
   for (const key of keys) {
     const childSpec = spec.fields?.[key] as unknown as MetaSpec<unknown>
     const childKeys = fieldKeys(childSpec)
-    const keyModel = childKeys?.length
+    // Continue recursing if there are nested-level routes
+    const grandChildSpecs = childKeys.map(ck => childSpec.fields[ck]) as Array<MetaSpec<unknown>>
+    const hasGrandChildRoutes = grandChildSpecs.some(s => s.route)
+    const keyModel = hasGrandChildRoutes
       ? mapNavModel(model)(childSpec)
       : model
     Object.assign(navModel, { [key]: keyModel })
