@@ -34,6 +34,11 @@ export interface ApplicationSpec<T, P = any> {
    * Flag to create a localised context with state updates isolated from the rest of an application.
    */
   local?: boolean
+
+  /**
+   * Collection of application-defined hooks for integration etc.
+   */
+  actions?: ApplicationActions<T, P>
 }
 
 export interface ApplicationState<T> {
@@ -41,6 +46,15 @@ export interface ApplicationState<T> {
    * Localised `up` function that is available when `local` has been set to true in the spec.
    */
   up?: Up<Meta<T>>
+}
+
+/**
+ * Application actions is an extensible interface to link processes
+ * such as data persistence, file uploads and other downstream integration
+ * tasks into defined application interaction points such as "save", "delete", "refresh" etc.
+ */
+export interface ApplicationActions<T, P> {
+  this?: ApplicationActions<T, P>
 }
 
 declare module "metaliq" {
@@ -55,7 +69,6 @@ declare module "metaliq" {
 
 export type InitFunction<T> = ((spec?: MetaSpec<T>) => T) | ((spec?: MetaSpec<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
-export type MetaFnOrFns<T, P = any> = MetaFn<T, P> | Array<MetaFn<T, P>>
 
 /**
  * Run a spec - initialise its data value and set `up`

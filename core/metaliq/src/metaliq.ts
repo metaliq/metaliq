@@ -332,9 +332,13 @@ export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => !Array
 export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> => Array.isArray(m)
 
 /**
- * Shortcut to a proxy object for the parent.
+ * Given either a meta info object or its underlying data value (but not a primitive),
+ * return a reference to the value object for the parent.
  */
-export const parent = <T extends object, P = any> (value: T | HasMeta$<T, P>) => m$(value)?.parent?.$.value
+export const parent = <T extends object, P = any> (v$: T | HasMeta$<T, P>) => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
+  return $?.parent?.$.value
+}
 
 /**
  * Works better than keyof T where you know that T is not an array.

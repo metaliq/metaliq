@@ -4,7 +4,19 @@ import { metafy, MetaSpec } from "metaliq"
 
 chai.should()
 
+/**
+ * The data model of a digital solution will often include collections of values,
+ * for example a list of contacts, multiple classes on a driver's licence,
+ * a range of upcoming events, etc.
+ *
+ * MetaliQ handles arrays within the data model in quite a similar way to non-array objects,
+ * with some differences specific to arrays. These are described in the code samples below.
+ */
 describe("MetaliQ Array Handling", () => {
+
+  /**
+   * Sometimes the array is made up of primitive values (numbers, strings or booleans).
+   */
   describe("Primitive Arrays", () => {
     type Person = {
       aliases: string[]
