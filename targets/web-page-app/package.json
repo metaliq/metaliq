@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/web-page-app",
   "description": "MetaliQ publication target for a web-based single-page-app",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/publication": "workspace:*",
