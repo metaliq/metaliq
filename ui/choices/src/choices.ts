@@ -108,7 +108,7 @@ const state = {
 const onChange = (options: SelectorOptions) => ($: Meta$<any>, event: Event) => {
   if (state.proposedChange?.type === "Add") {
     if (options.multiple) {
-      $.value = $.value || ($.parent.$.value[$.key] = [])
+      $.value = $.value || []
       $.value.push(state.proposedChange.value)
     } else {
       $.value = state.proposedChange.value

@@ -59,7 +59,9 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
         return html`
           <input id=${id}
             ?disabled=${disabled}
-            class="mq-input ${classMap({ "mq-disabled": disabled })}" 
+            class="mq-input ${classMap({ "mq-disabled": disabled })}"
+            @focus=${up(() => { $.state.active = true })}
+            @blur=${up(() => { $.state.active = false })}
           />
         `
       })}

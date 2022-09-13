@@ -23,9 +23,16 @@ export interface PresentationSpec<T, P> {
   statusView?: MetaViewTerm<T, P>
 }
 
+export interface PresentationState {
+  active?: boolean
+}
+
 declare module "metaliq" {
   namespace Policy {
     interface Specification<T, P> extends PresentationSpec<T, P> { }
+    interface State<T, P> extends PresentationState {
+      this?: State<T, P>
+    }
   }
 }
 
