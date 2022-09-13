@@ -40,12 +40,8 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
           )
           .map(key => {
             const fieldMeta = meta[key] as HasMeta$<any>
-            if (isMetaArray(fieldMeta)) {
-              return view(repeatView)(fieldMeta.$.value, fieldMeta.$)
-            } else {
-              const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta.$)
-              return view(itemView)(fieldMeta.$.value, fieldMeta.$)
-            }
+            const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta.$)
+            return view(itemView)(fieldMeta.$.value, fieldMeta.$)
           })}
       </div>
     `
@@ -68,6 +64,9 @@ export const repeatView: MetaView<any[]> = (v, $) => {
 const defaultFieldView = <T> ($: Meta$<T>): MetaView<T> => {
   if (!$) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
+  } else if (Array.isArray($.meta)) {
+    // T is an array type
+    return <unknown>repeatView as MetaView<T>
   } else if ($.value && typeof $.value === "object") {
     return metaForm()
   } else if (typeof $.value === "boolean") {
