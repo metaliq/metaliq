@@ -213,11 +213,13 @@ export function metafy <T, P = any> (
 
   // Reuse existing Meta$ if present, otherwise create new one
   const $ = proto?.$ || {
+    // Value getter and setter defaults to keyed value within parent object if present,
+    // so that primitive values are assigned properly to their place in the containing object.
     get value () {
-      if (typeof this._value === "object" || !this.parent) {
-        return this._value
-      } else {
+      if (this.parent) {
         return this.parent[this.key]?.$._value
+      } else {
+        return this._value
       }
     },
     set value (val) {
