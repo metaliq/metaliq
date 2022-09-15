@@ -189,6 +189,14 @@ const MetaProto = {
 }
 
 class MetaArrayProto extends Array {
+  $: Meta$<any>
+
+  constructor ($: Meta$<any>) {
+    super()
+    $.meta = this
+    this.$ = $
+  }
+
   toString () {
     return metaPath(<unknown> this as MetaArray<any>)
   }
@@ -208,7 +216,7 @@ export function metafy <T, P = any> (
   proto = isArray
     ? proto instanceof MetaArrayProto
       ? proto
-      : new MetaArrayProto()
+      : new MetaArrayProto(proto.$)
     : proto || Object.create(MetaProto)
 
   // Reuse existing Meta$ if present, otherwise create new one
