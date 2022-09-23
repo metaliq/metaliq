@@ -49,7 +49,7 @@ export const photoField = (options: PhotoFieldOptions = {}): MetaView<string> =>
         ` : ""}
       </div>
       ${$.value ? html`
-        <button class="mq-photo-clear" @click=${up(clearImage, $)}></button>
+        <button class="mq-field-clear" @click=${up(clearImage, $)}></button>
       ` : ""}
     </label>
     ${errorMsg({ classes: "mq-field-error" })(value, $)}

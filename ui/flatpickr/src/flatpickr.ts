@@ -5,8 +5,10 @@ import { classMap } from "lit/directives/class-map.js"
 import flatpickr from "flatpickr"
 import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
-import { validate } from "@metaliq/validation"
+import { hasValue, validate } from "@metaliq/validation"
 import { fieldError, isDisabled } from "@metaliq/forms"
+import { Meta$ } from "metaliq"
+import Instance = flatpickr.Instance
 
 export type DatePickerOptions = {
   classes?: string
@@ -26,8 +28,9 @@ export type DatePickerOptions = {
 
 export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
   const disabled = isDisabled($)
+
   return html`
-    <label class="mq-field mq-text-field ${classMap({
+    <label class="mq-field mq-date-field ${classMap({
       [options.classes]: !!options.classes,
       "mq-mandatory": $.state.mandatory,
       "mq-active": $.state.active,
@@ -38,9 +41,16 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
       </span>
       ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
+        const clearDate = ($: Meta$<string>) => {
+          $.value = ""
+          const fl = flatpickr(`#${id}`) as Instance
+          fl.clear()
+        }
+
         setTimeout(
           () => {
             flatpickr(`#${id}`, {
+              allowInput: true,
               onClose (selectedDates, dateStr) {
                 if (selectedDates[0]) {
                   value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
@@ -63,6 +73,9 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
             @focus=${up(() => { $.state.active = true })}
             @blur=${up(() => { $.state.active = false })}
           />
+          ${hasValue($) ? html`
+            <button class="mq-field-clear" @click=${up(clearDate, $)} tabindex="-1"></button>
+          ` : ""}
         `
       })}
       ${fieldError(value, $)}
