@@ -64,7 +64,7 @@ metaSetups.push($ => {
     // TODO: These should go into runtime target
     if ($.spec.view || !$.spec.publicationTarget) {
       $.spec.review = $.spec.review || renderPage
-      Object.assign(window, { meta: $ })
+      Object.assign(window, { meta: $.meta })
       document.title = getDynamicTerm("label")($.value, $)
     }
   }

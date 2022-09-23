@@ -233,7 +233,7 @@ export function metafy <T, P = any> (
     set value (val) {
       reset(this, val)
     }
-  }
+  } as Meta$<T>
 
   // Add contextual meta information to Meta$
   Object.assign($, {
@@ -252,10 +252,13 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
-  if (parent && key && !(parent[key] instanceof MetaArrayProto)) {
+  if (parent && key && !Array.isArray(parent[key])) {
     Object.assign(parent, { [key]: result }) // (Re)attach this meta to its parent
     Object.assign(parent.$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
   }
+
+  const classes$ = (window as any)?.meta?.datasets?.driversLicenceData1?.driversLicenceClasses?.$
+  console.log(`metafying ${key}, value is ${classes$?.value}`)
 
   // Descend through children creating further meta objects
   if (isArray) {
