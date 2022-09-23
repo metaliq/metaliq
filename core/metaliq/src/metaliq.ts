@@ -257,9 +257,6 @@ export function metafy <T, P = any> (
     Object.assign(parent.$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
   }
 
-  const classes$ = (window as any)?.meta?.datasets?.driversLicenceData1?.driversLicenceClasses?.$
-  console.log(`metafying ${key}, value is ${classes$?.value}`)
-
   // Descend through children creating further meta objects
   if (isArray) {
     const valueArr = <unknown>value as any[] || []
