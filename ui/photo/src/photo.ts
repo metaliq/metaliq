@@ -42,7 +42,7 @@ export const photoField = (options: PhotoFieldOptions = {}): MetaView<string> =>
     <label class="mq-field mq-photo-field ${classMap(fieldClasses($))}">
       ${fieldLabel<string>({})(value, $)}
       <i class="bi bi-camera-fill"></i>
-      <input ?disabled=${disabled} type="file" accept="image/*" capture="environment" @change=${up(imageSelected, $)}>
+      <input ?disabled=${disabled} type="file" accept="image/*" @change=${up(imageSelected, $)}>
       <div class="mq-photo-preview">
         ${$.value ? html`
           <img src=${$.value} alt="Preview">
