@@ -92,12 +92,22 @@ export const ifThen = <T, P = any> (
   elseView?: MetaView<T, P>
 ): MetaView<T, P> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
 
-export type InputOptions<T> = {
+/**
+ * General options for all MetaliQ form fields.
+ * Individual fields can define their own options types, which would normally extend this type.
+ */
+export type FieldOptions<T> = {
+  labelView?: MetaView<T> // Custom label content function
+  classes?: string // Additional class(es) for field container
+}
+
+/**
+ * Options for input and similar fields.
+ */
+export type InputOptions<T> = FieldOptions<T> & {
   type?: "text" | "checkbox" | "number" | "tel"
   unvalidated?: boolean // don't perform validation
   labelAfter?: boolean // Place the label after the input
-  labelView?: MetaView<T> // Custom label content function
-  classes?: string // Additional class(es) for field container
   autocomplete?: string
 }
 
@@ -177,7 +187,7 @@ export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (v,
 /**
  * Label element for input field.
  */
-export const fieldLabel = <T>(options?: InputOptions<T>): MetaView<T> => (value, $) =>
+export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value, $) =>
   typeof options?.labelView === "function"
     ? options.labelView(value, $)
     : html`<span class="mq-input-label">${labelOrKey($)}</span>`
