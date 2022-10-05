@@ -148,3 +148,20 @@ export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
   $.state.allErrors = result
   return result
 }
+
+export const unvalidate = <T, P>(v$: T | Meta$<T, P>) => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
+  delete $.state.error
+  const { meta } = $
+  if (isMetaArray(meta)) {
+    for (const sub of meta) {
+      unvalidate(sub.$)
+    }
+  } else if (isMeta(meta)) {
+    const keys = fieldKeys($.spec)
+    for (const key of keys) {
+      const sub = meta[key]
+      unvalidate(sub)
+    }
+  }
+}
