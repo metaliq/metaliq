@@ -41,15 +41,17 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
       </span>
       ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
+
+        let fl: Instance = null
+
         const clearDate = ($: Meta$<string>) => {
           $.value = ""
-          const fl = flatpickr(`#${id}`) as Instance
           fl.clear()
         }
 
         setTimeout(
           () => {
-            flatpickr(`#${id}`, {
+            fl = flatpickr(`#${id}`, {
               allowInput: true,
               onClose (selectedDates, dateStr) {
                 if (selectedDates[0]) {
@@ -62,7 +64,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
               disable: options.disable || [],
               dateFormat: options.displayFormat || "Y-m-d",
               disableMobile: true
-            })
+            }) as Instance
           },
           250
         )
