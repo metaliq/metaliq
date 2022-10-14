@@ -1,0 +1,17 @@
+{
+  "name": "create-solution",
+  "description": "Create a new MetaliQ solution",
+  "author": "tim@klaud.haus",
+  "version": "1.0.0-beta.15",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
+  "main": "lib/application.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/application.d.ts"
+
+}
