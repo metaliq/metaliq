@@ -47,26 +47,53 @@
  */
 
 import { URL } from "url"
-import { cp } from "fs/promises"
+import { cp, readFile, writeFile, readdir } from "fs/promises"
 import { cwd } from "process"
 import { resolve } from "path"
 import { templateUrl } from "@metaliq/template"
 
 const main = async () => {
-  console.log("Creating MetaliQ solution")
 
+  const projectDir = cwd()
+  const projectName = projectDir.split(/[\\/]/).filter(Boolean).pop()
+  const existing = await readdir(projectDir)
+  if (existing.length) {
+    console.error(`${projectDir} is not empty. Please change to an empty directory to create a new MetaliQ solution.`)
+    return
+  } else {
+    console.log(`Creating MetaliQ solution ${projectName}`)
+  }
+
+  // Copy template files to new project
   const templateDir = resolve(new URL(".", templateUrl()).pathname, "..") + "/"
   const excludeDirs = ["bin", "node_modules", ".idea"]
-
-  await cp(templateDir, cwd(), {
+  await cp(templateDir, projectDir, {
     filter (source: string, destination: string): boolean {
       for (const dir of excludeDirs) {
-        if (source.match(new RegExp(`/@metaliq/template/${dir}`))) return false
+        if (source.match(new RegExp(`${templateDir}${dir}`))) return false
       }
       return true
     },
     recursive: true
   })
+
+  // Remove project extension from tsconfig
+  const tsConfigPath = resolve(projectDir, "tsconfig.json")
+  const tsConfigJson = await readFile(tsConfigPath, "utf8")
+  const tsConfig = JSON.parse(tsConfigJson)
+  delete tsConfig.extends
+  await writeFile(tsConfigPath, JSON.stringify(tsConfig, null, 2))
+
+  // Package.json updates
+  const packagePath = resolve(projectDir, "package.json")
+  const packageJson = await readFile(packagePath, "utf8")
+  const pkg = JSON.parse(packageJson)
+  pkg.name = projectName
+  pkg.author = ""
+  pkg.description = ""
+  pkg.licesnse = ""
+  pkg.version = "0.1.0"
+  await writeFile(packagePath, JSON.stringify(pkg, null, 2))
 }
 
 main().catch(console.error)
