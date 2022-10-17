@@ -3,10 +3,10 @@
  * initialising a new MetaliQ solution.
  * This script is the main entry point.
  *
- * Normally this is initiated with the command:
+ * Normally this is run in a new, empty directory with the command:
  *
  * ```sh
- * pnpm init @metaliq/solution
+ * pnpm create @metaliq/solution
  * ```
  *
  * It initialises a MetaliQ solution consisting of:
@@ -27,7 +27,7 @@
  * It can be re-launched again at any time with the command:
  *
  * ```
- * metaliq run
+ * pnpm start
  * ```
  *
  * This starts the sample full-stack web application running locally,
@@ -51,10 +51,9 @@ import { cp, readFile, writeFile, readdir } from "fs/promises"
 import { cwd } from "process"
 import { resolve } from "path"
 import { templateUrl } from "@metaliq/template"
-import { exec } from "child_process"
-import { promisify } from "util"
+import { execaCommand } from "execa"
 
-const pExec = promisify(exec)
+const exec = (command: string) => execaCommand(command, { stdio: "inherit" })
 
 const main = async () => {
 
@@ -70,10 +69,10 @@ const main = async () => {
 
   // Copy template files to new project
   const templateDir = resolve(new URL(".", templateUrl()).pathname, "..") + "/"
-  const excludeDirs = ["bin", "node_modules", ".idea"]
+  const exclude = ["bin", "node_modules", ".idea", "tsconfig.tsbuildinfo"]
   await cp(templateDir, projectDir, {
     filter (source: string, destination: string): boolean {
-      for (const dir of excludeDirs) {
+      for (const dir of exclude) {
         if (source.match(new RegExp(`${templateDir}${dir}`))) return false
       }
       return true
@@ -100,9 +99,10 @@ const main = async () => {
   await writeFile(packagePath, JSON.stringify(pkg, null, 2))
 
   // Install and run
-  await pExec("pnpm install --prefer-offline")
-  await pExec("pnpm start")
-
+  if (pkg.dependencies.metaliq !== "workspace:*") { // Only install the prepared and published template
+    await exec("pnpm install --prefer-offline")
+    await exec("pnpm start")
+  }
 }
 
 main().catch(console.error)
