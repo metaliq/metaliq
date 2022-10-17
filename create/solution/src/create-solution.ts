@@ -51,6 +51,10 @@ import { cp, readFile, writeFile, readdir } from "fs/promises"
 import { cwd } from "process"
 import { resolve } from "path"
 import { templateUrl } from "@metaliq/template"
+import { exec } from "child_process"
+import { promisify } from "util"
+
+const pExec = promisify(exec)
 
 const main = async () => {
 
@@ -94,6 +98,11 @@ const main = async () => {
   pkg.licesnse = ""
   pkg.version = "0.1.0"
   await writeFile(packagePath, JSON.stringify(pkg, null, 2))
+
+  // Install and run
+  await pExec("pnpm install --prefer-offline")
+  await pExec("pnpm start")
+
 }
 
 main().catch(console.error)

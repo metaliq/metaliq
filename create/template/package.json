@@ -5,7 +5,9 @@
   "main": "bin/specs.js",
   "types": "bin/specs.d.ts",
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "start": "metaliq run"
+  },
   "author": "",
   "license": "",
   "dependencies": {
