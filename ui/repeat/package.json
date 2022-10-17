@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/repeat",
   "description": "Repeat view and controls for MetaliQ",
-  "version": "1.0.0-beta.21",
+  "version": "1.0.0-beta.22",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/presentation": "workspace:*",
