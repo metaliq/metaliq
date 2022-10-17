@@ -2,7 +2,7 @@
   "name": "@metaliq/create-solution",
   "description": "Create a new MetaliQ solution",
   "author": "tim@klaud.haus",
-  "version": "1.0.0-beta.15",
+  "version": "1.0.0-beta.16",
   "dependencies": {
     "@metaliq/template": "workspace:*"
   },
