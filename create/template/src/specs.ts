@@ -5,6 +5,8 @@ export { labelPath } from "@metaliq/terminology"
 export { validate } from "@metaliq/validation"
 export { view } from "@metaliq/presentation"
 
+export const templateUrl = () => import.meta.url
+
 export type Package = {
   name: string
   description: string

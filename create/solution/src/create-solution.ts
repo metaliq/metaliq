@@ -49,13 +49,13 @@
 import { URL } from "url"
 import { cp } from "fs/promises"
 import { cwd } from "process"
-import { join, resolve } from "path"
+import { resolve } from "path"
+import { templateUrl } from "@metaliq/template"
 
 const main = async () => {
   console.log("Creating MetaliQ solution")
 
-  const createSolutionDir = resolve(new URL(".", import.meta.url).pathname, "..")
-  const templateDir = join(createSolutionDir, "node_modules/@metaliq/template/")
+  const templateDir = resolve(new URL(".", templateUrl()).pathname, "..") + "/"
   const excludeDirs = ["bin", "node_modules", ".idea"]
 
   await cp(templateDir, cwd(), {

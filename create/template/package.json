@@ -2,6 +2,8 @@
   "name": "@metaliq/template",
   "version": "0.1.0",
   "type": "module",
+  "main": "bin/specs.js",
+  "types": "bin/specs.d.ts",
   "description": "",
   "scripts": {},
   "author": "",
