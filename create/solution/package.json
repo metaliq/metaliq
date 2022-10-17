@@ -12,8 +12,10 @@
   "license": "MIT",
   "main": "lib/create-solution.js",
   "repository": "https://github.com/metaliq/metaliq",
+  "bin": {
+    "create-solution": "./bin/create-solution.js"
+  },
   "scripts": {
-    "create-solution": "./lib/create-solution.js",
     "test-local": "cd ../../../new-solution && node ../metaliq/create/solution/lib/create-solution.js"
   },
   "type": "module",
