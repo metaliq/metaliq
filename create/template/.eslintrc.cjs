@@ -1,17 +1,8 @@
-const { readdirSync } = require("fs")
-
-const topLevel = ["cli", "test"]
-const containers = ["core", "create", "policies", "targets", "ui"]
-const nextLevel = containers.flatMap(c => readdirSync(c).map(p => `${c}/${p}`))
-
-const packages = [...topLevel, ...nextLevel]
-
 module.exports = {
   extends: "standard-with-typescript",
   parserOptions: {
-    project: packages.map(p => `${p}/tsconfig.json`)
+    project: "./tsconfig.json"
   },
-  ignorePatterns: [ "**/*.js", "**/*.cjs" ],
   // Add specific overrides to tweak StandardJS defaults to match our usage
   rules: {
     // We prefer double quoted strings ...
@@ -50,8 +41,6 @@ module.exports = {
     // Prevent this check which reports obj[key].toString as being [object Object]
     "@typescript-eslint/no-base-to-string": "off",
     // Specifically turned off for MetaliQ, as we use namespaced interface merging to work around lack of HKTs
-    "@typescript-eslint/no-namespace": "off",
-    // Allow more flexibility around ternary operator
-    "multiline-ternary": "off"
+    "@typescript-eslint/no-namespace": "off"
   }
 }

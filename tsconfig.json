@@ -41,6 +41,8 @@
     { "path": "targets/graphql-server"},
 
     { "path": "cli"},
-    { "path": "test" }
+    { "path": "test" },
+    { "path": "create/template" },
+    { "path": "create/solution" }
   ]
 }

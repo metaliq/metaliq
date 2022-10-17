@@ -1,17 +1,21 @@
 {
-  "name": "create-solution",
+  "name": "@metaliq/create-solution",
   "description": "Create a new MetaliQ solution",
   "author": "tim@klaud.haus",
   "version": "1.0.0-beta.15",
-  "dependencies": {},
+  "dependencies": {
+    "@metaliq/template": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.7.3"
   },
   "license": "MIT",
-  "main": "lib/application.js",
+  "main": "lib/create-solution.js",
   "repository": "https://github.com/metaliq/metaliq",
-  "scripts": {},
+  "scripts": {
+    "create-solution": "./lib/create-solution.js",
+    "test-local": "cd ../../../new-solution && node ../metaliq/create/solution/lib/create-solution.js"
+  },
   "type": "module",
-  "types": "lib/application.d.ts"
-
+  "types": "lib/create-solution.d.ts"
 }

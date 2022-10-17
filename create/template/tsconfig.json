@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2019",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "outDir": "./bin",
+    "rootDir": "./src",
+    "moduleResolution": "Node"
+  },
+  "include": ["./src/**/*"]
+}

@@ -1,0 +1,6 @@
+/.idea/
+/node_modules/
+/prod/
+/bin/
+/src/gen/
+pnpm-lock.yaml

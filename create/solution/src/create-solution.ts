@@ -45,3 +45,28 @@
  * source code directory, and serves as a starting point
  * from which to evolve new solutions.
  */
+
+import { URL } from "url"
+import { cp } from "fs/promises"
+import { cwd } from "process"
+import { join, resolve } from "path"
+
+const main = async () => {
+  console.log("Creating MetaliQ solution")
+
+  const createSolutionDir = resolve(new URL(".", import.meta.url).pathname, "..")
+  const templateDir = join(createSolutionDir, "node_modules/@metaliq/template/")
+  const excludeDirs = ["bin", "node_modules", ".idea"]
+
+  await cp(templateDir, cwd(), {
+    filter (source: string, destination: string): boolean {
+      for (const dir of excludeDirs) {
+        if (source.match(new RegExp(`/@metaliq/template/${dir}`))) return false
+      }
+      return true
+    },
+    recursive: true
+  })
+}
+
+main().catch(console.error)

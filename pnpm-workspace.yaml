@@ -5,3 +5,4 @@ packages:
   - "targets/*"
   - "cli"
   - "test"
+  - "create/*"

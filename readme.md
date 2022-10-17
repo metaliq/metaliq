@@ -4,15 +4,31 @@
 
 ## The MetaliQ Platform
 
-MetaliQ is a platform for delivering online solutions as model-driven, policy-based, composable, runnable specifications.
+MetaliQ is a platform for delivering digital business solutions as model-driven, policy-based, composable, runnable specifications.
 
 The `metaliq` library and associated libraries in the `@metaliq` organisation provide a free, open-source framework for defining model-driven, policy-based specifications using TypeScript. It can be used independently to develop and build complete solutions. It is provided with ready-made policies for data validation and visualisation, interactive forms and more, and can be extended through custom policies to support any type of solution.
 
 ### Meta Systems
 
-MetaliQ was created at Klaudhaus, and its approach of building solutions from policies, schemas and specifications comes from a consideration of how digital systems reflect organisational understanding, described in detail in a white paper called [The K-Factor](https://klaud.haus/k-factor).
+MetaliQ was created at Klaudhaus, and its approach of building solutions from policies, schemas and specifications comes from a consideration of how digital systems reflect organisational understanding, described in detail in a white paper called [Introducing the K-Factor](https://klaud.haus/k-factor).
 
 The MetaliQ library provides structures and functions for defining specifications which extend a solution's underlying data model using terms that are provided by various policies.
+
+### Get Started
+
+You can create a new MetaliQ solution with the command:
+
+```sh
+pnpm init @metaliq/solution
+```
+
+Note that there are some subtle differences between NPM clients such as `npm`, `yarn ` and `pnpm` (our preferred option). We aim to confidently support them all going forward, but we are currently prioritising focus on MetaliQ platform features and capabilities, so we recommend using `pnpm` when working with MetaliQ.
+
+The `init` command above will scaffold a new solution and launch a sample full-stack application that presents an interactive project configuration interface and describes further platform features. This application along with its source code is accessible in the `src` folder and can be used as a guide to authoring front and back end specifications.
+
+
+
+
 
 #### Data Model
 
