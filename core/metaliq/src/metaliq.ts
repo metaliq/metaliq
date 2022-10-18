@@ -345,7 +345,7 @@ export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, 
  * Given either a meta info object or its underlying data value (but not a primitive),
  * return a reference to the value object for the parent.
  */
-export const parent = <T extends object, P = any> (v$: T | HasMeta$<T, P>) => {
+export const parent = <T extends object, P = any> (v$: T | HasMeta$<T, P>): P => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
   return $?.parent?.$.value
 }
