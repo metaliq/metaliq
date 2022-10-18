@@ -44,5 +44,6 @@
     { "path": "test" },
     { "path": "create/template" },
     { "path": "create/solution" }
-  ]
+  ],
+  "compileOnSave": false
 }

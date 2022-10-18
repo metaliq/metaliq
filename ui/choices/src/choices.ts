@@ -4,29 +4,63 @@ import { html } from "lit"
 import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { Meta$ } from "metaliq"
+import { Meta$, MetaFn } from "metaliq"
 import { fieldClasses, fieldError, fieldLabel, isDisabled } from "@metaliq/forms"
 import { getModuleDefault } from "@metaliq/util/lib/import"
-import { remove } from "@metaliq/util"
+import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
 
-export type SelectorOptions = {
+export type SelectorOptions<P = any> = {
   classes?: string
   type?: "text" | "select-one" | "select-multiple"
-  choices?: ChoicesModule.Choice[]
+  choices?: ChoicesModule.Choice[] | MetaFn<string, P, ChoicesModule.Choice[]>
   searchText?: string
   multiple?: boolean
-  sort?: boolean // Defaults to true, set to false to prevent alpha-sorting
+  sort?: boolean // Defaults to true, assign false to prevent alpha-sorting
+}
+
+interface SelectorState {
+  choices?: ChoicesModule.Choice[]
+  choicesJs?: any
+}
+
+declare module "metaliq" {
+  namespace Policy {
+    interface State<T, P> extends SelectorState {
+      this?: State<T, P>
+    }
+  }
 }
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
-export const selector = (options: SelectorOptions = {}): MetaView<any> => (v, $) => {
-  options = {
-    sort: true,
-    ...options
+export const selector = <P>(options: SelectorOptions<P> = {}): MetaView<string, P> => (v, $) => {
+  options = { sort: true, ...options }
+
+  const resetChoices = (on: unknown = $.state.choicesJs) => {
+    if (!on) return
+    const choicesJs = on as {
+      setChoices: (p: any[], v?: string, l?: string, r?: boolean) => void
+      setChoiceByValue: (v: string) => void
+      clearChoices: () => void
+      clearStore: () => void
+    }
+    choicesJs.clearStore()
+    choicesJs.setChoices($.state.choices, "value", "label", true)
+    $.value = ""
   }
+
   const disabled = isDisabled($)
+
+  if (typeof options.choices === "function") {
+    const newChoices = options.choices(v, $) || []
+    if (!equals(newChoices, $.state.choices)) {
+      $.state.choices = newChoices
+      resetChoices()
+    }
+  } else {
+    $.state.choices = options.choices
+  }
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
@@ -35,11 +69,11 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (v, $)
     })}">
       ${guard($, () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
-        options.choices.forEach(choice => { delete choice.selected })
+        $.state.choices.forEach(choice => { delete choice.selected })
         if (hasValue($)) {
           const values = Array.isArray(v) ? v : [v]
           for (const val of values) {
-            const selected = options.choices.find(c => c.value === val)
+            const selected = $.state.choices.find(c => c.value === val)
             if (!selected) {
               console.warn(`Invalid selector value for ${$.key} : ${v}`)
             } else {
@@ -50,16 +84,14 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (v, $)
         setTimeout(
           () => {
             // eslint-disable-next-line no-new -- No need to hold reference to Choices
-            new Choices(`#${id}`, {
+            $.state.choicesJs = new Choices(`#${id}`, {
               searchPlaceholderValue: options.searchText ?? "",
               allowHTML: true,
               removeItems: true,
               removeItemButton: true,
               shouldSort: !!options.sort,
               callbackOnInit: function () {
-                // Initialise choices here instead of in options to prevent problem with non-sorted list "selecting" placeholder.
-                const choicesJs = <unknown> this as { setChoices: (p: any[]) => void }
-                choicesJs.setChoices(options.choices)
+                resetChoices(this)
               }
             })
           },
@@ -81,7 +113,7 @@ export const selector = (options: SelectorOptions = {}): MetaView<any> => (v, $)
             </select>
           `
       })}
-      ${fieldLabel()(v, $)}
+      ${fieldLabel()(v, $ as Meta$<unknown, any>)}
       ${fieldError(v, $)}
     </label>
 `
@@ -105,7 +137,7 @@ const state = {
   proposedChange: null as ProposedChange
 }
 
-const onChange = (options: SelectorOptions) => ($: Meta$<any>, event: Event) => {
+const onChange = (options: SelectorOptions<any>) => ($: Meta$<any>, event: Event) => {
   if (state.proposedChange?.type === "Add") {
     if (options.multiple) {
       $.value = $.value || []
@@ -124,14 +156,14 @@ const onChange = (options: SelectorOptions) => ($: Meta$<any>, event: Event) => 
   state.proposedChange = null
 }
 
-const onAddItem = (options: SelectorOptions) => ($: Meta$<any>, event: { detail: { value: string } }) => {
+const onAddItem = (options: SelectorOptions<any>) => ($: Meta$<any>, event: { detail: { value: string } }) => {
   state.proposedChange = {
     type: "Add",
     value: event?.detail?.value
   }
 }
 
-const onRemoveItem = (options: SelectorOptions) => ($: Meta$<any>, event: { detail: { value: string } }) => {
+const onRemoveItem = (options: SelectorOptions<any>) => ($: Meta$<any>, event: { detail: { value: string } }) => {
   state.proposedChange = {
     type: "Remove",
     value: event?.detail?.value
