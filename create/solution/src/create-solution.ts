@@ -52,6 +52,7 @@ import { cwd } from "process"
 import { resolve } from "path"
 import { templateUrl } from "@metaliq/template"
 import { execaCommand } from "execa"
+import { dedent } from "ts-dedent"
 
 const exec = (command: string) => execaCommand(command, { stdio: "inherit" })
 
@@ -79,6 +80,19 @@ const main = async () => {
     },
     recursive: true
   })
+
+  // Add .gitignore (filtered out by NPM)
+  const gitignore = dedent`
+    /.idea/
+    /.vscode/
+    /node_modules/
+    /prod/
+    /bin/
+    /src/gen/
+    pnpm-lock.yaml
+  `
+  const gitignorePath = resolve(projectDir, ".gitignore")
+  await writeFile(gitignorePath, gitignore)
 
   // Remove project extension from tsconfig
   const tsConfigPath = resolve(projectDir, "tsconfig.json")
