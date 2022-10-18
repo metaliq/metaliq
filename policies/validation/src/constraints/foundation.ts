@@ -4,7 +4,7 @@ import { child$, FieldKey, m$, MetaFn } from "metaliq"
 /**
  * Checks equality with the given value.
  */
-export const equals = (equalTo: any, msg?: string): Validator<any> => value =>
+export const equalTo = (equalTo: any, msg?: string): Validator<any> => value =>
   value === equalTo || msg || "Wrong value"
 
 /**
