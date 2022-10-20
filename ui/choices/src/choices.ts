@@ -10,18 +10,49 @@ import { getModuleDefault } from "@metaliq/util/lib/import"
 import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
 
+export { Choice } from "choices.js"
+
+/**
+ * Can't get proper type references from library due to incorrect ES definitions.
+ * Mimic here.
+ */
+type ChoicesJs = {
+  setChoices: (p: any[], v?: string, l?: string, r?: boolean) => void
+  setChoiceByValue: (v: string) => void
+  clearChoices: () => void
+  clearStore: () => void
+}
+
 export type SelectorOptions<P = any> = {
   classes?: string
   type?: "text" | "select-one" | "select-multiple"
+
+  /**
+   * Either a static array of choices or a function that returns choices.
+   * This allows dynamic choices based on values elsewhere in the data graph.
+   * If choices need to be dynamically updated on search key input, use
+   * searchChoices instead. Using both together is not supported.
+   */
   choices?: ChoicesModule.Choice[] | MetaFn<string, P, ChoicesModule.Choice[]>
+
+  /**
+   * A function (possibly asynchronous) that returns choices based on the
+   * current value in the search input text.
+   */
+  searchFn?: SelectorSearchFn<P>
+
   searchText?: string
   multiple?: boolean
   sort?: boolean // Defaults to true, assign false to prevent alpha-sorting
 }
 
+export type SelectorSearchFn<P> = (
+  searchText: string, parent$: Meta$<P>
+) => ChoicesModule.Choice[] | Promise<ChoicesModule.Choice[]>
+
 interface SelectorState {
   choices?: ChoicesModule.Choice[]
-  choicesJs?: any
+  choicesJs?: ChoicesJs
 }
 
 declare module "metaliq" {
@@ -37,14 +68,8 @@ const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof Choice
 export const selector = <P>(options: SelectorOptions<P> = {}): MetaView<string, P> => (v, $) => {
   options = { sort: true, ...options }
 
-  const resetChoices = (on: unknown = $.state.choicesJs) => {
-    if (!on) return
-    const choicesJs = on as {
-      setChoices: (p: any[], v?: string, l?: string, r?: boolean) => void
-      setChoiceByValue: (v: string) => void
-      clearChoices: () => void
-      clearStore: () => void
-    }
+  const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
+    if (!choicesJs) return
     choicesJs.clearStore()
     choicesJs.setChoices($.state.choices, "value", "label", true)
     $.value = ""
@@ -58,9 +83,12 @@ export const selector = <P>(options: SelectorOptions<P> = {}): MetaView<string, 
       $.state.choices = newChoices
       resetChoices()
     }
-  } else {
+  } else if (Array.isArray(options.choices)) {
     $.state.choices = options.choices
+  } else {
+    $.state.choices = []
   }
+
   return html`
     <label class="mq-field mq-select-field ${classMap({
       [options.classes]: !!options.classes,
@@ -83,17 +111,29 @@ export const selector = <P>(options: SelectorOptions<P> = {}): MetaView<string, 
         }
         setTimeout(
           () => {
+            const el = document.querySelector(`#${id}`)
             // eslint-disable-next-line no-new -- No need to hold reference to Choices
-            $.state.choicesJs = new Choices(`#${id}`, {
+            $.state.choicesJs = new Choices(el, {
               searchPlaceholderValue: options.searchText ?? "",
               allowHTML: true,
               removeItems: true,
               removeItemButton: true,
               shouldSort: !!options.sort,
               callbackOnInit: function () {
-                resetChoices(this)
+                resetChoices(<unknown> this as ChoicesJs)
               }
             })
+
+            if (typeof options.searchFn === "function") {
+              const asyncListener = async (e: any) => {
+                // TODO: Debounce
+                const searchText = e.detail.value
+                $.state.choices = await options.searchFn(searchText, $.parent.$)
+                resetChoices()
+              }
+
+              el.addEventListener("search", e => { asyncListener(e).catch(console.error) })
+            }
           },
           250
         )
