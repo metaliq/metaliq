@@ -1,0 +1,12 @@
+schema: ./gql/schema.gql
+documents: ./gql/operations.gql
+generates:
+  ./src/gen/graphql-types.ts:
+    plugins:
+      - add:
+          content: '/* eslint-disable */'
+      - typescript
+      - typescript-operations
+  ./src/gen/graphql-operations.ts:
+    plugins:
+      - graphqlex-codegen
