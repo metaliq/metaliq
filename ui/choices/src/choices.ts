@@ -23,7 +23,7 @@ type ChoicesJs = {
   clearStore: () => void
 }
 
-export type SelectorOptions<P = any> = {
+export type SelectorOptions<T, P = any> = {
   classes?: string
   type?: "text" | "select-one" | "select-multiple"
 
@@ -33,7 +33,7 @@ export type SelectorOptions<P = any> = {
    * If choices need to be dynamically updated on search key input, use
    * searchChoices instead. Using both together is not supported.
    */
-  choices?: ChoicesModule.Choice[] | MetaFn<string, P, ChoicesModule.Choice[]>
+  choices?: ChoicesModule.Choice[] | MetaFn<T, P, ChoicesModule.Choice[]>
 
   /**
    * A function (possibly asynchronous) that returns choices based on the
@@ -65,14 +65,14 @@ declare module "metaliq" {
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
-export const selector = <P>(options: SelectorOptions<P> = {}): MetaView<string, P> => (v, $) => {
+export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
   options = { sort: true, ...options }
 
   const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
     if (!choicesJs) return
     choicesJs.clearStore()
     choicesJs.setChoices($.state.choices, "value", "label", true)
-    $.value = ""
+    $.value = null
   }
 
   const disabled = isDisabled($)

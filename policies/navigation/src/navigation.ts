@@ -3,7 +3,7 @@ import { child$, FieldKey, fieldKeys, fns, getAncestorTerm, m$, Meta$, MetaFn, m
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 
-export { route } from "./router"
+export * from "./router"
 
 export { ApplicationSpec } from "@metaliq/application"
 
@@ -59,22 +59,35 @@ declare module "metaliq" {
   }
 }
 
+/**
+ * Policy-level state store.
+ */
 type NavigationPolicy = {
-  routeMetas: Map<Route<object>, Meta$<any>>
+  /**
+   * A map of routes to their associated Meta$.
+   */
+  route$s: Map<Route<object>, Meta$<any>>
+
+  /**
+   * The selected route's Meta$.
+   */
   selectedRoute$: Meta$<any>
 }
 const policy: NavigationPolicy = {
-  routeMetas: new Map(),
+  route$s: new Map(),
   selectedRoute$: null
 }
 
-export const routeMeta = (route: Route<object>) => policy.routeMetas.get(route)
+/**
+ * Obtain the Meta$ associated with the given route.
+ */
+export const route$ = (route: Route<object>) => policy.route$s.get(route)
 
 metaSetups.push($ => {
   const spec = $.spec
   // If this spec has a route, initialise any route handling functions
   if (spec?.route) {
-    policy.routeMetas.set(spec.route, $)
+    policy.route$s.set(spec.route, $)
     if (typeof spec.onLeave === "function") {
       spec.route.onLeave = async () => {
         const result = await spec.onLeave($.value, $)
@@ -111,11 +124,11 @@ metaSetups.push($ => {
     ) {
       history.pushState(null, null, spec.urlPath)
     }
-    if (policy.routeMetas.size) {
+    if (policy.route$s.size) {
       $.spec.bootstrap = fns([$.spec.bootstrap, () => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
-          Array.from(policy.routeMetas.keys())
+          Array.from(policy.route$s.keys())
         ).start()
         router.catch(console.error)
       }])
@@ -127,18 +140,18 @@ metaSetups.push($ => {
  * Convenience method to map all nodes of a navigation model
  * to the same underlying logical model.
  */
-export const mapNavModel = <T, M> (model: M) => (spec?: MetaSpec<T>) => {
-  spec = spec || this as MetaSpec<T>
-  const navModel = {} as T
-  const keys = fieldKeys(spec)
+export const mapNavModel = <M, N> (model: M, navSpec?: MetaSpec<N>) => {
+  navSpec = navSpec || this as MetaSpec<N>
+  const navModel = {} as N
+  const keys = fieldKeys(navSpec)
   for (const key of keys) {
-    const childSpec = spec.fields?.[key] as unknown as MetaSpec<unknown>
+    const childSpec = navSpec.fields?.[key] as unknown as MetaSpec<unknown>
     const childKeys = fieldKeys(childSpec)
     // Continue recursing if there are nested-level routes
     const grandChildSpecs = childKeys.map(ck => childSpec.fields[ck]) as Array<MetaSpec<unknown>>
     const hasGrandChildRoutes = grandChildSpecs.some(s => s.route)
     const keyModel = hasGrandChildRoutes
-      ? mapNavModel(model)(childSpec)
+      ? mapNavModel(model, childSpec)
       : model
     Object.assign(navModel, { [key]: keyModel })
   }
