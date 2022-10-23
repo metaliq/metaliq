@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/test",
   "description": "Framework-agnostic state management",
-  "version": "1.0.0-beta.23",
+  "version": "1.0.0-beta.24",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
