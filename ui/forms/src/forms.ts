@@ -2,10 +2,10 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { FieldKey, fieldKeys, HasMeta$, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { MetaView, view, ViewResult } from "@metaliq/presentation"
+import { MetaView, MetaViewTerm, view, ViewResult } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 
 export { expander } from "@metaliq/elements"
@@ -56,6 +56,16 @@ export const repeatView: MetaView<any[]> = (v, $) => {
       return itemView($.value, $)
     })
   } else return ""
+}
+
+/**
+ * Display a field for the given parent and key, optionally with a specific view.
+ */
+export const field = <P, K extends FieldKey<P>> (
+  parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
+) => {
+  const field$ = child$(parent, key)
+  return view(fieldView || field$.spec.view || defaultFieldView(field$))(field$.value, field$)
 }
 
 /**

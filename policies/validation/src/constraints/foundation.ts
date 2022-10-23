@@ -1,5 +1,5 @@
 import { Constraint, Validator } from "../validation"
-import { child$, FieldKey, m$, MetaFn } from "metaliq"
+import { $fn, child$, FieldKey, m$, MetaFn } from "metaliq"
 
 /**
  * Checks equality with the given value.
@@ -37,8 +37,8 @@ export const notBlank = (msg?: string): Validator<string> => value =>
 export const blankOr = (other: Validator<string>): Validator<string> => (value, meta) =>
   !value || other(value, meta)
 
-export const siblingsBlankOr = <T, P>(siblings: Array<FieldKey<P>>, other: Validator<T>): Validator<T, P> => (v, $ = m$(v)) =>
-  !siblings.map(key => child$($.parent.$, key).value).filter(Boolean).length || other(v, $)
+export const siblingsBlankOr = <T, P>(siblings: Array<FieldKey<P>>, other: Validator<T>): Validator<T, P> => $fn((v, $) =>
+  !siblings.map(key => child$($.parent.$, key).value).filter(Boolean).length || other(v, $))
 
 export const matchRegex = (regex: RegExp, msg?: string): Validator<string> => value =>
   !!value.match(regex) || msg || "Does not match required pattern"
@@ -56,13 +56,13 @@ export const max: Constraint<number> = (maxVal: number, msg?: string) => value =
 /**
  * A logical AND operator for validators.
  */
-export const allOf = <T, P>(...validators: Array<Validator<T>>): Validator<T, P> => (v, $ = m$(v)) => {
+export const allOf = <T, P>(...validators: Array<Validator<T>>): Validator<T, P> => $fn((v, $) => {
   for (const validator of validators) {
     const result = validator(v, $)
     if (result === false || typeof result === "string") return result
   }
   return true
-}
+})
 
 /**
  * A logical OR operator for validators.

@@ -379,6 +379,49 @@ export type MetaFn<Type, Parent = any, Result = any> =
   ) =>
   Result
 
+/**
+ * Sanitise the arguments to a MetaFn.
+ * Use at the top of any MetaFn like:
+ *
+ * ```
+ * const myMetaFn: MetaFn<any> = (v, $) => {
+ *   [v, $] = $args(v, $)
+ * }
+ * ```
+ *
+ * (There is a convenience method called `$fn` that applies this transform to any MetaFn.)
+ *
+ * Normally a MetaFn is called with a data value and its associated meta-information,
+ * like `myMetaFn(value, $)`.
+ *
+ * However, if a MetaFn uses $args as shown above, it guards against cases
+ * where it has been called with its data value only,
+ * (in which case its meta information will be extracted and assigned to local $,
+ * does not work for primitive data types)
+ * or by passing the meta-information as the only parameter
+ * (in which case its value will be extracted and v and $ set accordingly).
+ */
+export const $args = <Type, Parent> (value: Type, $?: Meta$<Type, Parent>, event?: Event): [ Type, Meta$<Type, Parent> ] => {
+  const maybeValue = value as any
+  if (!$ && typeof maybeValue === "object") {
+    if (maybeValue.$) {
+      $ = maybeValue.$
+    } else if (["value", "spec", "meta"].every(key => !!maybeValue[key])) {
+      $ = maybeValue
+      value = $.value
+    }
+  }
+  return [value, $]
+}
+
+/**
+ * Convenient method of wrapping a MetaFn and adding the behaviour of $args.
+ */
+export const $fn = <Type, Parent> (fn: MetaFn<Type, Parent>): MetaFn<Type, Parent> => (v, $, e) => {
+  [v, $] = $args(v, $)
+  return fn(v, $, e)
+}
+
 export type SpecKey = keyof Policy.Specification<any>
 export type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
 export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
@@ -393,11 +436,11 @@ export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "fun
  * either a particular type or a MetaFn that returns that type.
  */
 export const getDynamicTerm = <K extends SpecKey>(key: K): MetaFn<any, any, DerivedSpecValue<K>> =>
-  (v, $ = m$(v)) => {
+  $fn((v, $) => {
     const specValue = $.spec[key]
     if (isMetaFn(specValue)) return specValue(v, $)
     else return specValue
-  }
+  })
 
 /**
  * Return the value of a spec term by searching the
@@ -407,11 +450,11 @@ export const getDynamicTerm = <K extends SpecKey>(key: K): MetaFn<any, any, Deri
 export const getAncestorTerm = <K extends SpecKey>(
   key: K, dynamic: boolean = false
 ): MetaFn<any, any, SpecValue<K>> =>
-    (v, $ = m$(v)) => {
+    $fn((v, $) => {
       while ($ && typeof $.spec[key] === "undefined") $ = $.parent?.$
-      const termValue = $.spec[key]
+      const termValue = $?.spec[key]
       return termValue
-    }
+    })
 
 /**
  * Combine an array of meta functions into a single meta function

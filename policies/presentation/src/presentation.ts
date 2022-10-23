@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { child$, FieldKey, FieldType, getDynamicTerm, m$, MetaFn, metaSetups } from "metaliq"
+import { $fn, child$, FieldKey, FieldType, getDynamicTerm, MetaFn, metaSetups } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationSpec } from "@metaliq/application"
@@ -123,7 +123,7 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
 export function view <T, P = any> (
   metaViewTerm?: MetaViewTerm<T, P>
 ): MetaView<T, P> {
-  return (v, $ = m$(v)) => {
+  return $fn((v, $) => {
     if (typeof (v ?? false) === "object") {
       // Establish correct value/meta link prior to viewing
       Object.assign(v, { $ })
@@ -140,15 +140,5 @@ export function view <T, P = any> (
         return $.state.hidden ? "" : metaViewTerm(v, $)
       }
     }
-  }
-}
-
-/**
- * Display a field for the given parent and key, optionally with a specific view.
- */
-export const field = <P, K extends FieldKey<P>> (
-  parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
-) => {
-  const field$ = child$(parent, key)
-  return view(fieldView)(field$.value, field$)
+  })
 }

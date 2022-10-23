@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { child$, FieldKey, fieldKeys, fns, getAncestorTerm, m$, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
+import { $fn, child$, FieldKey, fieldKeys, fns, getAncestorTerm, m$, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 
@@ -169,7 +169,7 @@ export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
 /**
  * Recursively set the navigation meta state.
  */
-export const setNavSelection: MetaFn<any> = (v, $ = m$(v)) => {
+export const setNavSelection: MetaFn<any> = $fn((v, $) => {
   let recursing = false
 
   const recurse: MetaFn<any> = (v, $) => {
@@ -187,16 +187,18 @@ export const setNavSelection: MetaFn<any> = (v, $ = m$(v)) => {
   }
 
   recurse(v, $)
-}
+})
 
 /**
  * Go to the given nav node's route if it has one,
  * otherwise find and go to its first child route.
- * This will in turn trigger any onNavigation, such as `selectMenuItem`.
  */
 export const goNavRoute = (item$: Meta$<any>) => {
-  const route = getAncestorTerm("route")(item$.value, item$)
-  route?.go()
+  while (item$ && !item$.spec.route) {
+    const firstChildKey = fieldKeys(item$.spec)[0]
+    item$ = child$(item$, firstChildKey)
+  }
+  item$.spec.route?.go()
 }
 
 export const freeNavigation: NavigationType = {
