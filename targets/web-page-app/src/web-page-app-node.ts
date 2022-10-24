@@ -1,5 +1,6 @@
 import { dirname, join, extname } from "path"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
+import { createServer, InlineConfig, ViteDevServer, Plugin } from "vite"
 import mime from "mime-types"
 import { copy, pathExists, remove } from "fs-extra"
 import CleanCSS from "clean-css"
@@ -10,6 +11,9 @@ import { page } from "@metaliq/publication/lib/page"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
+import { createFsFromVolume, fs as memfs, vol } from "memfs"
+import { ufs } from "unionfs"
+import * as fs from "fs"
 
 export { TerminologySpec } from "@metaliq/terminology"
 
@@ -21,66 +25,103 @@ export const webPageAppRunner = (
   config: WebPageAppConfig = {}
 ): Runner => async ({ specName, simplePath, spec }) => {
   const port = config.run?.port || 8400
-  console.log(`Starting MetaliQ SPA server on port ${port}`)
+  console.log(`Starting MetaliQ web page app development server for spec: ${spec.label || "No label specified"}`)
 
-  const devServerConfig: DevServerConfig = {
-    rootDir: process.cwd(),
-    port,
-    nodeResolve: {
-      browser: true
-    },
-    open: true,
-    watch: true,
-    middleware: [
-      (ctx, next) => {
-        // Manually adding local version of @web/dev-server-core/dist/middleware/historyApiFallbackMiddleware
-        // That module export is not expose in the `exports` of package.json for @web/dev-server-core
-        // And we can't "just" enable it by configuration because there's no built-in way to get it to run
-        // before the index page generation middleware
-        if (ctx.method !== "GET" || extname(ctx.path)) {
-          // not a GET, or a direct file request
-          return next()
-        }
+  const vrtPath = join(process.cwd(), "vrt")
+  const vrtVol = Volume.fromJSON({
+    [vrtPath]: "Hello"
+  })
+  ufs.use(fs).use(createFsFromVolume(vrtVol))
 
-        if (!ctx.headers || typeof ctx.headers.accept !== "string") {
-          return next()
-        }
-
-        if (ctx.headers.accept.includes("application/json")) {
-          return next()
-        }
-
-        if (!(ctx.headers.accept.includes("text/html") || ctx.headers.accept.includes("*/*"))) {
-          return next()
-        }
-
-        if (!ctx.url.startsWith("/")) {
-          return next()
-        }
-
-        ctx.url = "/index.html"
-        return next()
-      },
-      async (ctx, next) => {
-        if (ctx.path === "/bin/index.js") {
-          ctx.body = indexJs(specName, simplePath)
-        } else if (ctx.path === "/" || ctx.path === "/index.html") {
+  const serveIndex: Plugin = {
+    name: "MetaliQ index.html plugin",
+    configureServer (server) {
+      server.middlewares.use("", async (req, res, next) => {
+        if (req.originalUrl === "/") {
           const { src: cssSrc } = config?.build?.css || { src: "css/index.css" }
-          ctx.body = indexHtml(config, jsSrc, cssSrc)
+          const html = indexHtml(config, jsSrc, cssSrc)
+          const transformedHtml = await server.transformIndexHtml?.(req.url, html, req.originalUrl)
+          res.end(transformedHtml)
         }
-        ctx.type = mime.lookup(ctx.path) || ""
-        return await next()
-      }
-    ]
+      })
+    },
+    transformIndexHtml (html) {
+      console.log(html)
+      return html
+    }
   }
 
-  if (server) server.stop()
-  server = await startDevServer({
-    config: devServerConfig,
-    readCliArgs: false,
-    readFileConfig: false,
-    autoExitProcess: false
-  })
+  const viteServerConfig: InlineConfig = {
+    root: process.cwd(),
+    plugins: [serveIndex],
+    server: {
+      port,
+      open: true
+    }
+  }
+
+  const viteServer = await createServer(viteServerConfig)
+  console.log(viteServer.middlewares)
+  await viteServer.listen()
+
+  // const devServerConfig: DevServerConfig = {
+  //   rootDir: process.cwd(),
+  //   port,
+  //   nodeResolve: {
+  //     browser: true
+  //   },
+  //   open: true,
+  //   watch: true,
+  //   middleware: [
+  //     (ctx, next) => {
+  //       // Manually adding local version of @web/dev-server-core/dist/middleware/historyApiFallbackMiddleware
+  //       // That module export is not expose in the `exports` of package.json for @web/dev-server-core
+  //       // And we can't "just" enable it by configuration because there's no built-in way to get it to run
+  //       // before the index page generation middleware
+  //       if (ctx.method !== "GET" || extname(ctx.path)) {
+  //         // not a GET, or a direct file request
+  //         return next()
+  //       }
+  //
+  //       if (!ctx.headers || typeof ctx.headers.accept !== "string") {
+  //         return next()
+  //       }
+  //
+  //       if (ctx.headers.accept.includes("application/json")) {
+  //         return next()
+  //       }
+  //
+  //       if (!(ctx.headers.accept.includes("text/html") || ctx.headers.accept.includes("*/*"))) {
+  //         return next()
+  //       }
+  //
+  //       if (!ctx.url.startsWith("/")) {
+  //         return next()
+  //       }
+  //
+  //       ctx.url = "/index.html"
+  //       return next()
+  //     },
+  //     async (ctx, next) => {
+  //       if (ctx.path === "/bin/index.js") {
+  //         ctx.body = indexJs(specName, simplePath)
+  //       } else if (ctx.path === "/" || ctx.path === "/index.html") {
+  //         const { src: cssSrc } = config?.build?.css || { src: "css/index.css" }
+  //         ctx.body = indexHtml(config, jsSrc, cssSrc)
+  //       }
+  //       ctx.type = mime.lookup(ctx.path) || ""
+  //       return await next()
+  //     }
+  //   ]
+  // }
+
+  // if (server) server.stop()
+  // server = await startDevServer({
+  //   config: devServerConfig,
+  //   readCliArgs: false,
+  //   readFileConfig: false,
+  //   autoExitProcess: false
+  // })
 
   return true
 }

@@ -10,9 +10,13 @@
     "@web/dev-server": "^0.1.25",
     "clean-css": "^4.2.3",
     "fs-extra": "^10.0.0",
+    "fs-monkey": "^1.0.3",
+    "memfs": "^3.4.7",
     "metaliq": "workspace:*",
     "mime-types": "^2.1.33",
-    "ts-dedent": "^2.2.0"
+    "ts-dedent": "^2.2.0",
+    "unionfs": "^4.4.0",
+    "vite": "^3.1.8"
   },
   "devDependencies": {
     "@types/clean-css": "^4.2.5",
