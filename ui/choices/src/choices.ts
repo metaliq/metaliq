@@ -72,7 +72,6 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
     if (!choicesJs) return
     choicesJs.clearStore()
     choicesJs.setChoices($.state.choices, "value", "label", true)
-    $.value = null
   }
 
   const disabled = isDisabled($)
@@ -80,6 +79,7 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
   if (typeof options.choices === "function") {
     const newChoices = options.choices(v, $) || []
     if (!equals(newChoices, $.state.choices)) {
+      if ($.state.choices) $.value = null // There was previously a different initialised choice list
       $.state.choices = newChoices
       resetChoices()
     }
