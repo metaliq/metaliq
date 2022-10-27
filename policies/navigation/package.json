@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/navigation",
   "description": "MetaliQ navigation policy",
-  "version": "1.0.0-beta.25",
+  "version": "1.0.0-beta.26",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
