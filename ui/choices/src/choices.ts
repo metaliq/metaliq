@@ -71,6 +71,18 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
   const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
     if (!choicesJs) return
     choicesJs.clearStore()
+    $.state.choices.forEach(choice => { delete choice.selected })
+    if (hasValue($)) {
+      const values = Array.isArray(v) ? v : [v]
+      for (const val of values) {
+        const selected = $.state.choices.find(c => c.value === val)
+        if (!selected) {
+          console.warn(`Invalid selector value for ${$.key} : ${v}`)
+        } else {
+          selected.selected = true
+        }
+      }
+    }
     choicesJs.setChoices($.state.choices, "value", "label", true)
   }
 
@@ -97,18 +109,6 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
     })}">
       ${guard($, () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
-        $.state.choices.forEach(choice => { delete choice.selected })
-        if (hasValue($)) {
-          const values = Array.isArray(v) ? v : [v]
-          for (const val of values) {
-            const selected = $.state.choices.find(c => c.value === val)
-            if (!selected) {
-              console.warn(`Invalid selector value for ${$.key} : ${v}`)
-            } else {
-              selected.selected = true
-            }
-          }
-        }
         setTimeout(
           () => {
             const el = document.querySelector(`#${id}`)
@@ -189,7 +189,7 @@ const onChange = (options: SelectorOptions<any>) => ($: Meta$<any>, event: Event
     if (options.multiple) {
       remove($.value, state.proposedChange.value)
     } else {
-      $.value = ""
+      $.value = null
     }
   }
   validate($)
