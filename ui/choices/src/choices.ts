@@ -89,8 +89,12 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
   const disabled = isDisabled($)
 
   if (typeof options.choices === "function") {
+    const oldChoices = JSON.parse(JSON.stringify(
+      $.state.choices || [],
+      (k, v) => ["$", "selected"].includes(k) ? undefined : v)
+    )
     const newChoices = options.choices(v, $) || []
-    if (!equals(newChoices, $.state.choices)) {
+    if (!equals(newChoices, oldChoices)) {
       if ($.state.choices) $.value = null // There was previously a different initialised choice list
       $.state.choices = newChoices
       resetChoices()
@@ -109,6 +113,7 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
     })}">
       ${guard($, () => {
         const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
+
         setTimeout(
           () => {
             const el = document.querySelector(`#${id}`)
