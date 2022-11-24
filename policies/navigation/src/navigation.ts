@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { $fn, child$, FieldKey, fieldKeys, fns, getAncestorTerm, m$, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
+import { $fn, child$, FieldKey, fieldKeys, fns, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 
@@ -94,20 +94,16 @@ metaSetups.push($ => {
         return result
       }
     }
-    spec.route.onEnter = (params) => {
-      up(async () => {
-        let routeResult
-        if (typeof spec.onEnter === "function") {
-          routeResult = await spec.onEnter($.value, $)(params)
-          if (routeResult === false) return false
-        }
-        const navType = getAncestorTerm("navType")($.value, $)
-        if (typeof navType?.onNavigate === "function") {
-          const navTypeResult = navType.onNavigate($.value, $)
-          if (navTypeResult === false) return false
-        }
-        return routeResult
-      })()
+    spec.route.onEnter = async (params) => {
+      if (typeof spec.onEnter === "function") {
+        const routeResult = await spec.onEnter($.value, $)(params)
+        if (routeResult === false) return false
+      }
+      const navType = getAncestorTerm("navType")($.value, $)
+      if (typeof navType?.onNavigate === "function") {
+        const navTypeResult = navType.onNavigate($.value, $)
+        if (navTypeResult === false) return false
+      }
     }
   }
   // If this is a nav container, set initial selection
@@ -128,7 +124,8 @@ metaSetups.push($ => {
       $.spec.bootstrap = fns([$.spec.bootstrap, () => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
-          Array.from(policy.route$s.keys())
+          Array.from(policy.route$s.keys()),
+          () => up()()
         ).start()
         router.catch(console.error)
       }])
@@ -172,7 +169,19 @@ export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
 export const setNavSelection: MetaFn<any> = $fn((v, $) => {
   let recursing = false
 
-  const recurse: MetaFn<any> = (v, $) => {
+  // Clear any lower selections
+  const recurseChildren: MetaFn<any> = (v, $) => {
+    if ($.state.nav) {
+      delete $.state.nav.selected
+    }
+    for (const key of fieldKeys($.spec)) {
+      const c$ = child$($, key)
+      recurseChildren(c$.value, c$)
+    }
+  }
+
+  // Set any upper selections
+  const recurseParent: MetaFn<any> = (v, $) => {
     const parent$ = $.parent?.$
     if (!recursing) policy.selectedRoute$ = $
     if (parent$) {
@@ -182,11 +191,12 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
         parent$.state.nav.showMenu = false
       }
       recursing = true
-      recurse(parent$.value, parent$)
+      recurseParent(parent$.value, parent$)
     }
   }
 
-  recurse(v, $)
+  recurseChildren(v, $)
+  recurseParent(v, $)
 })
 
 /**
