@@ -71,7 +71,7 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
   const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
     if (!choicesJs) return
     choicesJs.clearStore()
-    $.state.choices.forEach(choice => { delete choice.selected })
+    $.state.choices?.forEach(choice => { delete choice.selected })
     if (hasValue($)) {
       const values = Array.isArray(v) ? v : [v]
       for (const val of values) {
