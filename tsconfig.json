@@ -35,6 +35,7 @@
     { "path": "ui/modals" },
     { "path": "ui/photo" },
     { "path": "ui/repeat" },
+    { "path": "ui/signature_pad" },
     { "path": "ui/wizard" },
 
     { "path": "targets/web-page-app"},

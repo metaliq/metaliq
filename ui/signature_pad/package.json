@@ -1,0 +1,22 @@
+{
+  "name": "@metaliq/signature_pad",
+  "description": "MetaliQ wrapper for the signature_pad library",
+  "version": "1.0.0-beta.29",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {
+    "@metaliq/forms": "workspace:*",
+    "@metaliq/presentation": "workspace:*",
+    "@metaliq/up": "workspace:*",
+    "lit": "2.3.1",
+    "metaliq": "workspace:*",
+    "signature_pad": "^4.1.4"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
+  "main": "lib/signature_pad.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "type": "module",
+  "types": "lib/signature_pad.d.ts"
+}
