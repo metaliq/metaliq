@@ -38,16 +38,26 @@ export type SortKey<T> = `${"-" | ""}${FieldKey<T>}`
  * Each key can be preceded by a `-` character to perform a descending sort.
  */
 export function sortBy<T> (keyOrKeys: SortKey<T> | Array<SortKey<T>>) {
-  const keys: Array<SortKey<T>> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
+  const sortKeys: Array<SortKey<T>> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
+
+  type ParsedSortKey = {
+    fieldName: keyof T
+    descending: boolean
+  }
+
+  const parsedKeys: ParsedSortKey[] = sortKeys.map(sortKey => {
+    const matches = sortKey.match(/^(-?)(.*)/)
+    const descending = matches[1] === "-"
+    const fieldName = matches[2] as keyof T
+    return { descending, fieldName }
+  })
+
   return (a: T, b: T) => {
     if (a === null && b !== null) return -1
     if (b === null && a !== null) return 1
-    for (const sortKey of keys) {
-      const matches = sortKey.match(/^(-?)(.*)/)
-      const desc = matches[0] === "-"
-      const key = matches[1] as keyof T
-      if (a[key] < b[key]) return desc ? 1 : -1
-      if (b[key] < a[key]) return desc ? -1 : 1
+    for (const { fieldName, descending } of parsedKeys) {
+      if (a[fieldName] < b[fieldName]) return descending ? 1 : -1
+      if (b[fieldName] < a[fieldName]) return descending ? -1 : 1
     }
     return 0
   }
