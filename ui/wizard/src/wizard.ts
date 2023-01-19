@@ -87,10 +87,7 @@ metaSetups.push(<T>($: Meta$<T>) => {
       const step = $.meta[stepName]
       if (!step.$.spec.view) step.$.spec.view = <unknown>metaForm() as MetaView<any>
     }
-    const firstStepName = stepNames[0]
-    return {
-      step: firstStepName
-    }
+    $.state.step = stepNames[0]
   }
 })
 

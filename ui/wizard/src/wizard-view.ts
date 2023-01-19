@@ -1,6 +1,6 @@
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-import { fieldKeys, Meta, Meta$ } from "metaliq"
+import { child$, fieldKeys, Meta, Meta$ } from "metaliq"
 import { up } from "@metaliq/up"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
@@ -25,7 +25,7 @@ export const wizardTramline: MetaView<object> = (value, $) => {
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${($.meta[stepName] as Meta<any>)}</span>
+          <span class="mq-wizard-nav-label">${child$(value, stepName).state.label}</span>
         </div>
       `)}
     </div>
