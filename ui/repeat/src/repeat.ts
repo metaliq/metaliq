@@ -1,6 +1,6 @@
-import { ViewResult } from "@metaliq/presentation"
+import { MetaView, ViewResult } from "@metaliq/presentation"
 import { html } from "lit"
-import { getDynamicTerm, m$, Meta, MetaFn } from "metaliq"
+import { $args, getDynamicTerm, m$, MetaFn } from "metaliq"
 import { up } from "@metaliq/up"
 
 export interface RepeatSpec<T, P = any> {
@@ -21,10 +21,11 @@ export const defaultRepeatSpec: RepeatSpec<any> = {
   newItem: {}
 }
 
-export const repeatControls = <T, P>(value: T[], meta: Meta<T[], P>): ViewResult => {
+export const repeatControls: MetaView<any[]> = (v, $): ViewResult => {
+  [v, $] = $args(v, $)
   return html`
     <div>
-      <button class="mq-button" @click=${up(addItem, value)}>${getDynamicTerm("addLabel")(meta)}</button>
+      <button class="mq-button" @click=${up(addItem, v)}>${getDynamicTerm("addLabel")(v)}</button>
     </div>
   `
 }
