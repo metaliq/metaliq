@@ -16,9 +16,9 @@
     "typescript": "^4.7.3"
   },
   "license": "MIT",
-  "main": "lib/graphql-server.js",
+  "main": "lib/wizard.js",
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/graphql-server.d.ts"
+  "types": "lib/wizard.d.ts"
 }
