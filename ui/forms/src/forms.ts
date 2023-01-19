@@ -107,15 +107,29 @@ export const ifThen = <T, P = any> (
  * Individual fields can define their own options types, which would normally extend this type.
  */
 export type FieldOptions<T> = {
-  labelView?: MetaView<T> // Custom label content function
-  classes?: string // Additional class(es) for field container
+  /**
+   * Custom label content function
+   */
+  labelView?: MetaView<T>
+
+  /**
+   * Additional class(es) for field container
+   */
+  classes?: string
+
+  /**
+   * Field type.
+   * If present, used to assign class mq-<type>-field to fieldContainer.
+   * If used on an input, additionally specifies input type, e.g.
+   * "text" | "checkbox" | "number" | "tel".
+   */
+  type?: string
 }
 
 /**
  * Options for input and similar fields.
  */
 export type InputOptions<T> = FieldOptions<T> & {
-  type?: "text" | "checkbox" | "number" | "tel"
   unvalidated?: boolean // don't perform validation
   labelAfter?: boolean // Place the label after the input
   autocomplete?: string
@@ -201,6 +215,21 @@ export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value,
   typeof options?.labelView === "function"
     ? options.labelView(value, $)
     : html`<span class="mq-input-label">${labelOrKey($)}</span>`
+
+/**
+ *
+ */
+export const fieldContainer = <T>(options?: FieldOptions<any>) => (fieldContent: MetaView<T>): MetaView<T> => (v, $) => html`
+  <label class="mq-field ${classMap({
+    [options.classes]: !!options.classes,
+    [`mq-${options.type || "text"}-field`]: true,
+    ...fieldClasses($)
+  })}" >
+    ${fieldLabel(options)(v, $)}
+    ${fieldContent(v, $)}
+    ${errorMsg({ classes: "mq-field-error" })(v, $)}
+  </label>
+`
 
 /**
  * Input field with default options for a validated checkbox
