@@ -153,55 +153,6 @@ export const addDynamicState = <T, P = any, K extends SpecKey = any>($: Meta$<T,
 }
 
 /**
- * Return a path string for the given meta,
- * with the given root meta name which defaults to "meta".
- */
-function metaPath ($: HasMeta$<any>, root = "meta"): string {
-  let path = $.$.key ?? root
-  let parent = $.$.parent
-  while (parent) {
-    path = `${parent.$.key ?? root}.${path}`
-    parent = parent.$.parent
-  }
-  return `${path}`
-}
-
-function metaToString (meta: Meta<any>): string {
-  const value = meta.$.value
-  if (typeof value === "undefined") {
-    return ""
-  } else if (Array.isArray(value)) {
-    return "" // Should be in MetaArrayProto instead
-  } else if (typeof value === "object") {
-    return metaPath(meta)
-  } else if (typeof value === "boolean") {
-    return value ? "true" : "false"
-  } else {
-    return value?.toString() || ""
-  }
-}
-
-const MetaProto = {
-  toString () {
-    return metaToString(this)
-  }
-}
-
-class MetaArrayProto extends Array {
-  $: Meta$<any>
-
-  constructor ($: Meta$<any>) {
-    super()
-    $.meta = this
-    this.$ = $
-  }
-
-  toString () {
-    return metaPath(<unknown> this as MetaArray<any>)
-  }
-}
-
-/**
  * Create a Meta object with the given spec, value and optional parent and key.
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
@@ -213,10 +164,10 @@ export function metafy <T, P = any> (
 
   // Establish the correct form of prototype for this meta
   proto = isArray
-    ? proto instanceof MetaArrayProto
+    ? Array.isArray(proto)
       ? proto
-      : new MetaArrayProto(proto.$)
-    : proto || Object.create(MetaProto)
+      : Object.assign([], { $: proto?.$ }) as HasMeta$<T, P>
+    : proto || {} as Meta<T, P>
 
   // Reuse existing Meta$ if present, otherwise create new one
   const $ = proto?.$ || {
