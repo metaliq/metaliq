@@ -123,7 +123,7 @@ export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
  * Setups should check the policy's term(s) in the meta spec to determine applicability of any such setup.
  */
-export type MetaSetup<T, P = any> = (meta: Meta$<T, P>) => any
+export type MetaSetup<T, P = any> = ($: Meta$<T, P>) => void
 
 export const metaSetups: Array<MetaSetup<any>> = []
 

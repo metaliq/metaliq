@@ -5,7 +5,7 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta$, MetaFn } from "metaliq"
-import { fieldClasses, fieldError, fieldLabel, isDisabled } from "@metaliq/forms"
+import { fieldContainer, isDisabled } from "@metaliq/forms"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
@@ -65,7 +65,7 @@ declare module "metaliq" {
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
-export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
+const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
   options = { sort: true, ...options }
 
   const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
@@ -106,63 +106,58 @@ export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T,
   }
 
   return html`
-    <label class="mq-field mq-select-field ${classMap({
-      [options.classes]: !!options.classes,
-      ...fieldClasses($),
-      "mq-populated": hasValue($)
-    })}">
-      ${guard($, () => {
-        const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
+    ${guard($, () => {
+      const id = `mq-selector-${Math.ceil(Math.random() * 1000000)}`
 
-        setTimeout(
-          () => {
-            const el = document.querySelector(`#${id}`)
-            // eslint-disable-next-line no-new -- No need to hold reference to Choices
-            $.state.choicesJs = new Choices(el, {
-              searchPlaceholderValue: options.searchText ?? "",
-              allowHTML: true,
-              removeItems: true,
-              removeItemButton: true,
-              shouldSort: !!options.sort,
-              callbackOnInit: function () {
-                resetChoices(<unknown> this as ChoicesJs)
-              }
-            })
-
-            if (typeof options.searchFn === "function") {
-              const asyncListener = async (e: any) => {
-                // TODO: Debounce
-                const searchText = e.detail.value
-                $.state.choices = await options.searchFn(searchText, $.parent.$)
-                resetChoices()
-              }
-
-              el.addEventListener("search", e => { asyncListener(e).catch(console.error) })
+      setTimeout(
+        () => {
+          const el = document.querySelector(`#${id}`)
+          // eslint-disable-next-line no-new -- No need to hold reference to Choices
+          $.state.choicesJs = new Choices(el, {
+            searchPlaceholderValue: options.searchText ?? "",
+            allowHTML: true,
+            removeItems: true,
+            removeItemButton: true,
+            shouldSort: !!options.sort,
+            callbackOnInit: function () {
+              resetChoices(<unknown> this as ChoicesJs)
             }
-          },
-          250
-        )
+          })
 
-        return html`
-            <select id=${id}
-              @change=${up(onChange(options), $)}
-              @addItem=${up(onAddItem(options), $)}
-              @removeItem=${up(onRemoveItem(options), $)}
-              ?multiple=${options.multiple}
-              ?disabled=${disabled}
-              class="mq-input ${classMap({ "mq-disabled": disabled })}"
-            >
-              ${options.multiple ? "" : html`
-                <option value="">${$.state.label}</option>
-              `}
-            </select>
-          `
-      })}
-      ${fieldLabel()(v, $ as Meta$<unknown, any>)}
-      ${fieldError(v, $)}
-    </label>
-`
+          if (typeof options.searchFn === "function") {
+            const asyncListener = async (e: any) => {
+              // TODO: Debounce
+              const searchText = e.detail.value
+              $.state.choices = await options.searchFn(searchText, $.parent.$)
+              resetChoices()
+            }
+
+            el.addEventListener("search", e => { asyncListener(e).catch(console.error) })
+          }
+        },
+        250
+      )
+
+      return html`
+        <select id=${id}
+          @change=${up(onChange(options), $)}
+          @addItem=${up(onAddItem(options), $)}
+          @removeItem=${up(onRemoveItem(options), $)}
+          ?multiple=${options.multiple}
+          ?disabled=${disabled}
+          class="mq-input ${classMap({ "mq-disabled": disabled })}"
+        >
+          ${options.multiple ? "" : html`
+            <option value="">${$.state.label}</option>
+          `}
+        </select>
+      `
+    })}
+  `
 }
+
+export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P> =>
+  fieldContainer(innerSelector(options), { type: "select" })
 
 export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
   ...Object.entries(object).map(([k, v]) => ({

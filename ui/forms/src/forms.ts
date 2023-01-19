@@ -131,7 +131,6 @@ export type FieldOptions<T> = {
  */
 export type InputOptions<T> = FieldOptions<T> & {
   unvalidated?: boolean // don't perform validation
-  labelAfter?: boolean // Place the label after the input
   autocomplete?: string
 }
 
@@ -195,18 +194,8 @@ export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
-export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) => html`
-  <label class="mq-field ${classMap({
-    [options.classes]: !!options.classes,
-    [`mq-${options.type || "text"}-field`]: true,
-    ...fieldClasses($)
-  })}" >
-    ${!options.labelAfter ? fieldLabel(options)(v, $) : ""}
-    ${input({ type: "text", ...options })(v, $)}
-    ${options.labelAfter ? fieldLabel(options)(v, $) : ""}
-    ${errorMsg({ classes: "mq-field-error" })(v, $)}
-  </label>
-`
+export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> =>
+  fieldContainer(input({ type: "text", ...options }), options)
 
 /**
  * Label element for input field.
@@ -219,10 +208,10 @@ export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value,
 /**
  *
  */
-export const fieldContainer = <T>(options?: FieldOptions<any>) => (fieldContent: MetaView<T>): MetaView<T> => (v, $) => html`
+export const fieldContainer = <T>(fieldContent: MetaView<T>, options?: FieldOptions<any>): MetaView<T> => (v, $) => html`
   <label class="mq-field ${classMap({
-    [options.classes]: !!options.classes,
-    [`mq-${options.type || "text"}-field`]: true,
+    [options?.classes]: !!options?.classes,
+    [`mq-${options?.type || "text"}-field`]: options?.type,
     ...fieldClasses($)
   })}" >
     ${fieldLabel(options)(v, $)}
@@ -237,7 +226,6 @@ export const fieldContainer = <T>(options?: FieldOptions<any>) => (fieldContent:
 export const checkboxField = (options: InputOptions<boolean> = {}): MetaView<boolean> =>
   inputField({
     type: "checkbox",
-    labelAfter: true,
     ...options
   })
 
