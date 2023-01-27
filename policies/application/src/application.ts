@@ -1,4 +1,4 @@
-import { Meta, MetaFn, metafy, MetaSpec, reset } from "metaliq"
+import { Meta, MetaFn, metafy, MetaModel, reset } from "metaliq"
 import { LogFunction, startUp, Up } from "@metaliq/up"
 
 /**
@@ -67,22 +67,22 @@ declare module "metaliq" {
   }
 }
 
-export type InitFunction<T> = ((spec?: MetaSpec<T>) => T) | ((spec?: MetaSpec<T>) => Promise<T>)
+export type InitFunction<T> = ((spec?: MetaModel<T>) => T) | ((spec?: MetaModel<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 
 /**
  * Run a spec - initialise its data value and set `up`
  * state transition management with any specified logging.
  */
-export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
-  let spec: MetaSpec<T>
+export async function run<T> (specOrMeta: MetaModel<T> | Meta<T>) {
+  let spec: MetaModel<T>
   let meta: Meta<T>
   // Determine whether a spec or an initialised meta was passed
   if (typeof (<any>specOrMeta).$ === "object") {
     meta = specOrMeta as Meta<T>
     spec = meta.$.spec
   } else {
-    spec = specOrMeta as MetaSpec<T>
+    spec = specOrMeta as MetaModel<T>
     const value = await initSpecValue(spec)
     meta = metafy(spec, value)
   }
@@ -110,7 +110,7 @@ export async function run<T> (specOrMeta: MetaSpec<T> | Meta<T>) {
 /**
  * Get the initial value from the specification's `init` provider.
  */
-export async function initSpecValue<T> (spec: MetaSpec<T>): Promise<T> {
+export async function initSpecValue<T> (spec: MetaModel<T>): Promise<T> {
   const data: T = typeof spec.init === "function"
     ? await (spec.init as InitFunction<T>)(spec)
     : spec.init ?? {} as T

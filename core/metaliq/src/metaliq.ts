@@ -89,7 +89,7 @@ export type Meta$<T, P = any> = {
   /**
    * The specification applied to this meta object.
    */
-  spec: MetaSpec<T, P>
+  spec: MetaModel<T, P>
 
   /**
    * The runtime Meta state.
@@ -110,12 +110,12 @@ export type Meta$<T, P = any> = {
 /**
  * Specification for a given Type and optional Parent.
  */
-export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
+export type MetaModel<T, P = any> = Policy.Specification<T, P> & {
   fields?: T extends any[]
     ? never
-    : { [K in FieldKey<T>]?: MetaSpec<T[K], T> }
+    : { [K in FieldKey<T>]?: MetaModel<T[K], T> }
   items?: T extends Array<infer I>
-    ? MetaSpec<I>
+    ? MetaModel<I>
     : never
 }
 
@@ -157,7 +157,7 @@ export const addDynamicState = <T, P = any, K extends SpecKey = any>($: Meta$<T,
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>
+  spec: MetaModel<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>
 ): Meta<T, P> {
   const hasProto = !!proto
   const isArray = spec.items || Array.isArray(value)
@@ -246,12 +246,12 @@ export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
 /**
  * Apply a given spec to an existing meta.
  */
-export function applySpec<T> ($: Meta$<T>, spec: MetaSpec<T>) {
+export function applySpec<T> ($: Meta$<T>, spec: MetaModel<T>) {
   $.spec = spec
   setupMeta($)
   if (isMeta($.meta)) {
     for (const key of fieldKeys(spec)) {
-      const fieldSpec = <unknown>spec.fields[key] as MetaSpec<T[FieldKey<T>]>
+      const fieldSpec = <unknown>spec.fields[key] as MetaModel<T[FieldKey<T>]>
       const fieldMeta = <unknown>$.meta[key] as Meta<T[FieldKey<T>]>
       applySpec(fieldMeta.$, fieldSpec)
     }
@@ -313,7 +313,7 @@ export type FieldType<Parent, Key extends FieldKey<Parent>> = Parent[Key]
 /**
  * Return the keys of a field spec.
  */
-export const fieldKeys = <T>(spec: MetaSpec<T>) =>
+export const fieldKeys = <T>(spec: MetaModel<T>) =>
   Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
 
 /**

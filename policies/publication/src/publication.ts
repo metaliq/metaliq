@@ -1,4 +1,4 @@
-import { MetaSpec } from "metaliq"
+import { MetaModel } from "metaliq"
 
 interface PublicationSpec {
   publicationTarget?: PublicationTarget
@@ -60,7 +60,7 @@ export type PublicationContext = {
   /**
    * Loaded spec.
    */
-  spec: MetaSpec<any>
+  spec: MetaModel<any>
 }
 
 export type BuildResult = boolean

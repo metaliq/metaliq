@@ -1,5 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
-import { $fn, child$, FieldKey, fieldKeys, fns, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaSpec } from "metaliq"
+import { $fn, child$, FieldKey, fieldKeys, fns, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaModel } from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 
@@ -137,15 +137,15 @@ metaSetups.push($ => {
  * Convenience method to map all nodes of a navigation model
  * to the same underlying logical model.
  */
-export const mapNavModel = <M, N> (model: M, navSpec?: MetaSpec<N>) => {
-  navSpec = navSpec || this as MetaSpec<N>
+export const mapNavModel = <M, N> (model: M, navSpec?: MetaModel<N>) => {
+  navSpec = navSpec || this as MetaModel<N>
   const navModel = {} as N
   const keys = fieldKeys(navSpec)
   for (const key of keys) {
-    const childSpec = navSpec.fields?.[key] as unknown as MetaSpec<unknown>
+    const childSpec = navSpec.fields?.[key] as unknown as MetaModel<unknown>
     const childKeys = fieldKeys(childSpec)
     // Continue recursing if there are nested-level routes
-    const grandChildSpecs = childKeys.map(ck => childSpec.fields[ck]) as Array<MetaSpec<unknown>>
+    const grandChildSpecs = childKeys.map(ck => childSpec.fields[ck]) as Array<MetaModel<unknown>>
     const hasGrandChildRoutes = grandChildSpecs.some(s => s.route)
     const keyModel = hasGrandChildRoutes
       ? mapNavModel(model, childSpec)

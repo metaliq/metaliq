@@ -6,7 +6,7 @@ import { Command } from "commander"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 
-import { MetaSpec } from "metaliq"
+import { MetaModel } from "metaliq"
 import { webPageApp } from "@metaliq/web-page-app"
 import { PublicationContext, PublicationTarget } from "@metaliq/publication"
 import { link, unlink } from "./linker"
@@ -183,7 +183,7 @@ async function importSpec (name: string = "appSpec", path: string = "specs") {
   console.log(`Loading MetaliQ specification ${path} > ${name}`)
   try {
     const module = await import ("file://" + join(process.cwd(), "bin", path))
-    const spec: MetaSpec<any> = module[name]
+    const spec: MetaModel<any> = module[name]
     return spec
   } catch (e) {
     console.error([

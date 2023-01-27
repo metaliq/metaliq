@@ -1,4 +1,4 @@
-import { MetaSpec } from "metaliq"
+import { MetaModel } from "metaliq"
 import { metaForm } from "@metaliq/forms"
 
 export { labelPath } from "@metaliq/terminology"
@@ -15,7 +15,7 @@ export type Package = {
   license: string
 }
 
-export const appSpec: MetaSpec<Package> = {
+export const appSpec: MetaModel<Package> = {
   label: "New MetaliQ Solution",
   fields: {
     name: {

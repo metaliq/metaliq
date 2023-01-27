@@ -1,9 +1,9 @@
 ## The Meta-Graph
 
-You have seen that MetaliQ solutions consist of specifications that provide additional information about data model types in the terms defined by policies. These specifications are made using the generic type `MetaSpec`.
+You have seen that MetaliQ solutions consist of specifications that provide additional information about data model types in the terms defined by policies. These specifications are made using the generic type `MetaModel`.
 
 ```ts
-export const contactSpec: MetaSpec<Contact> = {
+export const contactSpec: MetaModel<Contact> = {
   label: "Contact Details",
   fields: {
     name: {
@@ -57,7 +57,7 @@ If this Meta object is a child of another Meta object, this is its key within th
 
 * `spec`
 
-This is a reference to the `MetaSpec` with which this Meta was created.
+This is a reference to the `MetaModel` with which this Meta was created.
 
 * `state`
 
@@ -126,7 +126,7 @@ The `meta` function can take any value object and give you its Meta object, suit
 const personSpec = meta(person).$.spec
 ```
 
-In either case, `personSpec` will be inferred by the compiler to have the type `MetaSpec<Person>`.
+In either case, `personSpec` will be inferred by the compiler to have the type `MetaModel<Person>`.
 
 * ... but this won't work for primitives
 
@@ -144,6 +144,6 @@ This turns out not to be a big problem though, even if you do need to use back-l
 
 ### Meta Arrays
 
-We have seen how individual objects and primitive values are reflected in the Meta graph. Arrays are quite similar in how they are handled. A `MetaSpec` that is based on an array type rather than an individual object type can have all the same policy-defined terms, but instead of the property `fields` it has the property `items`. This itself is a `MetaSpec` that becomes the specification for each individual item in the array. Note that if the `items` key of a MetaSpec is not specified then the underlying array's values will not have associated entries in the Meta graph. 
+We have seen how individual objects and primitive values are reflected in the Meta graph. Arrays are quite similar in how they are handled. A `MetaModel` that is based on an array type rather than an individual object type can have all the same policy-defined terms, but instead of the property `fields` it has the property `items`. This itself is a `MetaModel` that becomes the specification for each individual item in the array. Note that if the `items` key of a MetaModel is not specified then the underlying array's values will not have associated entries in the Meta graph. 
 
-At runtime, the Meta object of an array has the same `$` key as other Meta objects, with the same internal references including `$.value` which points to the underlying array with its original values. The Meta array is itself also an array of Meta objects of those original values, each of which is connected to its original value via its `$.value` property. Note that the array item Meta objects have the same `$.parent` as the array Meta itself. So, for example, if a parent object of type `Submission` had a field `contacts` of type `Contact[]`, the type for the  `contacts` field specification would be `MetaSpec<Contact[], Submission>` and the `items` property within that specification would be `MetaSpec<Contact, Submission>`. 
+At runtime, the Meta object of an array has the same `$` key as other Meta objects, with the same internal references including `$.value` which points to the underlying array with its original values. The Meta array is itself also an array of Meta objects of those original values, each of which is connected to its original value via its `$.value` property. Note that the array item Meta objects have the same `$.parent` as the array Meta itself. So, for example, if a parent object of type `Submission` had a field `contacts` of type `Contact[]`, the type for the  `contacts` field specification would be `MetaModel<Contact[], Submission>` and the `items` property within that specification would be `MetaModel<Contact, Submission>`. 

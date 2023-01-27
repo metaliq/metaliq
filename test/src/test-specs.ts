@@ -1,4 +1,4 @@
-import { MetaSpec } from "metaliq"
+import { MetaModel } from "metaliq"
 import { Address, Contact, Organisation } from "./test-types"
 
 export const emptyContact = (): Contact => ({
@@ -33,7 +33,7 @@ export const sampleOrganisation = (): Organisation => ({
   deliveryAddress: emptyAddress()
 })
 
-export const contactSpec: MetaSpec<Contact, any> = {
+export const contactSpec: MetaModel<Contact, any> = {
   label: "Contact",
   fields: {
     firstName: {
@@ -52,7 +52,7 @@ export const contactSpec: MetaSpec<Contact, any> = {
   }
 }
 
-export const organisationSpec: MetaSpec<Organisation> = {
+export const organisationSpec: MetaModel<Organisation> = {
   fields: {
     principal: {
       ...contactSpec,

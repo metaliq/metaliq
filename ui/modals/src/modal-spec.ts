@@ -1,4 +1,4 @@
-import { MetaSpec } from "metaliq"
+import { MetaModel } from "metaliq"
 import { closeModalChannel, showModalChannel } from "./modal-procs"
 import { ViewResult } from "@metaliq/presentation"
 import { modal } from "./modal-view"
@@ -57,7 +57,7 @@ export type ModalButton = {
   classes?: string
 }
 
-export const modalSpec: MetaSpec<ModalInfo> = {
+export const modalSpec: MetaModel<ModalInfo> = {
   label: "Modal Display",
   view: modal,
   channels: [

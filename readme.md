@@ -51,7 +51,7 @@ Already, the outline of organisational knowledge is taking shape by knowing some
 MetaliQ provides a way to extend this basic model by adding further layers of information-about-information - or *meta* information -  in the form of *specifications*. For example, here is a MetaliQ specification of the terminology we would like to use when presenting this information to a user:
 
 ```ts
-export const contactSpec: MetaSpec<Contact> = {
+export const contactSpec: MetaModel<Contact> = {
   label: "Contact",
   helpText: "A business contact",
   fields: {
@@ -118,7 +118,7 @@ export type Enrollment = {
   guardian: Contact
 }
 
-export const EnrollmentSpec: MetaSpec<Enrollment> = {
+export const EnrollmentSpec: MetaModel<Enrollment> = {
   fields: {
     student: {
       ...contactSpec,

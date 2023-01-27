@@ -1,6 +1,6 @@
 import chai from "chai"
 import { describe } from "mocha"
-import { metafy, MetaSpec } from "metaliq"
+import { metafy, MetaModel } from "metaliq"
 
 chai.should()
 
@@ -26,7 +26,7 @@ describe("MetaliQ Array Handling", () => {
       aliases: ["One", "Two"]
     }
 
-    const personSpecNoItems: MetaSpec<Person> = {
+    const personSpecNoItems: MetaModel<Person> = {
       fields: {
         aliases: {
           label: "Aliases"
@@ -34,7 +34,7 @@ describe("MetaliQ Array Handling", () => {
       }
     }
 
-    const personSpecWithItems: MetaSpec<Person> = {
+    const personSpecWithItems: MetaModel<Person> = {
       fields: { aliases: { label: "Aliases", items: { label: "Alias" } } }
     }
 
