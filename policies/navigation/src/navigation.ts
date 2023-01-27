@@ -5,11 +5,11 @@ import { up } from "@metaliq/up"
 
 export * from "./router"
 
-export { ApplicationSpec } from "@metaliq/application"
+export { ApplicationModel } from "@metaliq/application"
 
-export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
+export interface NavigationModel<T, P = any, RP extends object = any, RQ = any> {
   /**
-   * Route object associated with this specification.
+   * Route object associated with this MetaModel.
    */
   route?: Route<RP, RQ>
 
@@ -20,7 +20,7 @@ export interface NavigationSpec<T, P = any, RP extends object = any, RQ = any> {
   onLeave?: MetaFn<T, P, RouteHandler<RP, RQ>>
 
   /**
-   * Initial path for the top level spec,
+   * Initial path for a top level MetaModel,
    * if one is not already present in the browser location.
    */
   urlPath?: string
@@ -50,7 +50,7 @@ export interface NavigationState<T> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends NavigationSpec<T, P> {}
+    interface Model<T, P> extends NavigationModel<T, P> {}
 
     interface State<T, P> {
       this?: State<T, P>
@@ -84,19 +84,19 @@ const policy: NavigationPolicy = {
 export const route$ = (route: Route<object>) => policy.route$s.get(route)
 
 metaSetups.push($ => {
-  const spec = $.spec
-  // If this spec has a route, initialise any route handling functions
-  if (spec?.route) {
-    policy.route$s.set(spec.route, $)
-    if (typeof spec.onLeave === "function") {
-      spec.route.onLeave = async () => {
-        const result = await spec.onLeave($.value, $)
+  const model = $.model
+  // If this model has a route, initialise any route handling functions
+  if (model?.route) {
+    policy.route$s.set(model.route, $)
+    if (typeof model.onLeave === "function") {
+      model.route.onLeave = async () => {
+        const result = await model.onLeave($.value, $)
         return result
       }
     }
-    spec.route.onEnter = async (params) => {
-      if (typeof spec.onEnter === "function") {
-        const routeResult = await spec.onEnter($.value, $)(params)
+    model.route.onEnter = async (params) => {
+      if (typeof model.onEnter === "function") {
+        const routeResult = await model.onEnter($.value, $)(params)
         if (routeResult === false) return false
       }
       const navType = getAncestorTerm("navType")($.value, $)
@@ -107,21 +107,21 @@ metaSetups.push($ => {
     }
   }
   // If this is a nav container, set initial selection
-  if ($.spec.navType) {
+  if ($.model.navType) {
     $.state.nav = $.state.nav || { selected: null }
-    $.state.nav.selected = fieldKeys($.spec)[0]
+    $.state.nav.selected = fieldKeys($.model)[0]
   }
   // If this is the top-level meta and has routes specified then initialise navigation
   if (!$.parent) {
-    if (spec?.urlPath &&
+    if (model?.urlPath &&
       typeof history !== "undefined" && typeof window !== "undefined" &&
       (!window.location?.pathname || window.location.pathname === "/")
       // Only use initially specified path if one isn't already in the browser location
     ) {
-      history.pushState(null, null, spec.urlPath)
+      history.pushState(null, null, model.urlPath)
     }
     if (policy.route$s.size) {
-      $.spec.bootstrap = fns([$.spec.bootstrap, () => {
+      $.model.bootstrap = fns([$.model.bootstrap, () => {
         // Extend any existing bootstrap to initialise the Router
         const router = new Router(
           Array.from(policy.route$s.keys()),
@@ -135,24 +135,24 @@ metaSetups.push($ => {
 
 /**
  * Convenience method to map all nodes of a navigation model
- * to the same underlying logical model.
+ * to the same underlying data object.
  */
-export const mapNavModel = <M, N> (model: M, navSpec?: MetaModel<N>) => {
-  navSpec = navSpec || this as MetaModel<N>
-  const navModel = {} as N
-  const keys = fieldKeys(navSpec)
+export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
+  navModel = navModel || this as MetaModel<N>
+  const navData = {} as N
+  const keys = fieldKeys(navModel)
   for (const key of keys) {
-    const childSpec = navSpec.fields?.[key] as unknown as MetaModel<unknown>
-    const childKeys = fieldKeys(childSpec)
+    const childModel = navModel.fields?.[key] as unknown as MetaModel<unknown>
+    const childKeys = fieldKeys(childModel)
     // Continue recursing if there are nested-level routes
-    const grandChildSpecs = childKeys.map(ck => childSpec.fields[ck]) as Array<MetaModel<unknown>>
-    const hasGrandChildRoutes = grandChildSpecs.some(s => s.route)
+    const grandChildModels = childKeys.map(ck => childModel.fields[ck]) as Array<MetaModel<unknown>>
+    const hasGrandChildRoutes = grandChildModels.some(s => s.route)
     const keyModel = hasGrandChildRoutes
-      ? mapNavModel(model, childSpec)
-      : model
-    Object.assign(navModel, { [key]: keyModel })
+      ? mapNavData(data, childModel)
+      : data
+    Object.assign(navData, { [key]: keyModel })
   }
-  return navModel
+  return navData
 }
 
 /**
@@ -174,7 +174,7 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
     if ($.state.nav) {
       delete $.state.nav.selected
     }
-    for (const key of fieldKeys($.spec)) {
+    for (const key of fieldKeys($.model)) {
       const c$ = child$($, key)
       recurseChildren(c$.value, c$)
     }
@@ -204,11 +204,11 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
  * otherwise find and go to its first child route.
  */
 export const goNavRoute = (item$: Meta$<any>) => {
-  while (item$ && !item$.spec.route) {
-    const firstChildKey = fieldKeys(item$.spec)[0]
+  while (item$ && !item$.model.route) {
+    const firstChildKey = fieldKeys(item$.model)[0]
     item$ = child$(item$, firstChildKey)
   }
-  item$.spec.route?.go()
+  item$.model.route?.go()
 }
 
 export const freeNavigation: NavigationType = {

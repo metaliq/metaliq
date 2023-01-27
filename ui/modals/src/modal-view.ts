@@ -1,6 +1,6 @@
 import { html } from "lit"
 import { up } from "@metaliq/up"
-import { ModalInfo } from "./modal-spec"
+import { ModalInfo } from "./modal-model"
 
 export const modal = (info: ModalInfo
 ) => info.body ? html`

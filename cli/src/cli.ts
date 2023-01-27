@@ -37,15 +37,15 @@ program
   .version("0.30.5")
 
 program
-  .command("run [specName]")
-  .option("-f --file <file>", "Spec file location within source dir, with or without .ts extension", "specs")
-  .description("Start the MetaliQ development server for the given path/spec (defaults to appSpec)")
+  .command("run [modelName]")
+  .option("-f --file <file>", "MetaModel file location within source dir, with or without .ts extension", "models")
+  .description("Start the MetaliQ development server for the given path/model (defaults to appModel)")
   .action(run)
 
 program
-  .command("build [specNames...]")
-  .option("-f --file <file>", "Spec file location within source dir, with or without .ts extension", "specs")
-  .description("Run the build for the given spec (defaults to appSpec)")
+  .command("build [modelNames...]")
+  .option("-f --file <file>", "MetaModel file location within source dir, with or without .ts extension", "models")
+  .description("Run the build for the given model (defaults to appModel)")
   .action(build)
 
 program
@@ -67,7 +67,7 @@ program
 
 program.parse()
 
-async function run (specName: string = "appSpec", options: RunOptions = {}) {
+async function run (modelName: string = "appModel", options: RunOptions = {}) {
   // Initial project compilation with watch
   // Compile first in order to be able to import from bin
   await new Promise((resolve, reject) => {
@@ -102,60 +102,60 @@ async function run (specName: string = "appSpec", options: RunOptions = {}) {
   })
 
   const simplePath = optionsSimplePath(options)
-  const spec = await importSpec(specName, simplePath)
-  if (!spec) {
-    return console.error(`Specification not found: ${simplePath}.ts > ${specName}`)
+  const model = await importModel(modelName, simplePath)
+  if (!model) {
+    return console.error(`Model not found: ${simplePath}.ts > ${modelName}`)
   }
 
-  const pubTarget = spec?.publicationTarget || webPageApp()
+  const pubTarget = model?.publicationTarget || webPageApp()
   if (!pubTarget?.runner) {
     console.log("Specified publication target has no runner")
   }
 
-  console.log(`Running specification ${specName} with publication target ${pubTarget.name}`)
-  await pubTarget.runner({ specName, simplePath, spec })
+  console.log(`Running MetaModel ${modelName} with publication target ${pubTarget.name}`)
+  await pubTarget.runner({ modelName, simplePath, model })
 }
 
-async function build (specNames: string[], options: BuildOptions = {}) {
-  if (specNames.length === 0) specNames.push("appSpec")
-  console.log(`Starting MetaliQ build for ${specNames.join(", ")}`)
+async function build (modelNames: string[], options: BuildOptions = {}) {
+  if (modelNames.length === 0) modelNames.push("appModel")
+  console.log(`Starting MetaliQ build for ${modelNames.join(", ")}`)
 
   console.log(`Compiling project using ${tscPath}...`)
   await pExec(tscPath)
 
-  type BuildBundle = { specName: string, target: PublicationTarget, context: PublicationContext }
+  type BuildBundle = { modelName: string, target: PublicationTarget, context: PublicationContext }
   const bundles: BuildBundle[] = []
 
   // Assemble all targets
   const simplePath = optionsSimplePath(options)
-  for (const specName of specNames) {
-    console.log(`Bundling modules for spec ${specName}...`)
-    const spec = await importSpec(specName, simplePath)
-    if (!spec) {
-      return console.error(`Specification not found: ${simplePath} > ${specName}`)
+  for (const modelName of modelNames) {
+    console.log(`Bundling modules for model ${modelName}...`)
+    const model = await importModel(modelName, simplePath)
+    if (!model) {
+      return console.error(`Model not found: ${simplePath} > ${modelName}`)
     }
     bundles.push({
-      specName,
-      target: spec.publicationTarget || webPageApp(),
-      context: { specName, simplePath, spec }
+      modelName,
+      target: model.publicationTarget || webPageApp(),
+      context: { modelName, simplePath, model }
     })
   }
 
   // Clean all targets
-  for (const { specName, target, context } of bundles) {
-    console.log(`Cleaning output for spec ${specName}...`)
+  for (const { modelName, target, context } of bundles) {
+    console.log(`Cleaning output for model ${modelName}...`)
     if (target.cleaner) {
       await target.cleaner(context)
     }
   }
 
   // Build all targets
-  for (const { specName, target, context } of bundles) {
+  for (const { modelName, target, context } of bundles) {
     if (target.builder) {
-      console.log(`Building specification ${specName}...`)
+      console.log(`Building MetaModel ${modelName}...`)
       await target.builder(context)
     } else {
-      return console.error(`Specification ${specName} publication target ${target.name} for  has no builder`)
+      return console.error(`Model ${modelName} publication target ${target.name} for  has no builder`)
     }
   }
 
@@ -179,15 +179,15 @@ async function serve (location: string = "", options: ServeOptions = {}) {
   })
 }
 
-async function importSpec (name: string = "appSpec", path: string = "specs") {
-  console.log(`Loading MetaliQ specification ${path} > ${name}`)
+async function importModel (name: string = "appModel", path: string = "models") {
+  console.log(`Loading MetaliQ MetaModel ${path} > ${name}`)
   try {
     const module = await import ("file://" + join(process.cwd(), "bin", path))
-    const spec: MetaModel<any> = module[name]
-    return spec
+    const model: MetaModel<any> = module[name]
+    return model
   } catch (e) {
     console.error([
-      `Problem importing spec ${path} > ${name}`,
+      `Problem importing model ${path} > ${name}`,
       e.stack,
       e.message
     ].join("\n"))
@@ -197,5 +197,5 @@ async function importSpec (name: string = "appSpec", path: string = "specs") {
 
 function optionsSimplePath (options: BaseOptions) {
   if (options.file?.substr(-3).match(/\.[tj]s/)) options.file = options.file.substring(0, -4)
-  return options.file || "specs"
+  return options.file || "models"
 }

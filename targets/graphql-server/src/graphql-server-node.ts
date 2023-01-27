@@ -19,7 +19,7 @@ const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and
 
 export const graphQLServerRunner = (
   config: GraphQLServerConfig = {}
-): Runner => async ({ specName, simplePath, spec }) => {
+): Runner => async ({ modelName, simplePath, model }) => {
   const port = config.run?.port || 8940
   const hostname = "localhost" // TODO: Make configurable
 
@@ -39,7 +39,7 @@ export const graphQLServerRunner = (
   // Create the query / mutation service
   apolloServer = new ApolloServerExpress({
     typeDefs,
-    resolvers: spec.resolvers,
+    resolvers: model.resolvers,
     context: ({ req }) => {
       return {
         sessionToken: req.headers["session-token"]
@@ -59,7 +59,7 @@ export const graphQLServerRunner = (
 
 export const graphQLServerCleaner = (
   config: GraphQLServerConfig = {}
-): Cleaner => async ({ spec }) => {
+): Cleaner => async ({ model }) => {
   const destDir = config.build?.destDir || "prod/api"
 
   // Clean previous build
@@ -69,7 +69,7 @@ export const graphQLServerCleaner = (
 
 export const graphQLServerBuilder = (
   config: GraphQLServerConfig = {}
-): Builder => async ({ spec, simplePath, specName }) => {
+): Builder => async ({ model, simplePath, modelName }) => {
   const destDir = config.build?.destDir || "prod/api"
   const cloud = config.build?.cloud || "firebase"
   const useDomShim = !!config.build?.useDomShim
@@ -78,7 +78,7 @@ export const graphQLServerBuilder = (
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
+  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
@@ -154,8 +154,8 @@ const schemaJs = (schema: string, cloud: Cloud) => dedent`
 `
 
 const indexJs = (
-  specName: string,
-  specPath: string,
+  modelName: string,
+  modelPath: string,
   cloud: Cloud,
   cloudFnOptions: CloudFnOptions = {},
   useDomShim: boolean
@@ -186,14 +186,14 @@ const indexJs = (
   return dedent`
     ${useDomShim ? "import { installWindowOnGlobal } from \"@lit-labs/ssr/lib/dom-shim\"" : ""}
     import { typeDefs } from "./schema.js"
-    import { ${specName} } from "./${specPath}.js"
+    import { ${modelName} } from "./${modelPath}.js"
     
     import { ApolloServer } from "${apolloCloudLib[cloud]}"
     ${cloud === "firebase" ? "import functions from \"firebase-functions\"" : ""}
     
     const server = new ApolloServer({ 
       typeDefs, 
-      resolvers: ${specName}.resolvers,
+      resolvers: ${modelName}.resolvers,
       playground: true,
       introspection: true
     })

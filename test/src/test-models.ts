@@ -33,7 +33,7 @@ export const sampleOrganisation = (): Organisation => ({
   deliveryAddress: emptyAddress()
 })
 
-export const contactSpec: MetaModel<Contact, any> = {
+export const contactModel: MetaModel<Contact, any> = {
   label: "Contact",
   fields: {
     firstName: {
@@ -52,14 +52,14 @@ export const contactSpec: MetaModel<Contact, any> = {
   }
 }
 
-export const organisationSpec: MetaModel<Organisation> = {
+export const organisationModel: MetaModel<Organisation> = {
   fields: {
     principal: {
-      ...contactSpec,
+      ...contactModel,
       fields: {
-        ...contactSpec.fields,
+        ...contactModel.fields,
         age: {
-          ...contactSpec.fields.age,
+          ...contactModel.fields.age,
           validator: age => age >= 18
         }
       }

@@ -19,9 +19,9 @@ export type MetaFormOptions<T> = {
 }
 
 metaSetups.push($ => {
-  // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
-  if (!$.parent && !$.spec.publicationTarget && !$.spec.view) {
-    $.spec.view = metaForm()
+  // Default the review method of the top level model to renderPage if not assigned and this policy has been loaded
+  if (!$.parent && !$.model.publicationTarget && !$.model.view) {
+    $.model.view = metaForm()
   }
 })
 
@@ -33,14 +33,14 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
   if (isMeta(meta)) {
     return html`
       <div class="${options.baseClass ?? "mq-form"} ${options.classes || ""}" >
-        ${fieldKeys($.spec)
+        ${fieldKeys($.model)
           .filter(key =>
             (!options.include || options.include.includes(key)) &&
             (!(options.exclude || []).includes(key))
           )
           .map(key => {
             const fieldMeta = meta[key] as HasMeta$<any>
-            const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta.$)
+            const itemView = fieldMeta.$.model.view || defaultFieldView(fieldMeta.$)
             return view(itemView)(fieldMeta.$.value, fieldMeta.$)
           })}
       </div>
@@ -50,7 +50,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
 
 export const repeatView: MetaView<any[]> = (v, $) => {
   if (isMetaArray($.meta)) {
-    const itemView = view($.spec.items?.view || defaultFieldView($.meta[0].$))
+    const itemView = view($.model.items?.view || defaultFieldView($.meta[0].$))
 
     return $.meta.map(({ $ }) => {
       return itemView($.value, $)
@@ -65,7 +65,7 @@ export const field = <P, K extends FieldKey<P>> (
   parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
 ) => {
   const field$ = child$(parent, key)
-  return view(fieldView || field$.spec.view || defaultFieldView(field$))(field$.value, field$)
+  return view(fieldView || field$.model.view || defaultFieldView(field$))(field$.value, field$)
 }
 
 /**

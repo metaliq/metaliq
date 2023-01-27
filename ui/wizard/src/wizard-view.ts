@@ -15,7 +15,7 @@ export const wizardView: MetaView<any> = (value, $) => [
 export const wizardTramline: MetaView<object> = (value, $) => {
   return html`
     <div class="mq-wizard-nav">
-      ${fieldKeys($.spec).map((stepName) => html`
+      ${fieldKeys($.model).map((stepName) => html`
         <div class="mq-wizard-nav-item ${classMap({
       current: $.state.step === stepName,
       visited: ($.meta as Meta<any>)[stepName].$.state.validated,
@@ -47,7 +47,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
     })}">
       <div class="mq-wizard-page-title">
         ${currentStep$
-          ? currentStep$.spec.helpText
+          ? currentStep$.model.helpText
           : notConfiguredWarning}
       </div>
       <div>
@@ -56,7 +56,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
           : notConfiguredWarning}
         ${pageError(currentValue, currentStep$)}
       </div>
-      ${currentStep$.spec.wizard ? "" : html`
+      ${currentStep$.model.wizard ? "" : html`
         <div class="mq-wizard-buttons">
           ${labels.backwards === false ? "" : html`
             <button class="mq-button"
@@ -76,4 +76,4 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
   `
 }
 
-const notConfiguredWarning = "This spec is not configured as a wizard. Add a `wizard` term."
+const notConfiguredWarning = "This MetaModel is not configured as a wizard. Add a `wizard` term."

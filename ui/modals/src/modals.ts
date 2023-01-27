@@ -1,3 +1,3 @@
 export * from "./modal-procs"
 export * from "./modal-view"
-export * from "./modal-spec"
+export * from "./modal-model"

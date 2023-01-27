@@ -1,5 +1,5 @@
 import { call } from "@metaliq/communication"
-import { ModalButton, ModalInfo } from "./modal-spec"
+import { ModalButton, ModalInfo } from "./modal-model"
 import { m$, reset } from "metaliq"
 import { ViewResult } from "@metaliq/presentation"
 

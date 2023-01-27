@@ -15,7 +15,7 @@ export type Package = {
   license: string
 }
 
-export const appSpec: MetaModel<Package> = {
+export const appModel: MetaModel<Package> = {
   label: "New MetaliQ Solution",
   fields: {
     name: {

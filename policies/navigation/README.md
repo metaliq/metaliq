@@ -16,11 +16,11 @@ For this reason the navigation model in a MetaliQ app is usually defined as a se
 
 Note: recurrent navigational structures (such as trees) are not supported by this policy at this time.
 
-A MetaliQ spec extends this core navigation model, including things such as; terminology labels - which can be used for menus, page headers and so on; validation elements - such as data-driven hide/show or enable/disabling of navigation options; and view specifications, used to display the target content for each node in the structure.
+A MetaliQ MetaModel extends this core navigation model, including things such as; terminology labels - which can be used for menus, page headers and so on; validation elements - such as data-driven hide/show or enable/disabling of navigation options; and presentation views, used to display the target content for each node in the structure.
 
 On start-up, this navigational structure is initialised into a Meta graph.
 
-The navigation policy provides further specification terms, including  `route`, which takes a Route object that associates the "page" with a URL pattern with type-safe parameter parsing, browser history integration and deep-linking. 
+The navigation policy provides further MetaModel terms, including  `route`, which takes a Route object that associates the "page" with a URL pattern with type-safe parameter parsing, browser history integration and deep-linking. 
 
 The navigation policy also provides terms to support the navigation flow such as `onEntering, onEnter, onLeaving, onLeave`, each of which is a MetaFn for the specified type. These functions provide a granular way for applications to provision data loading, integration tasks and so on.
 

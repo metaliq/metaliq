@@ -57,7 +57,7 @@ export type ModalButton = {
   classes?: string
 }
 
-export const modalSpec: MetaModel<ModalInfo> = {
+export const modalModel: MetaModel<ModalInfo> = {
   label: "Modal Display",
   view: modal,
   channels: [

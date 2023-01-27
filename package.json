@@ -1,6 +1,6 @@
 {
   "name": "metaliq-monorepo",
-  "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
+  "description": "MetaliQ - A framework for delivering business solutions using MetaModels",
   "version": "1.0.0-beta.32",
   "author": "tstewart@klaudhaus.com",
   "devDependencies": {

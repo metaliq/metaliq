@@ -2,13 +2,13 @@ import { render, TemplateResult } from "lit"
 import { $fn, child$, FieldKey, FieldType, getDynamicTerm, MetaFn, metaSetups } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
-export { ApplicationSpec } from "@metaliq/application"
-export { TerminologySpec } from "@metaliq/terminology"
-export { ValidationSpec } from "@metaliq/validation"
+export { ApplicationModel } from "@metaliq/application"
+export { TerminologyModel } from "@metaliq/terminology"
+export { ValidationModel } from "@metaliq/validation"
 
-export interface PresentationSpec<T, P> {
+export interface PresentationModel<T, P> {
   /**
-   * The primary view associated with this specification.
+   * The primary view associated with this MetaModel.
    */
   view?: MetaViewTerm<T, P>
 
@@ -29,7 +29,7 @@ export interface PresentationState {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends PresentationSpec<T, P> { }
+    interface Model<T, P> extends PresentationModel<T, P> { }
     interface State<T, P> extends PresentationState {
       this?: State<T, P>
     }
@@ -59,11 +59,11 @@ export type SingularViewResult = TemplateResult | string
 export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 
 metaSetups.push($ => {
-  // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
+  // Default the review method of the top level MetaModel to renderPage if not assigned and this policy has been loaded
   if (!$.parent) {
     // TODO: These should go into runtime target
-    if ($.spec.view || !$.spec.publicationTarget) {
-      $.spec.review = $.spec.review || renderPage
+    if ($.model.view || !$.model.publicationTarget) {
+      $.model.review = $.model.review || renderPage
       Object.assign(window, { meta: $.meta })
       document.title = getDynamicTerm("label")($.value, $)
     }
@@ -97,8 +97,8 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
 }
 
 /**
- * Get a ViewResult for the given meta.
- * If the view is not specified, will fall back to the spec view.
+ * Get a ViewResult for the given value and meta info.
+ * If the view is not specified, will fall back to the MetaModel's view.
  * Calling `view(myView)(myValue, myMeta$?)` has several advantages over calling `myView(myValue, myMeta$)`:
  *
  * First, it can accommodate either a single view or an array of views - enabling the
@@ -108,15 +108,15 @@ export function setHideShowWrapper (wrapper: ViewWrapper) {
  * will attempt to deduce the meta info,
  * so the "inner" view function does not necessarily have to.
  * As with other meta functions, meta info deduction does not work for primitives
- * and may be unreliable where the same value object is shared by multiple meta objects / specs.
+ * and may be unreliable where the same value object is shared by multiple meta-model objects.
  * Fourth, if both a value and meta info are provided,
  * the $ backlink on the value object will be re-established.
  * This can assist in situations where a single value object is being shared
- * (with possibly different specifications) across multiple points in the meta graph.
+ * (with possibly different MetaModels) across multiple points in the meta graph.
  *
  * ```
- * view()(myValue) // View myValue with the view from the spec, if present
- * view(maybeView)(myValue) // View using maybeView if present, otherwise fall back to spec view if present
+ * view()(myValue) // View myValue with the view from the model, if present
+ * view(maybeView)(myValue) // View using maybeView if present, otherwise fall back to model view if present
  * view([firstView, secondView])(myValue) // View myValue using two different views sequentially
  * ```
  */
@@ -128,13 +128,13 @@ export function view <T, P = any> (
       // Establish correct value/meta link prior to viewing
       Object.assign(v, { $ })
     }
-    metaViewTerm = metaViewTerm ?? $.spec.view
+    metaViewTerm = metaViewTerm ?? $.model.view
     if (!metaViewTerm) {
       return ""
     } else if (Array.isArray(metaViewTerm)) {
       return metaViewTerm.map(mv => view(mv)(v, $))
     } else {
-      if (typeof $.spec.hidden === "function") {
+      if (typeof $.model.hidden === "function") {
         return hideShowWrapper(metaViewTerm)(v, $)
       } else {
         return $.state.hidden ? "" : metaViewTerm(v, $)

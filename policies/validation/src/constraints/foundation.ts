@@ -12,7 +12,7 @@ export const equalTo = (equalTo: any, msg?: string): Validator<any> => value =>
  */
 export const sameAs = <T, P>(other: FieldKey<P>, msg?: string): Validator<T, P> => (value, $ = m$(value)) => {
   const otherMeta$ = child$($.parent.$, other)
-  return value === otherMeta$.value as any || msg || `Does not match ${otherMeta$.spec.label}`
+  return value === otherMeta$.value as any || msg || `Does not match ${otherMeta$.model.label}`
 }
 
 export const transform = <T> (fn: MetaFn<T, any, T>): Validator<T> => (value, $ = m$(value)) => {

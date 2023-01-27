@@ -11,7 +11,7 @@ import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
 
-export { TerminologySpec } from "@metaliq/terminology"
+export { TerminologyModel } from "@metaliq/terminology"
 
 let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
@@ -19,7 +19,7 @@ const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and
 
 export const webPageAppRunner = (
   config: WebPageAppConfig = {}
-): Runner => async ({ specName, simplePath, spec }) => {
+): Runner => async ({ modelName, simplePath, model }) => {
   const port = config.run?.port || 8400
   console.log(`Starting MetaliQ SPA server on port ${port}`)
 
@@ -63,7 +63,7 @@ export const webPageAppRunner = (
       },
       async (ctx, next) => {
         if (ctx.path === "/bin/index.js") {
-          ctx.body = indexJs(specName, simplePath)
+          ctx.body = indexJs(modelName, simplePath)
         } else if (ctx.path === "/" || ctx.path === "/index.html") {
           const { src: cssSrc } = config?.build?.css || { src: "css/index.css" }
           ctx.body = indexHtml(config, jsSrc, cssSrc)
@@ -87,7 +87,7 @@ export const webPageAppRunner = (
 
 export const webPageAppCleaner = (
   config: WebPageAppConfig = {}
-): Cleaner => async ({ spec }) => {
+): Cleaner => async ({ model }) => {
   const destDir = config.build?.destDir || "www"
 
   // Clean previous build
@@ -97,7 +97,7 @@ export const webPageAppCleaner = (
 
 export const webPageAppBuilder = (
   config: WebPageAppConfig = {}
-): Builder => async ({ specName, simplePath, spec }) => {
+): Builder => async ({ modelName, simplePath, model }) => {
   // Deduce locations
   const destDir = config.build?.destDir || "www"
   const htmlDest = config.build?.html?.dest || "index.html"
@@ -106,11 +106,11 @@ export const webPageAppBuilder = (
   const cssDest = config.build?.css?.dest || cssSrc
 
   // Produce HTML
-  const html = indexHtml(config, jsDest, cssDest, typeof spec.label === "string" ? spec.label : "")
+  const html = indexHtml(config, jsDest, cssDest, typeof model.label === "string" ? model.label : "")
   await ensureAndWriteFile(join(destDir, htmlDest), html)
 
   // Produce JS
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath))
+  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./spa-node"]
@@ -144,11 +144,11 @@ export const webPageAppBuilder = (
   return true
 }
 
-const indexJs = (specName: string, specPath: string) => dedent`
+const indexJs = (modelName: string, modelPath: string) => dedent`
   import { run } from "@metaliq/application"
-  import { ${specName} } from "./${specPath}.js"
+  import { ${modelName} } from "./${modelPath}.js"
   
-  run(${specName})
+  run(${modelName})
 `
 
 const indexHtml = (spaConfig: WebPageAppConfig, jsPath: string, cssPath?: string, title?: string) => {

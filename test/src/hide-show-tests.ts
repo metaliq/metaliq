@@ -1,6 +1,6 @@
 import { describe } from "mocha"
 import chai from "chai"
-import { organisationSpec } from "./test-specs"
+import { organisationModel } from "./test-models"
 import { run } from "@metaliq/application"
 import { up } from "@metaliq/up"
 
@@ -10,7 +10,7 @@ export { validate } from "@metaliq/validation"
 
 describe("Hide / Show rules", () => {
   it("should hide or show a field depending on a rule", async () => {
-    const mApplication = await run(organisationSpec)
+    const mApplication = await run(organisationModel)
     const appVal = mApplication.$.value
 
     await up(contact => {

@@ -1,13 +1,13 @@
 import { MetaModel } from "metaliq"
 
-interface PublicationSpec {
+interface PublicationModel {
   publicationTarget?: PublicationTarget
 }
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends PublicationSpec {
-      this?: Specification<T, P>
+    interface Model<T, P> extends PublicationModel {
+      this?: Model<T, P>
       publicationTarget?: PublicationTarget
     }
   }
@@ -30,8 +30,8 @@ export type PublicationTarget = {
 
   /**
    * Cleaner function, run prior to build.
-   * When performing a multi-spec build, all cleaners are run first, followed by all builders.
-   * This allows for multiple specifications to provide separate content
+   * When performing a multiple MetaModel build, all cleaners are run first, followed by all builders.
+   * This allows for multiple MetaModels to provide separate content
    * to a common target directory which has been emptied or removed as part of the clean process.
    */
   cleaner?: Cleaner
@@ -43,14 +43,14 @@ export type PublicationTarget = {
 }
 
 /**
- * The initiation context for a publication, with project location and loaded instance of the spec and config.
+ * The initiation context for a publication.
  */
 export type PublicationContext = {
 
   /**
-   * Spec name as exported from its module.
+   * MetaModel name as exported from its module.
    */
-  specName: string
+  modelName: string
 
   /**
    * Path within the source folder, without extension.
@@ -58,9 +58,9 @@ export type PublicationContext = {
   simplePath: string
 
   /**
-   * Loaded spec.
+   * Loaded model.
    */
-  spec: MetaModel<any>
+  model: MetaModel<any>
 }
 
 export type BuildResult = boolean
