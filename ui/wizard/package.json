@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/wizard",
   "description": "Wizard navigator for MetaliQ",
-  "version": "1.0.0-beta.32",
+  "version": "1.0.0-beta.40",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/forms": "workspace:*",
