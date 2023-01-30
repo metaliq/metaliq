@@ -1,12 +1,12 @@
 import { render, TemplateResult } from "lit"
-import { $fn, child$, FieldKey, FieldType, getDynamicTerm, MetaFn, metaSetups } from "metaliq"
+import { $fn, getDynamicTerm, MetaFn, metaSetups } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
-export { ApplicationModel } from "@metaliq/application"
-export { TerminologyModel } from "@metaliq/terminology"
-export { ValidationModel } from "@metaliq/validation"
+export { ApplicationTerms } from "@metaliq/application"
+export { TerminologyTerms } from "@metaliq/terminology"
+export { ValidationTerms } from "@metaliq/validation"
 
-export interface PresentationModel<T, P> {
+export interface PresentationTerms<T, P> {
   /**
    * The primary view associated with this MetaModel.
    */
@@ -29,7 +29,7 @@ export interface PresentationState {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends PresentationModel<T, P> { }
+    interface Terms<T, P> extends PresentationTerms<T, P> { }
     interface State<T, P> extends PresentationState {
       this?: State<T, P>
     }

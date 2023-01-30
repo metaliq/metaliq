@@ -1,5 +1,5 @@
 /**
- * The Policy namespace holds the interfaces for meta Models and extended State.
+ * The Policy namespace holds the interfaces for meta model Terms and extended State.
  * These interfaces are extended within policy modules in order to build an overall policy
  * that encompasses their system capablities.
  *
@@ -12,11 +12,11 @@
  */
 
 export declare namespace Policy {
-  export interface Model<T, P = any> {
+  export interface Terms<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
      */
-    this?: Model<T, P>
+    this?: Terms<T, P>
 
     /**
      * Register of policy string literals.
@@ -108,12 +108,17 @@ export type Meta$<T, P = any> = {
 }
 
 /**
+ * The type of the `fields` definition collection in a MetaModel.
+ */
+export type MetaModelFields<Type> = { [K in FieldKey<Type>]?: MetaModel<Type[K], Type> }
+
+/**
  * MetaModel that extends a given data model Type and optional Parent.
  */
-export type MetaModel<Type, Parent = any> = Policy.Model<Type, Parent> & {
+export type MetaModel<Type, Parent = any> = Policy.Terms<Type, Parent> & {
   fields?: Type extends any[]
     ? never
-    : { [K in FieldKey<Type>]?: MetaModel<Type[K], Type> }
+    : MetaModelFields<Type>
   items?: Type extends Array<infer I>
     ? MetaModel<I>
     : never
@@ -372,8 +377,8 @@ export const $fn = <Type, Parent> (fn: MetaFn<Type, Parent>): MetaFn<Type, Paren
   return fn(v, $, e)
 }
 
-export type ModelKey = keyof Policy.Model<any>
-export type ModelValue<K extends ModelKey> = Policy.Model<any>[K]
+export type ModelKey = keyof Policy.Terms<any>
+export type ModelValue<K extends ModelKey> = Policy.Terms<any>[K]
 export type DerivedModelValue<K extends ModelKey> = Exclude<ModelValue<K>, MetaFn<any>>
 
 /**

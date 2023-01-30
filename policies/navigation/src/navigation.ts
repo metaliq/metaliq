@@ -5,9 +5,9 @@ import { up } from "@metaliq/up"
 
 export * from "./router"
 
-export { ApplicationModel } from "@metaliq/application"
+export { ApplicationTerms } from "@metaliq/application"
 
-export interface NavigationModel<T, P = any, RP extends object = any, RQ = any> {
+export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> {
   /**
    * Route object associated with this MetaModel.
    */
@@ -50,7 +50,7 @@ export interface NavigationState<T> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends NavigationModel<T, P> {}
+    interface Terms<T, P> extends NavigationTerms<T, P> {}
 
     interface State<T, P> {
       this?: State<T, P>

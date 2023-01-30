@@ -2,9 +2,9 @@ import { addDynamicState, fieldKeys, isMeta, isMetaArray, m$, Meta$, MetaFn, met
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
-export { TerminologyModel } from "@metaliq/terminology"
+export { TerminologyTerms } from "@metaliq/terminology"
 
-export interface ValidationModel<T, P = any> {
+export interface ValidationTerms<T, P = any> {
   validator?: Validator<T, P>
   mandatory?: boolean | MetaFn<T, P, boolean>
   disabled?: boolean | MetaFn<T, P, boolean>
@@ -24,7 +24,7 @@ export interface ValidationState {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends ValidationModel<T, P> {
+    interface Terms<T, P> extends ValidationTerms<T, P> {
     }
 
     interface State<T, P> extends ValidationState {

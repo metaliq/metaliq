@@ -61,7 +61,7 @@ This is a reference to the `MetaModel` with which this Meta was created.
 
 * `state`
 
-This is a container for additional runtime state for this particular Meta instance. We have seen previously that policies define meta Model terms. They can also define, intialise and manage aspects of the meta State.
+This is a container for additional runtime state for this particular Meta instance. We have seen previously that Policies define the Terms for MetaModels. They can also define, intialise and manage aspects of the meta State.
 
 * `value`
 

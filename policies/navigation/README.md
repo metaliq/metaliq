@@ -8,7 +8,7 @@ The MetaliQ Navigation policy is one of the core policies provided in the @metal
 
 It provides an abstraction for the mechanism of navigation within an application space, and is designed to be flexible and extendable enough to support various navigation needs.
 
-### Data and Navigation Model
+### Data and Navigation Terms
 
 Most apps have a logical data model, based upon the business domain and the functionality of the app itself. In Metaliq, this application data model is defined as a TypeScript type, and is generally structured in a pragmatic, information-centric manner that does not necessarily map directly to an application's navigation structure.
 

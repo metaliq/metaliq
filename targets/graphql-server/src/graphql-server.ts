@@ -1,6 +1,6 @@
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
-export type GraphQLServerModel<T> = {
+export type GraphQLServerTerms<T> = {
   /**
    * Service resolvers.
    */
@@ -9,8 +9,8 @@ export type GraphQLServerModel<T> = {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends GraphQLServerModel<T> {
-      this?: Model<T, P>
+    interface Terms<T, P> extends GraphQLServerTerms<T> {
+      this?: Terms<T, P>
     }
   }
 }

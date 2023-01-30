@@ -6,7 +6,7 @@ import { LogFunction, startUp, Up } from "@metaliq/up"
  * This establishes an update and review mechanism.
  */
 
-export interface ApplicationModel<T, P = any> {
+export interface ApplicationTerms<T, P = any> {
   /**
    * Data initialisation term, containing
    * initial value or a function (sync/async) to return the initial value.
@@ -60,7 +60,7 @@ export interface ApplicationActions<T, P> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends ApplicationModel<T, P> {}
+    interface Terms<T, P> extends ApplicationTerms<T, P> {}
 
     interface State<T, P> extends ApplicationState<T>{
       this?: State<T, P>

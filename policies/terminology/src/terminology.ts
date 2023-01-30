@@ -1,6 +1,6 @@
 import { addDynamicState, HasMeta$, m$, Meta$, MetaFn, metaSetups } from "metaliq"
 
-export interface TerminologyModel<T, P = any> {
+export interface TerminologyTerms<T, P = any> {
   /**
    * Primary identifying label.
    */
@@ -25,7 +25,7 @@ export interface TerminologyState {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends TerminologyModel<T, P> {}
+    interface Terms<T, P> extends TerminologyTerms<T, P> {}
     interface State<T, P> extends TerminologyState {
       this?: State<T, P>
     }

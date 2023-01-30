@@ -7,7 +7,7 @@ import { MetaView } from "@metaliq/presentation"
 
 export type StepLabel = string | boolean
 
-export interface WizardModel<T, P = any> {
+export interface WizardTerms<T, P = any> {
   wizard?: {
     /**
      * Set this to allow selection of any step at any time without validation.
@@ -40,7 +40,7 @@ export interface WizardState<T> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends WizardModel<T, P> {}
+    interface Terms<T, P> extends WizardTerms<T, P> {}
     interface State<T, P> extends WizardState<T>{
       this?: State<T, P>
     }

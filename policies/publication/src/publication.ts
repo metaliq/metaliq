@@ -1,13 +1,13 @@
 import { MetaModel } from "metaliq"
 
-interface PublicationModel {
+interface PublicationTerms {
   publicationTarget?: PublicationTarget
 }
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends PublicationModel {
-      this?: Model<T, P>
+    interface Terms<T, P> extends PublicationTerms {
+      this?: Terms<T, P>
       publicationTarget?: PublicationTarget
     }
   }

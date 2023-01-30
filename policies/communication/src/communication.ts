@@ -1,6 +1,6 @@
 import { Meta$, MetaFn, metaSetups } from "metaliq"
 
-export interface CommunicationModel<T, P> {
+export interface CommunicationTerms<T, P> {
   /**
    * An array of channels that will be registered for communicating with the produced meta.
    * If registered, any call to this channel will be applied to this meta.
@@ -12,7 +12,7 @@ export interface CommunicationModel<T, P> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Model<T, P> extends CommunicationModel<T, P> {}
+    interface Terms<T, P> extends CommunicationTerms<T, P> {}
   }
 }
 

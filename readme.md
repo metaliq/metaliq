@@ -229,7 +229,7 @@ Originally published as `lit-up`, the state transition management library has no
 
 #### Custom Policies
 
-MetaliQ has a range of policies to support different system types, and can be extended by adding new policies which provide the necessary functionality and extend the Model and State interfaces of the Policy namespace.
+MetaliQ has a range of policies to support different system types, and can be extended by adding new policies which provide the necessary functionality and extend the Terms and State interfaces of the Policy namespace.
 
 #### Support
 

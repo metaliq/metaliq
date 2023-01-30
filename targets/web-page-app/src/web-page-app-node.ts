@@ -11,7 +11,7 @@ import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
 
-export { TerminologyModel } from "@metaliq/terminology"
+export { TerminologyTerms } from "@metaliq/terminology"
 
 let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
