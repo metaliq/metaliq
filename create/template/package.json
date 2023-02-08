@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/template",
-  "version": "1.0.0-beta.40",
+  "version": "1.0.0-beta.41",
   "type": "module",
   "main": "bin/models.js",
   "types": "bin/models.d.ts",
