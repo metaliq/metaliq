@@ -214,7 +214,7 @@ const packageJson: Record<Cloud, object> = {
       logs: "firebase functions:log"
     },
     engines: {
-      node: "17"
+      node: "18"
     },
     type: "module",
     main: "index.js",
@@ -235,7 +235,7 @@ const packageJson: Record<Cloud, object> = {
   netlify: {
     name: "functions",
     engines: {
-      node: "17"
+      node: "18"
     },
     type: "module",
     main: "hello.js",
