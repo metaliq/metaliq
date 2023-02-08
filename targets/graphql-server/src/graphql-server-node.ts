@@ -99,6 +99,8 @@ export const graphQLServerBuilder = (
   const json = JSON.stringify(packageJson[cloud], null, "  ")
   await ensureAndWriteFile(join(destDir, "package.json"), json)
 
+  await ensureAndWriteFile(join(destDir, ".npmrc"), "auto-install-peers=true")
+
   return true
 }
 
