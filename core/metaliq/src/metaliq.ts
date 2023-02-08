@@ -87,6 +87,11 @@ export type Meta$<T, P = any> = {
   key?: FieldKey<P>
 
   /**
+   * Index of parent meta within array (if applicable).
+   */
+  index?: number
+
+  /**
    * The MetaModel associated with this node in the meta graph.
    */
   model: MetaModel<T, P>
@@ -162,7 +167,7 @@ export const addDynamicState = <T, P = any, K extends ModelKey = any>($: Meta$<T
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  model: MetaModel<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>
+  model: MetaModel<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
 ): Meta<T, P> {
   const hasProto = !!proto
   const isArray = model.items || Array.isArray(value)
@@ -180,7 +185,11 @@ export function metafy <T, P = any> (
     // so that primitive values are assigned properly to their place in the containing object.
     get value () {
       if (this.parent) {
-        return this.parent[this.key]?.$._value
+        if (typeof this.index === "number") {
+          return this.parent[this.key]?.[this.index]?.$._value
+        } else {
+          return this.parent[this.key]?.$._value
+        }
       } else {
         return this._value
       }
@@ -198,6 +207,8 @@ export function metafy <T, P = any> (
     state: proto?.$?.state || {},
     _value: value
   })
+  if (typeof index === "number") $.index = index
+
   const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
   // Assign the meta object to itself - useful for backlinks from values
@@ -217,9 +228,9 @@ export function metafy <T, P = any> (
     const valueArr = <unknown>value as any[] || []
     const metaArr = <unknown>result as MetaArray<any, P>
     metaArr.length = 0 // Remove any items from supplied prototype
-    for (const item of valueArr) {
+    for (const [itemIndex, item] of valueArr.entries()) {
       const itemMeta = item?.$?.meta
-      metaArr.push(metafy(model.items || {}, item, parent, key, itemMeta))
+      metaArr.push(metafy(model.items || {}, item, parent, key, itemMeta, itemIndex))
     }
   } else {
     for (const fieldKey of fieldKeys(model)) {
