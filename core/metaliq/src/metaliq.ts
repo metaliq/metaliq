@@ -67,27 +67,33 @@ export type MetaArray<Type, Parent = any> = Array<Meta<Type, Parent>> & HasMeta$
 export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
 
 /**
- * Dollar property containing meta information.
+ * Dollar property containing information for each node in the meta graph.
  */
 export type Meta$<T, P = any> = {
   /**
-   * Link to the meta object containing this $ property.
+   * Link to the object in the meta graph containing this $ property.
    * Useful for backlinks from object values.
    */
   meta?: HasMeta$<T, P>
 
   /**
-   * Ancestry within meta graph (if applicable).
+   * Ancestor node within meta graph (if applicable).
+   * This node's meta info is at `parent.$`.
+   * The `parent` function of this module provides convenient, typed access to
+   * the data at `parent.$.value`
    */
   parent?: HasMeta$<P>
 
   /**
-   * Key within parent meta (if applicable).
+   * Key within parent (if applicable).
+   * If this node of the graph is in an array then this is the key of the
+   * containing array within its parent, and can be used with the `index`
+   * property to determine this node's location.
    */
   key?: FieldKey<P>
 
   /**
-   * Index of parent meta within array (if applicable).
+   * Index of parent within array (if applicable).
    */
   index?: number
 
@@ -107,7 +113,7 @@ export type Meta$<T, P = any> = {
   value?: T
 
   /**
-   * The internal (potentially transient) version of the data value.
+   * The internal version of the data value.
    */
   _value?: T
 }
