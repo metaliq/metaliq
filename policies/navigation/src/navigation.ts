@@ -1,5 +1,17 @@
 import { Route, RouteHandler, Router } from "./router"
-import { $fn, child$, FieldKey, fieldKeys, fns, getAncestorTerm, Meta$, MetaFn, metaSetups, MetaModel } from "metaliq"
+import {
+  $fn,
+  child$,
+  FieldKey,
+  fieldKeys,
+  fns,
+  getAncestorTerm,
+  Meta$,
+  MetaFn,
+  metaSetups,
+  MetaModel,
+  onDescendants, root$
+} from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 
@@ -9,14 +21,36 @@ export { ApplicationTerms } from "@metaliq/application"
 
 export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> {
   /**
-   * Route object associated with this MetaModel.
+   * Set this term on any parent node within the navigation structure
+   * to define the basic navigation behaviour within that node.
+   *
+   * The MetaFn should expect to receive the selected navigation node and behave accordingly.
+   *
+   * This policy provides several standard functions `setNavSelection` which is
+   * a basic behaviour allowing free navigation between all the immediate child nodes.
+   * Alternative behaviours such as step-by-step wizard navigation
+   * can be provided by other policies.
+   */
+  onNavigate?: MetaFn<any, any, MaybeReturn<boolean>>
+
+  /**
+   * Define a route term for each "leaf" node in the navigation structure,
+   * as well as any parent nodes that need a navigation entry themselves.
    */
   route?: Route<RP, RQ>
 
   /**
-   * Meta functions for application navigation events.
+   * Set this term on a leaf node within the navigation structure
+   * in order to perform any pre-processing, such as remote data loading.
+   * If the function returns the boolean value `false` navigation will be cancelled.
    */
   onEnter?: MetaFn<T, P, RouteHandler<RP, RQ>>
+
+  /**
+   * Set this term on a leaf node within the navigation structure
+   * in order to perform any post-processing, such as remote data persistence.
+   * If the function returns the boolean value `false` navigation will be cancelled.
+   */
   onLeave?: MetaFn<T, P, RouteHandler<RP, RQ>>
 
   /**
@@ -24,16 +58,6 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    * if one is not already present in the browser location.
    */
   urlPath?: string
-
-  /**
-   * Navigation type.
-   * This is set at the parent level to define the mechanism for navigating between children.
-   */
-  navType?: NavigationType
-}
-
-export type NavigationType = {
-  onNavigate?: MetaFn<any, any, MaybeReturn<boolean>>
 }
 
 export interface NavigationState<T> {
@@ -99,15 +123,15 @@ metaSetups.push($ => {
         const routeResult = await model.onEnter($.value, $)(params)
         if (routeResult === false) return false
       }
-      const navType = getAncestorTerm("navType")($.value, $)
-      if (typeof navType?.onNavigate === "function") {
-        const navTypeResult = navType.onNavigate($.value, $)
+      const onNavigate = getAncestorTerm("onNavigate")($.value, $)
+      if (typeof onNavigate === "function") {
+        const navTypeResult = onNavigate($.value, $)
         if (navTypeResult === false) return false
       }
     }
   }
   // If this is a nav container, set initial selection
-  if ($.model.navType) {
+  if ($.model.onNavigate) {
     $.state.nav = $.state.nav || { selected: null }
     $.state.nav.selected = fieldKeys($.model)[0]
   }
@@ -121,14 +145,17 @@ metaSetups.push($ => {
       history.pushState(null, null, model.urlPath)
     }
     if (policy.route$s.size) {
-      $.model.bootstrap = fns([$.model.bootstrap, () => {
-        // Extend any existing bootstrap to initialise the Router
-        const router = new Router(
-          Array.from(policy.route$s.keys()),
-          () => up()()
-        ).start()
-        router.catch(console.error)
-      }])
+      $.model.bootstrap = fns(
+        $.model.bootstrap,
+        () => {
+          // Extend any existing bootstrap to initialise the Router
+          const router = new Router(
+            Array.from(policy.route$s.keys()),
+            () => up()()
+          ).start()
+          router.catch(console.error)
+        }
+      )
     }
   }
 })
@@ -164,39 +191,38 @@ export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
 }
 
 /**
- * Recursively set the navigation meta state.
+ * Clears the current navigation selection,
+ * then sets the provided node as the currently selected node in its parent
+ * and recursively applies this selection through any further ancestry
+ * in the navigation structure.
+ *
+ * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
 export const setNavSelection: MetaFn<any> = $fn((v, $) => {
-  let recursing = false
+  policy.selectedRoute$ = $
 
-  // Clear any lower selections
-  const recurseChildren: MetaFn<any> = (v, $) => {
+  const clearSelection: MetaFn<any> = (v, $) => {
     if ($.state.nav) {
       delete $.state.nav.selected
     }
-    for (const key of fieldKeys($.model)) {
-      const c$ = child$($, key)
-      recurseChildren(c$.value, c$)
-    }
   }
 
+  onDescendants(clearSelection)(root$($))
+
   // Set any upper selections
-  const recurseParent: MetaFn<any> = (v, $) => {
+  const setParentSelection: MetaFn<any> = (v, $) => {
     const parent$ = $.parent?.$
-    if (!recursing) policy.selectedRoute$ = $
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
       parent$.state.nav.selected = $.key
       if (parent$.state.nav.showMenu) {
-        parent$.state.nav.showMenu = false
+        // parent$.state.nav.showMenu = false
       }
-      recursing = true
-      recurseParent(parent$.value, parent$)
+      setParentSelection(parent$.value, parent$)
     }
   }
 
-  recurseChildren(v, $)
-  recurseParent(v, $)
+  setParentSelection(v, $)
 })
 
 /**
@@ -209,10 +235,6 @@ export const goNavRoute = (item$: Meta$<any>) => {
     item$ = child$(item$, firstChildKey)
   }
   item$.model.route?.go()
-}
-
-export const freeNavigation: NavigationType = {
-  onNavigate: setNavSelection
 }
 
 export const toggleMenu = ($: Meta$<any>) => {

@@ -389,7 +389,7 @@ export const $args = <Type, Parent> (value: Type, $?: Meta$<Type, Parent>, event
 /**
  * Convenient method of wrapping a MetaFn and adding the behaviour of $args.
  */
-export const $fn = <Type, Parent> (fn: MetaFn<Type, Parent>): MetaFn<Type, Parent> => (v, $, e) => {
+export const $fn = <Type, Parent, Return> (fn: MetaFn<Type, Parent, Return>): MetaFn<Type, Parent, Return> => (v, $, e) => {
   [v, $] = $args(v, $)
   return fn(v, $, e)
 }
@@ -429,13 +429,12 @@ export const getAncestorTerm = <K extends ModelKey>(
     })
 
 /**
- * Combine an array of meta functions into a single meta function
+ * Combine any number of meta functions into a single meta function
  * which returns the result of the last function.
- * Can be used recursively, i.e. `fns(fns(...), ...)`.
  * Useful for combining functionality into a single MetaFn term.
  */
 export const fns = <T, P = any, R = any> (
-  metaFns: [...Array<MetaFn<T, P>>, MetaFn<T, P, R>]
+  ...metaFns: [...Array<MetaFn<T, P>>, MetaFn<T, P, R>]
 ): MetaFn<T, P, R> => (v, $) => {
     let result: R
     for (const fn of metaFns) {
@@ -443,3 +442,37 @@ export const fns = <T, P = any, R = any> (
     }
     return result
   }
+
+/**
+ * Return the {@link Meta$} for the root node in the meta graph containing the
+ * node with the given Meta$.
+ *
+ * In the case where you know what Meta$ type to expect,
+ * you can specify with `root$<MyType>(myNode$)`.
+ *
+ * Note that a root Meta$ won't have a parent type.
+ */
+export const root$ = <T> (v: any, $?: Meta$<any>) => {
+  [v, $] = $args(v, $)
+  let result = $
+  while (result.parent) {
+    result = result.parent.$
+  }
+  return result as Meta$<T>
+}
+
+/**
+ * Return a MetaFn that will run a given MetaFn on all descendant nodes
+ * of the provided node.
+ */
+export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => $fn((v, $) => {
+  const recurse = ($: Meta$<any>, onBase: boolean = true) => {
+    if (onBase) fn(v, $)
+    const keys = fieldKeys($.model)
+    for (const key of keys) {
+      recurse(child$($, key))
+    }
+  }
+
+  recurse($, onBase)
+})

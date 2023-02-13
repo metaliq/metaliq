@@ -33,6 +33,7 @@
     { "path": "ui/choices" },
     { "path": "ui/flatpickr" },
     { "path": "ui/modals" },
+    { "path": "ui/navigator" },
     { "path": "ui/photo" },
     { "path": "ui/repeat" },
     { "path": "ui/wizard" },

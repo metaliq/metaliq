@@ -22,7 +22,9 @@ On start-up, this navigational structure is initialised into a Meta graph.
 
 The navigation policy provides further MetaModel terms, including  `route`, which takes a Route object that associates the "page" with a URL pattern with type-safe parameter parsing, browser history integration and deep-linking. 
 
-The navigation policy also provides terms to support the navigation flow such as `onEntering, onEnter, onLeaving, onLeave`, each of which is a MetaFn for the specified type. These functions provide a granular way for applications to provision data loading, integration tasks and so on.
+The navigation policy also provides terms to support the navigation flow such as `onEnter, onLeave`, each of which is a MetaFn for the specified type. These functions provide a granular way for applications to provision data loading, integration tasks and so on.
+
+There is also the term `onNavigate`. Unlike the `onEnter` and `onLeave` terms, which are specified at the navigation leaf level, `onNavigate` is set on the navigation parent. It provides the general mechanism that should be used for navigating around the application, and any navigation parent (which is any level within the navigation hierarchy that needs to maintain a current selection) should have an `onNavigate` term. This policy provides the standard `setNavSelection` 
 
 Additional terms can be supplied by specialised navigation models, such as sequential (for a wizard-like flow with additional inline validation and terminology for previous and next actions) or adventure (allowing movement along any of a node's connected edges).
 
