@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { $fn, getDynamicTerm, MetaFn, metaSetups } from "metaliq"
+import { $fn, MetaFn } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationTerms } from "@metaliq/application"
@@ -57,18 +57,6 @@ export type SingularViewResult = TemplateResult | string
  * (in which case each view result (which themselves may be singular or plural) is rendered in sequence).
  */
 export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
-
-metaSetups.push($ => {
-  // Default the review method of the top level MetaModel to renderPage if not assigned and this policy has been loaded
-  if (!$.parent) {
-    // TODO: These should go into runtime target
-    if ($.model.view || !$.model.publicationTarget) {
-      $.model.review = $.model.review || renderPage
-      Object.assign(window, { meta: $.meta })
-      document.title = getDynamicTerm("label")($.value, $)
-    }
-  }
-})
 
 /**
  * A widget takes some configuration and returns a View.

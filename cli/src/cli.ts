@@ -11,6 +11,8 @@ import { webPageApp } from "@metaliq/web-page-app"
 import { PublicationContext, PublicationTarget } from "@metaliq/publication"
 import { link, unlink } from "./linker"
 
+export { ApplicationTerms } from "@metaliq/application"
+
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
 Object.assign(window, { navigator: { userAgent: "" } })
@@ -107,13 +109,14 @@ async function run (modelName: string = "appModel", options: RunOptions = {}) {
     return console.error(`Model not found: ${simplePath}.ts > ${modelName}`)
   }
 
-  const pubTarget = model?.publicationTarget || webPageApp()
-  if (!pubTarget?.runner) {
+  model.publicationTarget = model.publicationTarget || webPageApp()
+
+  if (!model.publicationTarget?.runner) {
     console.log("Specified publication target has no runner")
   }
 
-  console.log(`Running MetaModel ${modelName} with publication target ${pubTarget.name}`)
-  await pubTarget.runner({ modelName, simplePath, model })
+  console.log(`Running MetaModel ${modelName} with publication target ${model.publicationTarget.name}`)
+  await model.publicationTarget.runner({ modelName, simplePath, model })
 }
 
 async function build (modelNames: string[], options: BuildOptions = {}) {
@@ -134,6 +137,7 @@ async function build (modelNames: string[], options: BuildOptions = {}) {
     if (!model) {
       return console.error(`Model not found: ${simplePath} > ${modelName}`)
     }
+
     bundles.push({
       modelName,
       target: model.publicationTarget || webPageApp(),

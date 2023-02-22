@@ -7,6 +7,8 @@
     "metaliq": "./bin/cli-es6.js"
   },
   "dependencies": {
+    "@metaliq/application": "workspace:*",
+    "@metaliq/presentation": "workspace:*",
     "@metaliq/publication": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
     "metaliq": "workspace:*",

@@ -21,7 +21,7 @@
     "@metaliq/validation": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
     "graphqlex": "0.8.0",
-    "lit": "2.3.1",
+    "lit": "2.6.1",
     "metaliq": "workspace:*"
   },
   "devDependencies": {

@@ -146,9 +146,14 @@ export const webPageAppBuilder = (
 
 const indexJs = (modelName: string, modelPath: string) => dedent`
   import { run } from "@metaliq/application"
+  import { renderPage } from "@metaliq/presentation"
+  import { metaForm } from "@metaliq/forms"
+  import { getDynamicTerm } from "metaliq"
   import { ${modelName} } from "./${modelPath}.js"
   
-  run(${modelName})
+  model.review = model.review || renderPage
+  window.meta = await run(${modelName})
+  document.title = getDynamicTerm("label")(window.meta.$)
 `
 
 const indexHtml = (spaConfig: WebPageAppConfig, jsPath: string, cssPath?: string, title?: string) => {
