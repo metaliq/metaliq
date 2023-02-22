@@ -151,7 +151,7 @@ const indexJs = (modelName: string, modelPath: string) => dedent`
   import { getDynamicTerm } from "metaliq"
   import { ${modelName} } from "./${modelPath}.js"
   
-  model.review = model.review || renderPage
+  ${modelName}.review = ${modelName}.review || renderPage
   window.meta = await run(${modelName})
   document.title = getDynamicTerm("label")(window.meta.$)
 `
