@@ -1,0 +1,27 @@
+{
+  "name": "@metaliq/flatpickr",
+  "description": "MetaliQ wrapper for the flatpickr date picker library",
+  "version": "1.0.0-beta.49",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {
+    "@metaliq/forms": "workspace:*",
+    "@metaliq/presentation": "workspace:*",
+    "@metaliq/up": "workspace:*",
+    "@metaliq/validation": "workspace:*",
+    "flatpickr": "^4.6.13",
+    "lit": "2.6.1",
+    "metaliq": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
+  "main": "lib/flatpickr.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {
+    "pkg-prepare": "mkdir -p lib && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/",
+    "prepare": "pnpm run pkg-prepare"
+  },
+  "type": "module",
+  "types": "lib/flatpickr.d.ts"
+}

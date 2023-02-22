@@ -1,0 +1,8 @@
+packages:
+  - "core/*"
+  - "policies/*"
+  - "ui/*"
+  - "targets/*"
+  - "cli"
+  - "test"
+  - "create/*"

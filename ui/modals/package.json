@@ -1,0 +1,22 @@
+{
+  "name": "@metaliq/modals",
+  "description": "Basic modal display for MetaliQ",
+  "version": "1.0.0-beta.49",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {
+    "@metaliq/communication": "workspace:*",
+    "@metaliq/presentation": "workspace:*",
+    "@metaliq/up": "workspace:*",
+    "lit": "2.6.1",
+    "metaliq": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
+  "main": "lib/modals.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/modals.d.ts"
+}

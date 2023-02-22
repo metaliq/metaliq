@@ -1,4 +1,5 @@
 {
+  "include": [],
   "compilerOptions": {
     "experimentalDecorators": true,
     "module": "ES2020",
@@ -7,12 +8,44 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "outDir": "./lib",
-    "rootDir": "./src",
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "declarationDir": "./lib"
+    "declarationMap": true,
+    "composite": true
   },
-  "include": ["./src/**/*"]
+  "references": [
+    { "path": "core/metaliq"},
+    { "path": "core/util"},
+    { "path": "core/up"},
+
+    { "path": "policies/terminology" },
+    { "path": "policies/publication" },
+    { "path": "policies/application" },
+    { "path": "policies/navigation" },
+    { "path": "policies/communication" },
+    { "path": "policies/serialization" },
+    { "path": "policies/validation" },
+    { "path": "policies/presentation" },
+
+    { "path": "ui/elements" },
+    { "path": "ui/forms" },
+    { "path": "ui/choices" },
+    { "path": "ui/flatpickr" },
+    { "path": "ui/modals" },
+    { "path": "ui/navigator" },
+    { "path": "ui/photo" },
+    { "path": "ui/repeat" },
+    { "path": "ui/wizard" },
+
+    { "path": "targets/web-page-app"},
+    { "path": "targets/web-component"},
+    { "path": "targets/graphql-server"},
+
+    { "path": "cli"},
+    { "path": "test" },
+    { "path": "create/template" },
+    { "path": "create/create"}
+  ],
+  "compileOnSave": false
 }

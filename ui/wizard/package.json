@@ -1,0 +1,24 @@
+{
+  "name": "@metaliq/wizard",
+  "description": "Wizard navigator for MetaliQ",
+  "version": "1.0.0-beta.49",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {
+    "@metaliq/forms": "workspace:*",
+    "@metaliq/presentation": "workspace:*",
+    "@metaliq/up": "workspace:*",
+    "@metaliq/util": "workspace:*",
+    "@metaliq/validation": "workspace:*",
+    "lit": "2.6.1",
+    "metaliq": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
+  "main": "lib/wizard.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/wizard.d.ts"
+}

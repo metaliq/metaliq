@@ -1,0 +1,19 @@
+{
+  "name": "metaliq",
+  "description": "MetaliQ - A framework for delivering business solutions using MetaModels",
+  "version": "1.0.0-beta.49",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "license": "MIT",
+  "main": "lib/metaliq.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {
+    "prep-css": "mkdir -p ./lib/css && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/css/ && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/css/",
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
+  },
+  "type": "module",
+  "types": "lib/metaliq.d.ts"
+}

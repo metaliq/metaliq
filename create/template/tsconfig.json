@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "es2020",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "outDir": "./bin",
+    "rootDir": "./src",
+    "moduleResolution": "Node"
+  },
+  "include": ["./src/**/*"]
+}
