@@ -2,7 +2,7 @@ import { createServer, Server } from "http"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
 import { ApolloServer as ApolloServerExpress } from "apollo-server-express"
 import express from "express"
-import fsExtra from "fs-extra"
+import fsExtra, { copy } from "fs-extra"
 import { Cloud, CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { join } from "path"
@@ -100,6 +100,14 @@ export const graphQLServerBuilder = (
   await ensureAndWriteFile(join(destDir, "package.json"), json)
 
   await ensureAndWriteFile(join(destDir, ".npmrc"), "auto-install-peers=true")
+  // Copy additional files
+  const copies = config.build?.copy || []
+  for (const entry of copies) {
+    const { src, dest }: { src: string, dest?: string } = (typeof entry === "string")
+      ? { src: entry, dest: entry }
+      : { src: entry.src, dest: entry.dest || entry.src }
+    await copy(src, `${destDir}/${dest}`, { dereference: true })
+  }
 
   return true
 }

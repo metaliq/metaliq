@@ -58,7 +58,18 @@ export type GraphQLServerConfig = {
     cloudFnOptions?: CloudFnOptions
 
     useDomShim?: boolean
+
+    /**
+     * Files to copy into build.
+     * Note, unlike webPageApp, the `res` folder is _not_ copied by default.
+     */
+    copy?: CopyEntry[]
   }
+}
+
+type CopyEntry = string | {
+  src: string // Within project dir.
+  dest?: string // Within destDir. Defaults to same as src
 }
 
 export type Cloud = "firebase" | "netlify"
