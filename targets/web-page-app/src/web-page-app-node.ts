@@ -88,7 +88,7 @@ export const webPageAppRunner = (
 export const webPageAppCleaner = (
   config: WebPageAppConfig = {}
 ): Cleaner => async ({ model }) => {
-  const destDir = config.build?.destDir || "www"
+  const destDir = config.build?.destDir || "prod/www"
 
   // Clean previous build
   await remove(destDir)
@@ -99,7 +99,7 @@ export const webPageAppBuilder = (
   config: WebPageAppConfig = {}
 ): Builder => async ({ modelName, simplePath, model }) => {
   // Deduce locations
-  const destDir = config.build?.destDir || "www"
+  const destDir = config.build?.destDir || "prod/www"
   const htmlDest = config.build?.html?.dest || "index.html"
   const jsDest = config.build?.js?.dest || jsSrc
   const { src: cssSrc } = config.build?.css || { src: "css/index.css" }
