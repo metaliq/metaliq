@@ -11,7 +11,6 @@
     "@metaliq/publication": "workspace:*",
     "@metaliq/util": "workspace:*",
     "apollo-server-cloud-functions": "3.5.0",
-    "apollo-server-express": "3.5.0",
     "apollo-server-lambda": "3.10.0",
     "cors": "2.8.5",
     "dotenv": "^16.0.1",
