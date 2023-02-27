@@ -11,7 +11,7 @@ import { createServer, Server } from "http"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
 import { ApolloServer } from "@apollo/server"
 import { expressMiddleware } from "@apollo/server/express4"
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/dist/esm/plugin/drainHttpServer"
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
 import express from "express"
 import cors from "cors"
 import fsExtra, { copy } from "fs-extra"
@@ -63,12 +63,14 @@ export const graphQLServerRunner = (
 
   expressApp.use(
     "/graphql",
-    cors,
+    cors(),
     express.json({ limit: "50mb" }),
     expressMiddleware<DevContext>(apolloServer, {
-      context: async ({ req }) => ({
-        sessionToken: req.headers["session-token"] as string
-      })
+      context: async ({ req }) => {
+        return {
+          sessionToken: req.headers["session-token"] as string
+        }
+      }
     })
   )
 
