@@ -214,16 +214,16 @@ const packageJson: Record<Cloud, object> = {
     type: "module",
     main: "index.js",
     dependencies: {
-      "@lit-labs/ssr": "^1.0.0",
-      "apollo-server-cloud-functions": "^3.6.1",
-      "firebase-admin": "^9.8.0",
-      "firebase-functions": "^3.14.1",
-      graphql: "^16.2.0",
-      lit: "^2.0.0",
+      "@lit-labs/ssr": "1.0.0",
+      "apollo-server-cloud-functions": "3.6.1",
+      "firebase-admin": "9.8.0",
+      "firebase-functions": "3.14.1",
+      graphql: "16.2.0",
+      lit: "2.0.0",
       "node-fetch": "3"
     },
     devDependencies: {
-      "firebase-functions-test": "^0.2.0"
+      "firebase-functions-test": "0.2.0"
     },
     private: true
   },
@@ -235,9 +235,9 @@ const packageJson: Record<Cloud, object> = {
     type: "module",
     main: "hello.js",
     dependencies: {
-      "apollo-server-lambda": "^3.10.0",
+      "apollo-server-lambda": "3.10.0",
       graphql: "15.8.0",
-      lit: "^2.0.0",
+      lit: "2.0.0",
       "node-fetch": "3"
     },
     private: true
