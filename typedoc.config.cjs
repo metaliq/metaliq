@@ -6,7 +6,6 @@ const entryPoints = tsConfig.references.map(r => r.path)
 
 /** @type {import("typedoc").TypeDocOptions} **/
 module.exports = {
-  out: "doc/api",
   entryPoints,
   entryPointStrategy: "packages",
   readme: "none"
