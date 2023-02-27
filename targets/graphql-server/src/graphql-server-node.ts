@@ -10,8 +10,10 @@
 import { createServer, Server } from "http"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
 import { ApolloServer } from "@apollo/server"
-import { startStandaloneServer } from "@apollo/server/standalone"
+import { expressMiddleware } from "@apollo/server/express4"
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/dist/esm/plugin/drainHttpServer"
 import express from "express"
+import cors from "cors"
 import fsExtra, { copy } from "fs-extra"
 import { Cloud, CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
@@ -23,10 +25,17 @@ import "dotenv/config"
 const { readFile, remove } = fsExtra
 
 let httpServer: Server
-let apolloServer: ApolloServer
+let apolloServer: ApolloServer<DevContext>
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
+interface DevContext {
+  sessionToken: string
+}
+
+/**
+ * Starts the development server for the MetaliQ GraphQL Server publication target.
+ */
 export const graphQLServerRunner = (
   config: GraphQLServerConfig = {}
 ): Runner => async ({ modelName, simplePath, model }) => {
@@ -37,33 +46,34 @@ export const graphQLServerRunner = (
   if (apolloServer) await apolloServer.stop()
   if (httpServer) httpServer.close()
 
-  // Create the HTTP server that will host the API
-  const app = express()
-  app.use(express.json({ limit: "50mb" }))
-  httpServer = createServer(app)
-
   // Load the GraphQL schema and resolvers
   // TODO: Make schema location configurable
   const typeDefs = await readFile("./gql/schema.gql", "utf8")
 
-  // Create the query / mutation service
-  apolloServer = new ApolloServer({
+  // Create the HTTP server that will host the API
+  const expressApp = express()
+  httpServer = createServer(expressApp)
+  apolloServer = new ApolloServer<DevContext>({
     typeDefs,
     resolvers: model.resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
   })
-  await startStandaloneServer(apolloServer, {
-    context: ({ req }) => {
-      return {
-        sessionToken: req.headers["session-token"]
-      }
-    }
-  })
-  apolloServer.applyMiddleware({ app })
 
-  // Start the API server
-  httpServer.listen(port, hostname, () =>
-    console.log(`GraphQL server running on http://${hostname}:${port}${apolloServer.graphqlPath}`)
+  await apolloServer.start()
+
+  expressApp.use(
+    "/graphql",
+    cors,
+    express.json({ limit: "50mb" }),
+    expressMiddleware<DevContext>(apolloServer, {
+      context: async ({ req }) => ({
+        sessionToken: req.headers["session-token"] as string
+      })
+    })
   )
+
+  await new Promise<void>((resolve) => httpServer.listen(port, hostname, resolve))
+  console.log(`GraphQL server running on http://${hostname}:${port}/graphql`)
 
   return true
 }
@@ -121,44 +131,6 @@ export const graphQLServerBuilder = (
   }
 
   return true
-}
-
-// TBD: Subscriptions
-
-// Fake imports
-class SubscriptionServer {
-  static create (...params: any[]): any {
-    return false
-  }
-
-  close () {
-  }
-}
-
-class PubSub {
-}
-
-// Module level - change to let
-let subServer: SubscriptionServer
-// Need to have a way of specifying
-export let pubsub: PubSub
-
-export const startSubscriptionServer = (schema: any) => {
-  if (subServer) subServer.close()
-
-  // Create the subscription service
-  subServer = SubscriptionServer.create({
-    onConnect: (connectionParams: any, socket: any) => {
-      return { sessionToken: connectionParams["session-token"] }
-    }
-    // NOTE: Disabled next line due to some import issues with execute and subscribed from graphql
-    // ...{ schema, execute, subscribe }
-  }, {
-    server: httpServer, path: apolloServer.graphqlPath
-  })
-
-  // Create new PubSub hub for subscription triggering
-  pubsub = new PubSub()
 }
 
 const apolloCloudLib: Record<Cloud, string> = {
