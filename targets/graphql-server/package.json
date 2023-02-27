@@ -4,6 +4,7 @@
   "version": "1.0.0-beta.50",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
+    "@apollo/server": "^4.4.0",
     "@firebase/app-compat": "^0.1.19",
     "@firebase/app-types": "^0.7.0",
     "@lit-labs/ssr": "^1.0.0",
@@ -17,7 +18,7 @@
     "firebase-admin": "^10.0.1",
     "firebase-functions": "^3.16.0",
     "fs-extra": "^10.0.0",
-    "graphql": "15.8.0",
+    "graphql": "16.6.0",
     "metaliq": "workspace:*",
     "ts-dedent": "^2.2.0"
   },

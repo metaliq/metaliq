@@ -1,6 +1,16 @@
+/**
+ * @module
+ *
+ * This module contains the node-specific code for the GraphQL server publication target.
+ *
+ * It is dynamically imported via the main {@link GraphQLServerConfig GraphQL server module},
+ * in order that node-specific dependencies do not "leak" into a browser environment.
+ */
+
 import { createServer, Server } from "http"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
-import { ApolloServer as ApolloServerExpress } from "apollo-server-express"
+import { ApolloServer } from "@apollo/server"
+import { startStandaloneServer } from "@apollo/server/standalone"
 import express from "express"
 import fsExtra, { copy } from "fs-extra"
 import { Cloud, CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
@@ -13,7 +23,7 @@ import "dotenv/config"
 const { readFile, remove } = fsExtra
 
 let httpServer: Server
-let apolloServer: ApolloServerExpress
+let apolloServer: ApolloServer
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
@@ -37,16 +47,17 @@ export const graphQLServerRunner = (
   const typeDefs = await readFile("./gql/schema.gql", "utf8")
 
   // Create the query / mutation service
-  apolloServer = new ApolloServerExpress({
+  apolloServer = new ApolloServer({
     typeDefs,
     resolvers: model.resolvers,
+  })
+  await startStandaloneServer(apolloServer, {
     context: ({ req }) => {
       return {
         sessionToken: req.headers["session-token"]
       }
     }
   })
-  await apolloServer.start()
   apolloServer.applyMiddleware({ app })
 
   // Start the API server
