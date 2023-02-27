@@ -1,18 +1,18 @@
 {
   "name": "@metaliq/presentation",
   "description": "MetaliQ presentation policy",
-  "version": "1.0.0-beta.46",
+  "version": "1.0.0-beta.52",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
     "@metaliq/publication": "workspace:*",
     "@metaliq/terminology": "workspace:*",
     "@metaliq/validation": "workspace:*",
-    "lit": "2.3.1",
+    "lit": "2.6.1",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^4.7.3"
+    "typescript": "4.7.3"
   },
   "license": "MIT",
   "main": "lib/presentation.js",

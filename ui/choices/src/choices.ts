@@ -53,6 +53,7 @@ export type SelectorSearchFn<P> = (
 interface SelectorState {
   choices?: ChoicesModule.Choice[]
   choicesJs?: ChoicesJs
+  choicesValue: any
 }
 
 declare module "metaliq" {
@@ -95,7 +96,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
     )
     const newChoices = options.choices(v, $) || []
     if (!equals(newChoices, oldChoices)) {
-      if ($.state.choices) $.value = null // There was previously a different initialised choice list
+      if ($.state.choices) $.state.choicesValue = $.value = null // There was previously a different initialised choice list
       $.state.choices = newChoices
       resetChoices()
     }
@@ -103,6 +104,10 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
     $.state.choices = options.choices
   } else {
     $.state.choices = []
+  }
+  if (!equals($.value, $.state.choicesValue)) {
+    resetChoices()
+    $.state.choicesValue = $.value
   }
 
   return html`
@@ -192,6 +197,7 @@ const onChange = (options: SelectorOptions<any>) => ($: Meta$<any>, event: Event
       $.value = null
     }
   }
+  $.state.choicesValue = $.value
   validate($)
   state.proposedChange = null
 }

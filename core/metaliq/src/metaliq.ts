@@ -153,10 +153,10 @@ function setupMeta ($: Meta$<any>) {
  * Use within a MetaSetup to establish a possibly dynamic state value based on a
  * MetaModel term that is either a literal or a meta function returning the literal.
  */
-export const addDynamicState = <T, P = any, K extends ModelKey = any>($: Meta$<T, P>, modelKey: K) => {
+export const addDynamicState = <T, P = any, K extends TermKey = any>($: Meta$<T, P>, modelKey: K) => {
   const termValue = $.model[modelKey]
   if (isMetaFn(termValue)) {
-    const modelValueFn = termValue as MetaFn<T, P, DerivedModelValue<K>>
+    const modelValueFn = termValue as MetaFn<T, P, DerivedTermValue<K>>
     Object.defineProperty($.state, modelKey, {
       enumerable: true,
       get () {
@@ -394,9 +394,9 @@ export const $fn = <Type, Parent, Return> (fn: MetaFn<Type, Parent, Return>): Me
   return fn(v, $, e)
 }
 
-export type ModelKey = keyof Policy.Terms<any>
-export type ModelValue<K extends ModelKey> = Policy.Terms<any>[K]
-export type DerivedModelValue<K extends ModelKey> = Exclude<ModelValue<K>, MetaFn<any>>
+export type TermKey = keyof Policy.Terms<any>
+export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
+export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
 
 /**
  * A simple type guard for terms that may or may not be a meta function.
@@ -407,7 +407,7 @@ export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "fun
  * Return the value of a MetaModel term that is defined as being
  * either a particular type or a MetaFn that returns that type.
  */
-export const getDynamicTerm = <K extends ModelKey>(key: K): MetaFn<any, any, DerivedModelValue<K>> =>
+export const getDynamicTerm = <K extends TermKey>(key: K): MetaFn<any, any, DerivedTermValue<K>> =>
   $fn((v, $) => {
     const termValue = $.model[key]
     if (isMetaFn(termValue)) return termValue(v, $)
@@ -419,9 +419,9 @@ export const getDynamicTerm = <K extends ModelKey>(key: K): MetaFn<any, any, Der
  * immediate object and then stepping back through ancestors
  * until a value is found.
  */
-export const getAncestorTerm = <K extends ModelKey>(
+export const getAncestorTerm = <K extends TermKey>(
   key: K, dynamic: boolean = false
-): MetaFn<any, any, ModelValue<K>> =>
+): MetaFn<any, any, TermValue<K>> =>
     $fn((v, $) => {
       while ($ && typeof $.model[key] === "undefined") $ = $.parent?.$
       const termValue = $?.model[key]

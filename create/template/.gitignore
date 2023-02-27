@@ -1,7 +1,8 @@
-/.idea/
-/.vscode/
-/node_modules/
-/prod/
+**/.vscode/
+**/.idea/
+**/node_modules/
+**/tsconfig.tsbuildinfo
+**/gen/
 /bin/
-/src/gen/
+/prod/
 pnpm-lock.yaml

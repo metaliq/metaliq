@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/forms",
   "description": "A range of basic form fields for MetaliQ",
-  "version": "1.0.0-beta.46",
+  "version": "1.0.0-beta.52",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/elements": "workspace:*",
@@ -9,11 +9,11 @@
     "@metaliq/terminology": "workspace:*",
     "@metaliq/up": "workspace:*",
     "@metaliq/validation": "workspace:*",
-    "lit": "2.3.1",
+    "lit": "2.6.1",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^4.7.3"
+    "typescript": "4.7.3"
   },
   "license": "MIT",
   "main": "lib/forms.js",

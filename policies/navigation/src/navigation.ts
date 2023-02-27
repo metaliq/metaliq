@@ -226,6 +226,31 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
 })
 
 /**
+ * Returns a MetaFn that closes the menu for the given navigation item
+ * if the screen width is below a specified width.
+ *
+ * Usually not used directly, but referenced via {@link setNavSelectionResponsive}.
+ */
+export const closeMenuResponsive = (width: number): MetaFn<any> => $fn((v, $) => {
+  if (typeof window === "object" && window.outerWidth < width) {
+    onDescendants((v, $) => {
+      if ($.state.nav?.showMenu) {
+        $.state.nav.showMenu = false
+      }
+    })(root$($))
+  }
+})
+
+/**
+ * A responsive version of setNavSelection which also closes the menu
+ * if the screen size is below a given width.
+ *
+ * Suitable as an {@link NavigationTerms.onNavigate} term value.
+ */
+export const setNavSelectionResponsive = (width: number) =>
+  fns(setNavSelection, closeMenuResponsive(width))
+
+/**
  * Go to the given nav node's route if it has one,
  * otherwise find and go to its first child route.
  */
@@ -250,4 +275,17 @@ export const openMenu = ($: Meta$<any>) => {
 export const closeMenu = ($: Meta$<any>) => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = false
+}
+
+/**
+ * Return false if any parent of the given item has state `showMenu === false`.
+ * Otherwise return true.
+ * Useful for controlling menu items in a "partially" closable (e.g. minimisable) menu.
+ */
+export const isMenuShown = (item$: Meta$<any>) => {
+  while (item$) {
+    item$ = item$.parent?.$
+    if (item$?.state?.nav?.showMenu === false) return false
+  }
+  return true
 }

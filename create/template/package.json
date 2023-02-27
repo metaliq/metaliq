@@ -1,11 +1,12 @@
 {
   "name": "@metaliq/template",
-  "version": "1.0.0-beta.46",
+  "version": "1.0.0-beta.52",
   "type": "module",
   "main": "bin/models.js",
   "types": "bin/models.d.ts",
   "description": "",
   "scripts": {
+    "install": "metaliq build",
     "start": "metaliq run"
   },
   "author": "",
@@ -21,27 +22,27 @@
     "@metaliq/validation": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
     "graphqlex": "0.8.0",
-    "lit": "2.3.1",
+    "lit": "2.6.1",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
     "@metaliq/cli": "workspace:*",
-    "@graphql-codegen/add": "3.1.0",
-    "@graphql-codegen/cli": "2.3.0",
-    "@graphql-codegen/typescript": "2.4.1",
-    "@graphql-codegen/typescript-operations": "2.2.1",
-    "@graphql-codegen/typescript-resolvers": "2.4.2",
-    "@types/node": "^16.10.3",
-    "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "@typescript-eslint/parser": "^4.0.0",
-    "eslint": "^7.10.0",
-    "eslint-config-standard-with-typescript": "^21.0.1",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
+    "@graphql-codegen/add": "3.2.1",
+    "@graphql-codegen/cli": "2.13.7",
+    "@graphql-codegen/typescript": "2.8.0",
+    "@graphql-codegen/typescript-operations": "2.5.5",
+    "@graphql-codegen/typescript-resolvers": "2.7.5",
+    "@types/node": "18.14.1",
+    "@typescript-eslint/eslint-plugin": "4.4.0",
+    "@typescript-eslint/parser": "4.0.0",
+    "eslint": "7.32.0",
+    "eslint-config-standard-with-typescript": "21.0.1",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-standard": "4.0.1",
     "graphql": "15.8.0",
-    "graphqlex-codegen": "0.2.0",
-    "typescript": "^4.7.3"
+    "graphqlex-codegen": "0.8.0",
+    "typescript": "4.7.3"
   }
 }

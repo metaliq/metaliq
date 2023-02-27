@@ -1,8 +1,8 @@
-import { $fn, child$, fieldKeys, fns, getAncestorTerm, Meta$, MetaFn, onDescendants, reset, root$ } from "metaliq"
+import { child$, fieldKeys, getAncestorTerm, Meta$, reset } from "metaliq"
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
 
-import { getNavSelection, goNavRoute, setNavSelection, toggleMenu } from "@metaliq/navigation"
+import { getNavSelection, goNavRoute, toggleMenu } from "@metaliq/navigation"
 import { MetaView, view, ViewResult } from "@metaliq/presentation"
 import { up, Update } from "@metaliq/up"
 
@@ -62,15 +62,3 @@ const getView = (navItem$: Meta$<any>) => {
     console.error(`No view found for Navigation Item: ${navItem$.state.label}`)
   }
 }
-
-export const closeMobileMenu = (width: number): MetaFn<any> => $fn((v, $) => {
-  if (window.outerWidth < width) {
-    onDescendants((v, $) => {
-      if ($.state.nav?.showMenu) {
-        $.state.nav.showMenu = false
-      }
-    })(root$($))
-  }
-})
-
-export const mobileNav = (width: number) => fns(setNavSelection, closeMobileMenu(width))

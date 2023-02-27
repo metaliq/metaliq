@@ -88,7 +88,7 @@ export const webPageAppRunner = (
 export const webPageAppCleaner = (
   config: WebPageAppConfig = {}
 ): Cleaner => async ({ model }) => {
-  const destDir = config.build?.destDir || "www"
+  const destDir = config.build?.destDir || "prod/www"
 
   // Clean previous build
   await remove(destDir)
@@ -99,7 +99,7 @@ export const webPageAppBuilder = (
   config: WebPageAppConfig = {}
 ): Builder => async ({ modelName, simplePath, model }) => {
   // Deduce locations
-  const destDir = config.build?.destDir || "www"
+  const destDir = config.build?.destDir || "prod/www"
   const htmlDest = config.build?.html?.dest || "index.html"
   const jsDest = config.build?.js?.dest || jsSrc
   const { src: cssSrc } = config.build?.css || { src: "css/index.css" }
@@ -146,9 +146,18 @@ export const webPageAppBuilder = (
 
 const indexJs = (modelName: string, modelPath: string) => dedent`
   import { run } from "@metaliq/application"
+  import { renderPage } from "@metaliq/presentation"
+  import { metaForm } from "@metaliq/forms"
+  import { getDynamicTerm } from "metaliq"
   import { ${modelName} } from "./${modelPath}.js"
   
-  run(${modelName})
+  async function main () {
+    ${modelName}.review = ${modelName}.review || renderPage
+    window.meta = await run(${modelName})
+    document.title = getDynamicTerm("label")(window.meta.$)
+  }
+  
+  main()
 `
 
 const indexHtml = (spaConfig: WebPageAppConfig, jsPath: string, cssPath?: string, title?: string) => {
