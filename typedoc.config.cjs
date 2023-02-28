@@ -8,5 +8,7 @@ const entryPoints = tsConfig.references.map(r => r.path)
 module.exports = {
   entryPoints,
   entryPointStrategy: "packages",
-  readme: "none"
+  readme: "none",
+  name: "MetaliQ API Reference",
+  githubPages: false
 }
