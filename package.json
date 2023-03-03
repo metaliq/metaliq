@@ -4,25 +4,24 @@
   "version": "1.0.0-beta.52",
   "author": "tstewart@klaudhaus.com",
   "devDependencies": {
+    "@types/chai": "4.3.4",
+    "@types/mocha": "10.0.1",
     "@types/node": "18.14.1",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
+    "chai": "4.3.7",
     "eslint": "^8.35.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
     "madge": "5.0.1",
+    "mocha": "10.2.0",
     "source-map-support": "0.5.21",
     "syncpack": "8.2.4",
     "typedoc": "0.23.25",
     "typedoc-plugin-resolve-crossmodule-references": "0.3.3",
     "typescript": "4.7.3"
-  },
-  "dependencies": {
-    "@metaliq/publication": "workspace:*",
-    "@metaliq/web-page-app": "workspace:*",
-    "metaliq": "workspace:*"
   },
   "license": "MIT",
   "repository": "https://github.com/metaliq/metaliq",
@@ -38,6 +37,6 @@
     "publish-master": "pnpm publish -r --access public",
     "publish-beta": "pnpm publish -r --tag beta --access public",
     "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./**/lib/test/**/*.js"
   }
 }
