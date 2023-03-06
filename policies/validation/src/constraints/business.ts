@@ -13,7 +13,7 @@ export const isEmail: Constraint<string> = () => value =>
 // TODO: Provide better internationalisation.
 // Developed to check Australian phone number format, with option to change or exclude country code.
 export const isPhoneNumber: Constraint<string> = (countryCode: string = "61") => (phone, $) => {
-  if (!phone) return "Cannot be empty"
+  if (!phone) return true // Specify whether field is mandatory separately
   const countryCodeEx = new RegExp(`^\\+${countryCode}`)
   if (countryCode && !phone.match(countryCodeEx)) {
     if (phone.match(/^0/)) {
