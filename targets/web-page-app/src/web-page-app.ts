@@ -18,7 +18,7 @@ export type WebPageAppConfig = {
    * Details for the production build.
    */
   build?: {
-    destDir?: string // Defaults to www
+    destDir?: string // Defaults to prod/www
     html?: {
       dest?: string // Within destDir. Defaults to index.html.
     }

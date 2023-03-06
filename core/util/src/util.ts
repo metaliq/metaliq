@@ -9,7 +9,7 @@ import { FieldKey } from "metaliq"
 export type EndoFunction = <T> (o: T) => T
 
 /**
- * Return type for a function that returns either the given type or null.
+ * Return type for a function that returns either the given type or void.
  */
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type MaybeReturn <T> = T | void
@@ -31,6 +31,11 @@ export const enumKeys = <T extends object>(obj: T): Array<keyof T> =>
 
 // ARRAY FUNCTIONS
 
+/**
+ * The type of the key(s) parameter for {@link sortBy}.
+ * Allows specifying the key of an object type,
+ * optionally preceded by the `-` character.
+ */
 export type SortKey<T> = `${"-" | ""}${FieldKey<T>}`
 
 /**
@@ -38,16 +43,26 @@ export type SortKey<T> = `${"-" | ""}${FieldKey<T>}`
  * Each key can be preceded by a `-` character to perform a descending sort.
  */
 export function sortBy<T> (keyOrKeys: SortKey<T> | Array<SortKey<T>>) {
-  const keys: Array<SortKey<T>> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
+  const sortKeys: Array<SortKey<T>> = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]
+
+  type ParsedSortKey = {
+    fieldName: keyof T
+    descending: boolean
+  }
+
+  const parsedKeys: ParsedSortKey[] = sortKeys.map(sortKey => {
+    const matches = sortKey.match(/^(-?)(.*)/)
+    const descending = matches[1] === "-"
+    const fieldName = matches[2] as keyof T
+    return { descending, fieldName }
+  })
+
   return (a: T, b: T) => {
     if (a === null && b !== null) return -1
     if (b === null && a !== null) return 1
-    for (const sortKey of keys) {
-      const matches = sortKey.match(/^(-?)(.*)/)
-      const desc = matches[0] === "-"
-      const key = matches[1] as keyof T
-      if (a[key] < b[key]) return desc ? 1 : -1
-      if (b[key] < a[key]) return desc ? -1 : 1
+    for (const { fieldName, descending } of parsedKeys) {
+      if (a[fieldName] < b[fieldName]) return descending ? 1 : -1
+      if (b[fieldName] < a[fieldName]) return descending ? -1 : 1
     }
     return 0
   }
@@ -115,7 +130,10 @@ export function copy<T> (obj: T, { exclude, include }: { exclude?: string[], inc
 /**
  * Return a function that transforms an object according to a predicate,
  * which takes [key, value] property entries and returns entries for the new object.
- * Any entry whose returned key is null or undefined will be excluded.
+ *
+ * This allows the transformation of either keys and/or values.
+ *
+ * Any entry whose returned _key_ is null or undefined will be excluded.
  */
 export type EntryPredicate = ([k, v]: [k: string, v: any], i: number) => [string, any]
 export const objectTransformer = (fn: EntryPredicate) => (obj: any) =>
@@ -173,6 +191,9 @@ export const initObjProps = <T extends object>(obj: T, keys: Array<keyof T>) => 
 
 // TEXT FUNCTIONS
 
+/**
+ * Very simple capitalisation function.
+ */
 export const capitalize = (str: string) => str.substr(0, 1).toUpperCase() + str.substr(1).toLowerCase()
 
 /**
@@ -199,6 +220,7 @@ export const textSearch = (term: string, ...targets: string[]) => {
 /**
  * Helper method for making GraphQL inputs from value objects.
  * Excludes keys $, __typename and any additional keys provided.
+ * TODO: Remove once high-level GraphQL wrapper added to MetaliQ.
  */
 export function inputObject <V extends object, I> (object: V, excludeKeys: string[] = []): I {
   excludeKeys = excludeKeys.concat(["$", "__typename"])
@@ -227,15 +249,15 @@ export function wait (delay: number = 1000) {
 export function equals (a: any, b: any): boolean {
   if (a === b) return true
 
-  if (a instanceof Date && b instanceof Date) {
-    return a.getTime() === b.getTime()
-  }
-
   if (!a || !b || (typeof a !== "object" && typeof b !== "object")) {
     return a === b
   }
 
   if (a.prototype !== b.prototype) return false
+
+  if (a instanceof Date && b instanceof Date) {
+    return a.getTime() === b.getTime()
+  }
 
   const keys = Object.keys(a)
   if (keys.length !== Object.keys(b).length) return false

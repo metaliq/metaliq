@@ -4,3 +4,4 @@
 **/lib/
 **/tsconfig.tsbuildinfo
 pnpm-lock.yaml
+/doc/api

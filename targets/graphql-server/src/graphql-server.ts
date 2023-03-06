@@ -1,6 +1,6 @@
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
-export type GraphQLServerSpec<T> = {
+export type GraphQLServerTerms<T> = {
   /**
    * Service resolvers.
    */
@@ -9,8 +9,8 @@ export type GraphQLServerSpec<T> = {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends GraphQLServerSpec<T> {
-      this?: Specification<T, P>
+    interface Terms<T, P> extends GraphQLServerTerms<T> {
+      this?: Terms<T, P>
     }
   }
 }
@@ -58,7 +58,18 @@ export type GraphQLServerConfig = {
     cloudFnOptions?: CloudFnOptions
 
     useDomShim?: boolean
+
+    /**
+     * Files to copy into build.
+     * Note, unlike webPageApp, the `res` folder is _not_ copied by default.
+     */
+    copy?: CopyEntry[]
   }
+}
+
+type CopyEntry = string | {
+  src: string // Within project dir.
+  dest?: string // Within destDir. Defaults to same as src
 }
 
 export type Cloud = "firebase" | "netlify"

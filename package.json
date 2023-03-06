@@ -1,26 +1,27 @@
 {
   "name": "metaliq-monorepo",
-  "description": "MetaliQ - A framework for policy-based, specification-driven meta-programming",
-  "version": "1.0.0-beta.29",
+  "description": "MetaliQ - A framework for delivering business solutions using MetaModels",
+  "version": "1.0.0-beta.54",
   "author": "tstewart@klaudhaus.com",
   "devDependencies": {
-    "@types/node": "^16.10.3",
-    "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "@typescript-eslint/parser": "^4.0.0",
-    "eslint": "^7.10.0",
-    "eslint-config-standard-with-typescript": "^21.0.1",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "madge": "^5.0.1",
-    "source-map-support": "^0.5.21",
-    "syncpack": "^8.2.4",
-    "typescript": "^4.7.3"
-  },
-  "dependencies": {
-    "@metaliq/publication": "workspace:*",
-    "@metaliq/web-page-app": "workspace:*",
-    "metaliq": "workspace:*"
+    "@types/chai": "4.3.4",
+    "@types/mocha": "10.0.1",
+    "@types/node": "18.14.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "chai": "4.3.7",
+    "eslint": "^8.35.0",
+    "eslint-config-standard-with-typescript": "^34.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "madge": "5.0.1",
+    "mocha": "10.2.0",
+    "source-map-support": "0.5.21",
+    "syncpack": "8.2.4",
+    "typedoc": "0.23.25",
+    "typedoc-plugin-resolve-crossmodule-references": "0.3.3",
+    "typescript": "4.7.3"
   },
   "license": "MIT",
   "repository": "https://github.com/metaliq/metaliq",
@@ -31,9 +32,11 @@
     "clean-lib": "find . -name 'lib' -type d -not -path '*/node_modules/*' -prune -exec rm -rf {} +",
     "clean-node-modules": "find . -name 'node_modules' -type d -exec rm -rf {} +",
     "dev": "npm run clean && pnpm run -r pkg-prepare && tsc -b --watch",
+    "eslint": "eslint",
     "prepare": "npm run clean && tsc -b",
+    "publish-master": "pnpm publish -r --access public",
     "publish-beta": "pnpm publish -r --tag beta --access public",
     "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./lib/test/"
+    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./**/lib/test/**/*.js"
   }
 }

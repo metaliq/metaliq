@@ -1,6 +1,6 @@
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-import { fieldKeys, Meta, Meta$ } from "metaliq"
+import { child$, fieldKeys, Meta, Meta$ } from "metaliq"
 import { up } from "@metaliq/up"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
@@ -15,7 +15,7 @@ export const wizardView: MetaView<any> = (value, $) => [
 export const wizardTramline: MetaView<object> = (value, $) => {
   return html`
     <div class="mq-wizard-nav">
-      ${fieldKeys($.spec).map((stepName) => html`
+      ${fieldKeys($.model).map((stepName) => html`
         <div class="mq-wizard-nav-item ${classMap({
       current: $.state.step === stepName,
       visited: ($.meta as Meta<any>)[stepName].$.state.validated,
@@ -25,7 +25,7 @@ export const wizardTramline: MetaView<object> = (value, $) => {
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${($.meta[stepName] as Meta<any>)}</span>
+          <span class="mq-wizard-nav-label">${child$(value, stepName).state.label}</span>
         </div>
       `)}
     </div>
@@ -47,7 +47,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
     })}">
       <div class="mq-wizard-page-title">
         ${currentStep$
-          ? currentStep$.spec.helpText
+          ? currentStep$.model.helpText
           : notConfiguredWarning}
       </div>
       <div>
@@ -56,7 +56,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
           : notConfiguredWarning}
         ${pageError(currentValue, currentStep$)}
       </div>
-      ${currentStep$.spec.wizard ? "" : html`
+      ${currentStep$.model.wizard ? "" : html`
         <div class="mq-wizard-buttons">
           ${labels.backwards === false ? "" : html`
             <button class="mq-button"
@@ -76,4 +76,4 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
   `
 }
 
-const notConfiguredWarning = "This spec is not configured as a wizard. Add a `wizard` term."
+const notConfiguredWarning = "This MetaModel is not configured as a wizard. Add a `wizard` term."

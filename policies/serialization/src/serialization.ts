@@ -1,5 +1,5 @@
 import { parse as flat_parse, stringify as flat_stringify } from "flatted"
-import { applySpec, Meta, MetaSpec } from "metaliq"
+import { applyModel, Meta, MetaModel } from "metaliq"
 import { filterObject } from "@metaliq/util"
 
 /**
@@ -34,9 +34,9 @@ export function stringify (meta: Meta<any>, statePredicate = defaultStatePredica
 /**
  * Deserialise a serialisation into a Meta object.
  */
-export function parse<T> (serialisation: string, spec?: MetaSpec<T>): Meta<T> {
+export function parse<T> (serialisation: string, model?: MetaModel<T>): Meta<T> {
   const meta: Meta<T> = flat_parse(serialisation)
-  if (spec) applySpec(meta.$, spec)
+  if (model) applyModel(meta.$, model)
   return meta
 }
 

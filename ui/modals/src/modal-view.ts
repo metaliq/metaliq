@@ -1,11 +1,11 @@
 import { html } from "lit"
 import { up } from "@metaliq/up"
-import { ModalInfo } from "./modal-spec"
+import { ModalInfo } from "./modal-model"
 
 export const modal = (info: ModalInfo
 ) => info.body ? html`
   <div class="mq-modal-mask">
-    <div class="mq-modal">
+    <div class="mq-modal ${info.classes}">
       <div class="mq-modal-header">
         ${info.title}
       </div>
@@ -22,7 +22,7 @@ export const modal = (info: ModalInfo
       ${info.buttons ? html`
         <div class="mq-modal-buttons">
           ${info.buttons.map(button => html`
-            <button type="button" class="mq-button" 
+            <button type="button" class="mq-button ${button.classes}" 
               @click=${up(button.up, button.data)} >
               ${button.label}
             </button>

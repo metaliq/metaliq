@@ -2,9 +2,9 @@ import { addDynamicState, fieldKeys, isMeta, isMetaArray, m$, Meta$, MetaFn, met
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
-export { TerminologySpec } from "@metaliq/terminology"
+export { TerminologyTerms } from "@metaliq/terminology"
 
-export interface ValidationSpec<T, P = any> {
+export interface ValidationTerms<T, P = any> {
   validator?: Validator<T, P>
   mandatory?: boolean | MetaFn<T, P, boolean>
   disabled?: boolean | MetaFn<T, P, boolean>
@@ -24,7 +24,7 @@ export interface ValidationState {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends ValidationSpec<T, P> {
+    interface Terms<T, P> extends ValidationTerms<T, P> {
     }
 
     interface State<T, P> extends ValidationState {
@@ -51,7 +51,7 @@ export type ValidationResult = string | boolean
 export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
 
 metaSetups.push(<T>($: Meta$<T>) => {
-  if ($.spec.validator) {
+  if ($.model.validator) {
     $.state.error = false
     $.state.validated = false
   }
@@ -91,7 +91,7 @@ export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
   if ($.state.mandatory && !hasValue($)) {
     return ($.state.error = requiredLabelFn($.value, $))
   } else {
-    const validator = $.spec.validator
+    const validator = $.model.validator
     if (typeof validator === "function") {
       const result = validator($.value, $)
       if (result === false) {
@@ -138,7 +138,7 @@ export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
         appendTo(result, validateAll(sub.$))
       }
     } else if (isMeta(meta)) {
-      const keys = fieldKeys($.spec)
+      const keys = fieldKeys($.model)
       for (const key of keys) {
         const sub = meta[key]
         appendTo(result, validateAll(sub.$ as Meta$<any>))
@@ -158,7 +158,7 @@ export const unvalidate = <T, P>(v$: T | Meta$<T, P>) => {
       unvalidate(sub.$)
     }
   } else if (isMeta(meta)) {
-    const keys = fieldKeys($.spec)
+    const keys = fieldKeys($.model)
     for (const key of keys) {
       const sub = meta[key]
       unvalidate(sub)

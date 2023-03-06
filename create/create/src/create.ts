@@ -1,12 +1,12 @@
 /**
- * @metaliq/create-solution is the base starter template for
+ * @metaliq/create is the base starter template for
  * initialising a new MetaliQ solution.
  * This script is the main entry point.
  *
  * Normally this is run in a new, empty directory with the command:
  *
  * ```sh
- * pnpm create @metaliq/solution
+ * pnpm create @metaliq
  * ```
  *
  * It initialises a MetaliQ solution consisting of:

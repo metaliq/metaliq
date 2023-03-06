@@ -1,14 +1,14 @@
 {
   "name": "@metaliq/application",
   "description": "MetaliQ application policy",
-  "version": "1.0.0-beta.29",
+  "version": "1.0.0-beta.54",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/up": "workspace:*",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^4.7.3"
+    "typescript": "4.7.3"
   },
   "license": "MIT",
   "main": "lib/application.js",

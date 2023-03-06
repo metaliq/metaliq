@@ -33,6 +33,7 @@
     { "path": "ui/choices" },
     { "path": "ui/flatpickr" },
     { "path": "ui/modals" },
+    { "path": "ui/navigator" },
     { "path": "ui/photo" },
     { "path": "ui/repeat" },
     { "path": "ui/signature_pad" },
@@ -45,7 +46,7 @@
     { "path": "cli"},
     { "path": "test" },
     { "path": "create/template" },
-    { "path": "create/solution" }
+    { "path": "create/create"}
   ],
   "compileOnSave": false
 }

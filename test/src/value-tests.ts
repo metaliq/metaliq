@@ -1,12 +1,12 @@
 import chai from "chai"
 import { describe } from "mocha"
 import { metafy, reset } from "metaliq"
-import { emptyOrganisation, organisationSpec } from "./test-specs"
+import { emptyOrganisation, organisationModel } from "./test-models"
 
 chai.should()
 
 describe("Underlying data value object", () => {
-  const mApp = metafy(organisationSpec, emptyOrganisation())
+  const mApp = metafy(organisationModel, emptyOrganisation())
 
   it("is accessible from any equivalent path in the meta-graph", () => {
     mApp.$.value.principal.should.equal(mApp.principal.$.value)

@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, isMetaArray, m$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { MetaView, MetaViewTerm, view, ViewResult } from "@metaliq/presentation"
@@ -18,13 +18,6 @@ export type MetaFormOptions<T> = {
   exclude?: Array<FieldKey<T>>
 }
 
-metaSetups.push($ => {
-  // Default the review method of the top level spec to renderPage if not assigned and this policy has been loaded
-  if (!$.parent && !$.spec.publicationTarget && !$.spec.view) {
-    $.spec.view = metaForm()
-  }
-})
-
 /**
  * A MetaView for an object type that displays all its child fields.
  */
@@ -33,14 +26,14 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
   if (isMeta(meta)) {
     return html`
       <div class="${options.baseClass ?? "mq-form"} ${options.classes || ""}" >
-        ${fieldKeys($.spec)
+        ${fieldKeys($.model)
           .filter(key =>
             (!options.include || options.include.includes(key)) &&
             (!(options.exclude || []).includes(key))
           )
           .map(key => {
             const fieldMeta = meta[key] as HasMeta$<any>
-            const itemView = fieldMeta.$.spec.view || defaultFieldView(fieldMeta.$)
+            const itemView = fieldMeta.$.model.view || defaultFieldView(fieldMeta.$)
             return view(itemView)(fieldMeta.$.value, fieldMeta.$)
           })}
       </div>
@@ -50,7 +43,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
 
 export const repeatView: MetaView<any[]> = (v, $) => {
   if (isMetaArray($.meta)) {
-    const itemView = view($.spec.items?.view || defaultFieldView($.meta[0].$))
+    const itemView = view($.model.items?.view || defaultFieldView($.meta[0].$))
 
     return $.meta.map(({ $ }) => {
       return itemView($.value, $)
@@ -65,7 +58,7 @@ export const field = <P, K extends FieldKey<P>> (
   parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
 ) => {
   const field$ = child$(parent, key)
-  return view(fieldView || field$.spec.view || defaultFieldView(field$))(field$.value, field$)
+  return view(fieldView || field$.model.view || defaultFieldView(field$))(field$.value, field$)
 }
 
 /**
@@ -107,17 +100,30 @@ export const ifThen = <T, P = any> (
  * Individual fields can define their own options types, which would normally extend this type.
  */
 export type FieldOptions<T> = {
-  labelView?: MetaView<T> // Custom label content function
-  classes?: string // Additional class(es) for field container
+  /**
+   * Custom label content function
+   */
+  labelView?: MetaView<T>
+
+  /**
+   * Additional class(es) for field container
+   */
+  classes?: string
+
+  /**
+   * Field type.
+   * If present, used to assign class mq-<type>-field to fieldContainer.
+   * If used on an input, additionally specifies input type, e.g.
+   * "text" | "checkbox" | "number" | "tel".
+   */
+  type?: string
 }
 
 /**
  * Options for input and similar fields.
  */
 export type InputOptions<T> = FieldOptions<T> & {
-  type?: "text" | "checkbox" | "number" | "tel"
   unvalidated?: boolean // don't perform validation
-  labelAfter?: boolean // Place the label after the input
   autocomplete?: string
 }
 
@@ -181,18 +187,8 @@ export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
-export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) => html`
-  <label class="mq-field ${classMap({
-    [options.classes]: !!options.classes,
-    [`mq-${options.type || "text"}-field`]: true,
-    ...fieldClasses($)
-  })}" >
-    ${!options.labelAfter ? fieldLabel(options)(v, $) : ""}
-    ${input({ type: "text", ...options })(v, $)}
-    ${options.labelAfter ? fieldLabel(options)(v, $) : ""}
-    ${errorMsg({ classes: "mq-field-error" })(v, $)}
-  </label>
-`
+export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> =>
+  fieldContainer(input({ type: "text", ...options }), options)
 
 /**
  * Label element for input field.
@@ -203,12 +199,26 @@ export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value,
     : html`<span class="mq-input-label">${labelOrKey($)}</span>`
 
 /**
+ *
+ */
+export const fieldContainer = <T>(fieldContent: MetaView<T>, options?: FieldOptions<any>): MetaView<T> => (v, $) => html`
+  <label class="mq-field ${classMap({
+    [options?.classes]: !!options?.classes,
+    [`mq-${options?.type || "text"}-field`]: options?.type,
+    ...fieldClasses($)
+  })}" >
+    ${fieldLabel(options)(v, $)}
+    ${fieldContent(v, $)}
+    ${errorMsg({ classes: "mq-field-error" })(v, $)}
+  </label>
+`
+
+/**
  * Input field with default options for a validated checkbox
  */
 export const checkboxField = (options: InputOptions<boolean> = {}): MetaView<boolean> =>
   inputField({
     type: "checkbox",
-    labelAfter: true,
     ...options
   })
 

@@ -7,7 +7,7 @@ import { MetaView } from "@metaliq/presentation"
 
 export type StepLabel = string | boolean
 
-export interface WizardSpec<T, P = any> {
+export interface WizardTerms<T, P = any> {
   wizard?: {
     /**
      * Set this to allow selection of any step at any time without validation.
@@ -40,23 +40,23 @@ export interface WizardState<T> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends WizardSpec<T, P> {}
+    interface Terms<T, P> extends WizardTerms<T, P> {}
     interface State<T, P> extends WizardState<T>{
       this?: State<T, P>
     }
   }
 }
 
-// Can't use getSpecValue as it is nested
-// TODO: EITHER make a nested version of getSpecValue OR switch to a review-and-state model
+// Can't use getModelValue as it is nested
+// TODO: EITHER make a nested version of getModelValue OR switch to a review-and-state model
 export const forwardsLabel: MetaFn<any, any, StepLabel> = (value, $) => {
-  const label = $.spec.wizardStep?.forwardsLabel
+  const label = $.model.wizardStep?.forwardsLabel
   if (isMetaFn(label)) return label(value, $)
   else return label
 }
 
 export const backwardsLabel: MetaFn<any, any, StepLabel> = (value, $) => {
-  const label = $.spec.wizardStep?.backwardsLabel
+  const label = $.model.wizardStep?.backwardsLabel
   if (isMetaFn(label)) return label(value, $)
   else return label
 }
@@ -81,21 +81,18 @@ export type WizardInfo<T> = {
 }
 
 metaSetups.push(<T>($: Meta$<T>) => {
-  if ($.spec.wizard && isMeta($.meta)) {
-    const stepNames = Object.keys($.spec.fields) as Array<FieldKey<T>>
+  if ($.model.wizard && isMeta($.meta)) {
+    const stepNames = Object.keys($.model.fields) as Array<FieldKey<T>>
     for (const stepName of stepNames) {
       const step = $.meta[stepName]
-      if (!step.$.spec.view) step.$.spec.view = <unknown>metaForm() as MetaView<any>
+      if (!step.$.model.view) step.$.model.view = <unknown>metaForm() as MetaView<any>
     }
-    const firstStepName = stepNames[0]
-    return {
-      step: firstStepName
-    }
+    $.state.step = stepNames[0]
   }
 })
 
 export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
-  const stepNames = Object.keys(wizard$.spec.fields) as Array<FieldKey<T>>
+  const stepNames = Object.keys(wizard$.model.fields) as Array<FieldKey<T>>
   const nowIndex = stepNames.indexOf(wizard$.state.step)
   const nowStep$ = child$(wizard$, stepNames[nowIndex])
   return { stepNames, nowIndex, nowStep$ }
@@ -109,14 +106,14 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
     ? stepChange.direction === "forwards" ? nowIndex + 1 : nowIndex - 1
     : stepNames.indexOf(stepChange.stepName)
   if (nextIndex < 0 || nextIndex >= stepNames.length) { // Index out of bounds
-    if (wizard$.parent?.$.spec.wizard) {
+    if (wizard$.parent?.$.model.wizard) {
       const direction: StepDirection = nextIndex < 0 ? "backwards" : "forwards"
       await changeStep({ direction })(wizard$.parent.$)
     }
     return
   }
 
-  if (!wizard$.spec.wizard?.unconstrained) {
+  if (!wizard$.model.wizard?.unconstrained) {
     // Perform validation unless wizard is unconstrained
     const nextStep = (wizard$.meta as Meta<any>)[stepNames[nextIndex]] as Meta<any>
     if (nextIndex > nowIndex + 1 && !nextStep.$.state.validated) return
@@ -133,7 +130,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
     }
   }
 
-  const onComplete = nowStep$.spec.wizardStep?.onComplete
+  const onComplete = nowStep$.model.wizardStep?.onComplete
   if (typeof onComplete === "function") {
     const completionResponse = await onComplete(nowStep$.value, nowStep$)
     if (completionResponse === false) return

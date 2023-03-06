@@ -1,6 +1,6 @@
 import chai from "chai"
 import { describe } from "mocha"
-import { metafy, MetaSpec } from "metaliq"
+import { metafy, MetaModel } from "metaliq"
 
 chai.should()
 
@@ -26,7 +26,7 @@ describe("MetaliQ Array Handling", () => {
       aliases: ["One", "Two"]
     }
 
-    const personSpecNoItems: MetaSpec<Person> = {
+    const personModelNoItems: MetaModel<Person> = {
       fields: {
         aliases: {
           label: "Aliases"
@@ -34,28 +34,28 @@ describe("MetaliQ Array Handling", () => {
       }
     }
 
-    const personSpecWithItems: MetaSpec<Person> = {
+    const personModelWithItems: MetaModel<Person> = {
       fields: { aliases: { label: "Aliases", items: { label: "Alias" } } }
     }
 
-    it("should metafy an array without an items definition to a MetaArray with empty spec for each item", () => {
-      const personMeta = metafy(personSpecNoItems, samplePerson)
+    it("should metafy an array without an items definition to a MetaArray with empty model for each item", () => {
+      const personMeta = metafy(personModelNoItems, samplePerson)
 
       personMeta.should.be.an("object")
       personMeta.aliases.should.be.an("array")
       personMeta.aliases.should.have.length(2)
       personMeta.aliases[0].should.have.property("$")
-      personMeta.aliases[0].$.spec.should.not.have.property("label")
+      personMeta.aliases[0].$.model.should.not.have.property("label")
     })
 
     it("should metafy an array of primitives to an array of metas for those primitives", () => {
-      const personMeta = metafy(personSpecWithItems, samplePerson)
+      const personMeta = metafy(personModelWithItems, samplePerson)
 
       personMeta.should.be.an("object")
       personMeta.aliases.should.be.an("array")
       personMeta.aliases.should.have.length(2)
       personMeta.aliases[0].should.have.property("$")
-      personMeta.aliases[0].$.spec.should.have.property("label")
+      personMeta.aliases[0].$.model.should.have.property("label")
     })
 
   })

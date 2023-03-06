@@ -8,7 +8,7 @@ The MetaliQ Navigation policy is one of the core policies provided in the @metal
 
 It provides an abstraction for the mechanism of navigation within an application space, and is designed to be flexible and extendable enough to support various navigation needs.
 
-### Data and Navigation Model
+### Data and Navigation Terms
 
 Most apps have a logical data model, based upon the business domain and the functionality of the app itself. In Metaliq, this application data model is defined as a TypeScript type, and is generally structured in a pragmatic, information-centric manner that does not necessarily map directly to an application's navigation structure.
 
@@ -16,13 +16,15 @@ For this reason the navigation model in a MetaliQ app is usually defined as a se
 
 Note: recurrent navigational structures (such as trees) are not supported by this policy at this time.
 
-A MetaliQ spec extends this core navigation model, including things such as; terminology labels - which can be used for menus, page headers and so on; validation elements - such as data-driven hide/show or enable/disabling of navigation options; and view specifications, used to display the target content for each node in the structure.
+A MetaliQ MetaModel extends this core navigation model, including things such as; terminology labels - which can be used for menus, page headers and so on; validation elements - such as data-driven hide/show or enable/disabling of navigation options; and presentation views, used to display the target content for each node in the structure.
 
 On start-up, this navigational structure is initialised into a Meta graph.
 
-The navigation policy provides further specification terms, including  `route`, which takes a Route object that associates the "page" with a URL pattern with type-safe parameter parsing, browser history integration and deep-linking. 
+The navigation policy provides further MetaModel terms, including  `route`, which takes a Route object that associates the "page" with a URL pattern with type-safe parameter parsing, browser history integration and deep-linking. 
 
-The navigation policy also provides terms to support the navigation flow such as `onEntering, onEnter, onLeaving, onLeave`, each of which is a MetaFn for the specified type. These functions provide a granular way for applications to provision data loading, integration tasks and so on.
+The navigation policy also provides terms to support the navigation flow such as `onEnter, onLeave`, each of which is a MetaFn for the specified type. These functions provide a granular way for applications to provision data loading, integration tasks and so on.
+
+There is also the term `onNavigate`. Unlike the `onEnter` and `onLeave` terms, which are specified at the navigation leaf level, `onNavigate` is set on the navigation parent. It provides the general mechanism that should be used for navigating around the application, and any navigation parent (which is any level within the navigation hierarchy that needs to maintain a current selection) should have an `onNavigate` term. This policy provides the standard `setNavSelection` 
 
 Additional terms can be supplied by specialised navigation models, such as sequential (for a wizard-like flow with additional inline validation and terminology for previous and next actions) or adventure (allowing movement along any of a node's connected edges).
 

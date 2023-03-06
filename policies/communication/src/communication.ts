@@ -1,6 +1,6 @@
 import { Meta$, MetaFn, metaSetups } from "metaliq"
 
-export interface CommunicationSpec<T, P> {
+export interface CommunicationTerms<T, P> {
   /**
    * An array of channels that will be registered for communicating with the produced meta.
    * If registered, any call to this channel will be applied to this meta.
@@ -12,7 +12,7 @@ export interface CommunicationSpec<T, P> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Specification<T, P> extends CommunicationSpec<T, P> {}
+    interface Terms<T, P> extends CommunicationTerms<T, P> {}
   }
 }
 
@@ -25,7 +25,7 @@ type CommunicationPolicy = {
 const policy: CommunicationPolicy = { channelMap: new Map() }
 
 metaSetups.push($ => {
-  for (const channel of $.spec.channels || []) {
+  for (const channel of $.model.channels || []) {
     policy.channelMap.set(channel, $)
   }
 })

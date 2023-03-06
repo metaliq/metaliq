@@ -1,8 +1,20 @@
+/**
+ * @module
+ *
+ * This module contains the node-specific code for the GraphQL server publication target.
+ *
+ * It is dynamically imported via the main {@link GraphQLServerConfig GraphQL server module},
+ * in order that node-specific dependencies do not "leak" into a browser environment.
+ */
+
 import { createServer, Server } from "http"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
-import { ApolloServer as ApolloServerExpress } from "apollo-server-express"
+import { ApolloServer } from "@apollo/server"
+import { expressMiddleware } from "@apollo/server/express4"
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
 import express from "express"
-import fsExtra from "fs-extra"
+import cors from "cors"
+import fsExtra, { copy } from "fs-extra"
 import { Cloud, CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { join } from "path"
@@ -13,13 +25,20 @@ import "dotenv/config"
 const { readFile, remove } = fsExtra
 
 let httpServer: Server
-let apolloServer: ApolloServerExpress
+let apolloServer: ApolloServer<DevContext>
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
+interface DevContext {
+  sessionToken: string
+}
+
+/**
+ * Starts the development server for the MetaliQ GraphQL Server publication target.
+ */
 export const graphQLServerRunner = (
   config: GraphQLServerConfig = {}
-): Runner => async ({ specName, simplePath, spec }) => {
+): Runner => async ({ modelName, simplePath, model }) => {
   const port = config.run?.port || 8940
   const hostname = "localhost" // TODO: Make configurable
 
@@ -27,39 +46,43 @@ export const graphQLServerRunner = (
   if (apolloServer) await apolloServer.stop()
   if (httpServer) httpServer.close()
 
-  // Create the HTTP server that will host the API
-  const app = express()
-  app.use(express.json({ limit: "50mb" }))
-  httpServer = createServer(app)
-
   // Load the GraphQL schema and resolvers
   // TODO: Make schema location configurable
   const typeDefs = await readFile("./gql/schema.gql", "utf8")
 
-  // Create the query / mutation service
-  apolloServer = new ApolloServerExpress({
+  // Create the HTTP server that will host the API
+  const expressApp = express()
+  httpServer = createServer(expressApp)
+  apolloServer = new ApolloServer<DevContext>({
     typeDefs,
-    resolvers: spec.resolvers,
-    context: ({ req }) => {
-      return {
-        sessionToken: req.headers["session-token"]
-      }
-    }
+    resolvers: model.resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
   })
-  await apolloServer.start()
-  apolloServer.applyMiddleware({ app })
 
-  // Start the API server
-  httpServer.listen(port, hostname, () =>
-    console.log(`GraphQL server running on http://${hostname}:${port}${apolloServer.graphqlPath}`)
+  await apolloServer.start()
+
+  expressApp.use(
+    "/graphql",
+    cors(),
+    express.json({ limit: "50mb" }),
+    expressMiddleware<DevContext>(apolloServer, {
+      context: async ({ req }) => {
+        return {
+          sessionToken: req.headers["session-token"] as string
+        }
+      }
+    })
   )
+
+  await new Promise<void>((resolve) => httpServer.listen(port, hostname, resolve))
+  console.log(`GraphQL server running on http://${hostname}:${port}/graphql`)
 
   return true
 }
 
 export const graphQLServerCleaner = (
   config: GraphQLServerConfig = {}
-): Cleaner => async ({ spec }) => {
+): Cleaner => async ({ model }) => {
   const destDir = config.build?.destDir || "prod/api"
 
   // Clean previous build
@@ -69,7 +92,7 @@ export const graphQLServerCleaner = (
 
 export const graphQLServerBuilder = (
   config: GraphQLServerConfig = {}
-): Builder => async ({ spec, simplePath, specName }) => {
+): Builder => async ({ model, simplePath, modelName }) => {
   const destDir = config.build?.destDir || "prod/api"
   const cloud = config.build?.cloud || "firebase"
   const useDomShim = !!config.build?.useDomShim
@@ -78,7 +101,7 @@ export const graphQLServerBuilder = (
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
-  await ensureAndWriteFile(jsSrc, indexJs(specName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
+  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     exclude: ["electron", "./graphql-server-node"],
@@ -99,45 +122,17 @@ export const graphQLServerBuilder = (
   const json = JSON.stringify(packageJson[cloud], null, "  ")
   await ensureAndWriteFile(join(destDir, "package.json"), json)
 
+  await ensureAndWriteFile(join(destDir, ".npmrc"), "auto-install-peers=true")
+  // Copy additional files
+  const copies = config.build?.copy || []
+  for (const entry of copies) {
+    const { src, dest }: { src: string, dest?: string } = (typeof entry === "string")
+      ? { src: entry, dest: entry }
+      : { src: entry.src, dest: entry.dest || entry.src }
+    await copy(src, `${destDir}/${dest}`, { dereference: true })
+  }
+
   return true
-}
-
-// TBD: Subscriptions
-
-// Fake imports
-class SubscriptionServer {
-  static create (...params: any[]): any {
-    return false
-  }
-
-  close () {
-  }
-}
-
-class PubSub {
-}
-
-// Module level - change to let
-let subServer: SubscriptionServer
-// Need to have a way of specifying
-export let pubsub: PubSub
-
-export const startSubscriptionServer = (schema: any) => {
-  if (subServer) subServer.close()
-
-  // Create the subscription service
-  subServer = SubscriptionServer.create({
-    onConnect: (connectionParams: any, socket: any) => {
-      return { sessionToken: connectionParams["session-token"] }
-    }
-    // NOTE: Disabled next line due to some import issues with execute and subscribed from graphql
-    // ...{ schema, execute, subscribe }
-  }, {
-    server: httpServer, path: apolloServer.graphqlPath
-  })
-
-  // Create new PubSub hub for subscription triggering
-  pubsub = new PubSub()
 }
 
 const apolloCloudLib: Record<Cloud, string> = {
@@ -154,8 +149,8 @@ const schemaJs = (schema: string, cloud: Cloud) => dedent`
 `
 
 const indexJs = (
-  specName: string,
-  specPath: string,
+  modelName: string,
+  modelPath: string,
   cloud: Cloud,
   cloudFnOptions: CloudFnOptions = {},
   useDomShim: boolean
@@ -186,14 +181,14 @@ const indexJs = (
   return dedent`
     ${useDomShim ? "import { installWindowOnGlobal } from \"@lit-labs/ssr/lib/dom-shim\"" : ""}
     import { typeDefs } from "./schema.js"
-    import { ${specName} } from "./${specPath}.js"
+    import { ${modelName} } from "./${modelPath}.js"
     
     import { ApolloServer } from "${apolloCloudLib[cloud]}"
     ${cloud === "firebase" ? "import functions from \"firebase-functions\"" : ""}
     
     const server = new ApolloServer({ 
       typeDefs, 
-      resolvers: ${specName}.resolvers,
+      resolvers: ${modelName}.resolvers,
       playground: true,
       introspection: true
     })
@@ -214,35 +209,35 @@ const packageJson: Record<Cloud, object> = {
       logs: "firebase functions:log"
     },
     engines: {
-      node: "17"
+      node: "18"
     },
     type: "module",
     main: "index.js",
     dependencies: {
-      "@lit-labs/ssr": "^1.0.0",
-      "apollo-server-cloud-functions": "^3.6.1",
-      "firebase-admin": "^9.8.0",
-      "firebase-functions": "^3.14.1",
-      graphql: "^16.2.0",
-      lit: "^2.0.0",
+      "@lit-labs/ssr": "1.0.0",
+      "apollo-server-cloud-functions": "3.6.1",
+      "firebase-admin": "9.8.0",
+      "firebase-functions": "3.14.1",
+      graphql: "16.2.0",
+      lit: "2.0.0",
       "node-fetch": "3"
     },
     devDependencies: {
-      "firebase-functions-test": "^0.2.0"
+      "firebase-functions-test": "0.2.0"
     },
     private: true
   },
   netlify: {
     name: "functions",
     engines: {
-      node: "17"
+      node: "18"
     },
     type: "module",
     main: "hello.js",
     dependencies: {
-      "apollo-server-lambda": "^3.10.0",
+      "apollo-server-lambda": "3.10.0",
       graphql: "15.8.0",
-      lit: "^2.0.0",
+      lit: "2.0.0",
       "node-fetch": "3"
     },
     private: true

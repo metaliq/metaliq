@@ -1,7 +1,7 @@
 import chai from "chai"
 import { describe } from "mocha"
 import { run } from "@metaliq/application"
-import { organisationSpec } from "./test-specs"
+import { organisationModel } from "./test-models"
 import { up } from "@metaliq/up"
 
 chai.should()
@@ -9,7 +9,7 @@ chai.should()
 describe("Application state processing", () => {
 
   it("resets the meta-graph after any process called with `up`", async () => {
-    const mApp = await run(organisationSpec)
+    const mApp = await run(organisationModel)
     const app = mApp.$.value
 
     app.principal.firstName.should.be.a("string").equal("Dexter")
@@ -24,7 +24,7 @@ describe("Application state processing", () => {
   })
 
   it("handles null as a value within the meta-graph", async () => {
-    const mApp = await run(organisationSpec)
+    const mApp = await run(organisationModel)
     const app = mApp.$.value // The underlying value is the first parameter to meta-functions
 
     await up(application => { application.principal = null }, app)()

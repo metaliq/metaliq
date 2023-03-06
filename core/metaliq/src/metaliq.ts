@@ -1,5 +1,5 @@
 /**
- * The Policy namespace holds the interfaces for system Specifications and extended State.
+ * The Policy namespace holds the interfaces for meta model Terms and extended State.
  * These interfaces are extended within policy modules in order to build an overall policy
  * that encompasses their system capablities.
  *
@@ -12,11 +12,11 @@
  */
 
 export declare namespace Policy {
-  export interface Specification<T, P = any> {
+  export interface Terms<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
      */
-    this?: Specification<T, P>
+    this?: Terms<T, P>
 
     /**
      * Register of policy string literals.
@@ -67,29 +67,40 @@ export type MetaArray<Type, Parent = any> = Array<Meta<Type, Parent>> & HasMeta$
 export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
 
 /**
- * Dollar property containing meta information.
+ * Dollar property containing information for each node in the meta graph.
  */
 export type Meta$<T, P = any> = {
   /**
-   * Link to the meta object containing this $ property.
+   * Link to the object in the meta graph containing this $ property.
    * Useful for backlinks from object values.
    */
   meta?: HasMeta$<T, P>
 
   /**
-   * Ancestry within meta graph (if applicable).
+   * Ancestor node within meta graph (if applicable).
+   * This node's meta info is at `parent.$`.
+   * The `parent` function of this module provides convenient, typed access to
+   * the data at `parent.$.value`
    */
   parent?: HasMeta$<P>
 
   /**
-   * Key within parent meta (if applicable).
+   * Key within parent (if applicable).
+   * If this node of the graph is in an array then this is the key of the
+   * containing array within its parent, and can be used with the `index`
+   * property to determine this node's location.
    */
   key?: FieldKey<P>
 
   /**
-   * The specification applied to this meta object.
+   * Index of parent within array (if applicable).
    */
-  spec: MetaSpec<T, P>
+  index?: number
+
+  /**
+   * The MetaModel associated with this node in the meta graph.
+   */
+  model: MetaModel<T, P>
 
   /**
    * The runtime Meta state.
@@ -102,29 +113,33 @@ export type Meta$<T, P = any> = {
   value?: T
 
   /**
-   * The internal (potentially transient) version of the data value.
+   * The internal version of the data value.
    */
   _value?: T
-
 }
 
 /**
- * Specification for a given Type and optional Parent.
+ * The type of the `fields` definition collection in a MetaModel.
  */
-export type MetaSpec<T, P = any> = Policy.Specification<T, P> & {
-  fields?: T extends any[]
+export type MetaModelFields<Type> = { [K in FieldKey<Type>]?: MetaModel<Type[K], Type> }
+
+/**
+ * MetaModel that extends a given data model Type and optional Parent.
+ */
+export type MetaModel<Type, Parent = any> = Policy.Terms<Type, Parent> & {
+  fields?: Type extends any[]
     ? never
-    : { [K in FieldKey<T>]?: MetaSpec<T[K], T> }
-  items?: T extends Array<infer I>
-    ? MetaSpec<I>
+    : MetaModelFields<Type>
+  items?: Type extends Array<infer I>
+    ? MetaModel<I>
     : never
 }
 
 /**
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
- * Setups should check the policy's term(s) in the meta spec to determine applicability of any such setup.
+ * Setups should check the policy's term(s) in the MetaModel to determine applicability of any such setup.
  */
-export type MetaSetup<T, P = any> = (meta: Meta$<T, P>) => any
+export type MetaSetup<T, P = any> = ($: Meta$<T, P>) => void
 
 export const metaSetups: Array<MetaSetup<any>> = []
 
@@ -135,89 +150,40 @@ function setupMeta ($: Meta$<any>) {
 }
 
 /**
- * Use within a metaSetup to establish a possibly dynamic state value based on a
- * specification term that is either a literal or a meta function returning the literal.
+ * Use within a MetaSetup to establish a possibly dynamic state value based on a
+ * MetaModel term that is either a literal or a meta function returning the literal.
  */
-export const addDynamicState = <T, P = any, K extends SpecKey = any>($: Meta$<T, P>, specKey: K) => {
-  const specValue = $.spec[specKey]
-  if (isMetaFn(specValue)) {
-    const specValueFn = specValue as MetaFn<T, P, DerivedSpecValue<K>>
-    Object.defineProperty($.state, specKey, {
+export const addDynamicState = <T, P = any, K extends TermKey = any>($: Meta$<T, P>, modelKey: K) => {
+  const termValue = $.model[modelKey]
+  if (isMetaFn(termValue)) {
+    const modelValueFn = termValue as MetaFn<T, P, DerivedTermValue<K>>
+    Object.defineProperty($.state, modelKey, {
       enumerable: true,
       get () {
-        return specValueFn($.value, $)
+        return modelValueFn($.value, $)
       }
     })
   } else {
-    Object.assign($.state, { [specKey]: specValue })
+    Object.assign($.state, { [modelKey]: termValue })
   }
 }
 
 /**
- * Return a path string for the given meta,
- * with the given root meta name which defaults to "meta".
- */
-function metaPath ($: HasMeta$<any>, root = "meta"): string {
-  let path = $.$.key ?? root
-  let parent = $.$.parent
-  while (parent) {
-    path = `${parent.$.key ?? root}.${path}`
-    parent = parent.$.parent
-  }
-  return `${path}`
-}
-
-function metaToString (meta: Meta<any>): string {
-  const value = meta.$.value
-  if (typeof value === "undefined") {
-    return ""
-  } else if (Array.isArray(value)) {
-    return "" // Should be in MetaArrayProto instead
-  } else if (typeof value === "object") {
-    return metaPath(meta)
-  } else if (typeof value === "boolean") {
-    return value ? "true" : "false"
-  } else {
-    return value?.toString() || ""
-  }
-}
-
-const MetaProto = {
-  toString () {
-    return metaToString(this)
-  }
-}
-
-class MetaArrayProto extends Array {
-  $: Meta$<any>
-
-  constructor ($: Meta$<any>) {
-    super()
-    $.meta = this
-    this.$ = $
-  }
-
-  toString () {
-    return metaPath(<unknown> this as MetaArray<any>)
-  }
-}
-
-/**
- * Create a Meta object with the given spec, value and optional parent and key.
+ * Create a Meta object with the given MetaModel, data value and optional parent and key.
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  spec: MetaSpec<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>
+  model: MetaModel<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
 ): Meta<T, P> {
   const hasProto = !!proto
-  const isArray = spec.items || Array.isArray(value)
+  const isArray = model.items || Array.isArray(value)
 
   // Establish the correct form of prototype for this meta
   proto = isArray
-    ? proto instanceof MetaArrayProto
+    ? Array.isArray(proto)
       ? proto
-      : new MetaArrayProto(proto.$)
-    : proto || Object.create(MetaProto)
+      : Object.assign([], { $: proto?.$ }) as HasMeta$<T, P>
+    : proto || {} as Meta<T, P>
 
   // Reuse existing Meta$ if present, otherwise create new one
   const $ = proto?.$ || {
@@ -225,7 +191,11 @@ export function metafy <T, P = any> (
     // so that primitive values are assigned properly to their place in the containing object.
     get value () {
       if (this.parent) {
-        return this.parent[this.key]?.$._value
+        if (typeof this.index === "number") {
+          return this.parent[this.key]?.[this.index]?.$._value
+        } else {
+          return this.parent[this.key]?.$._value
+        }
       } else {
         return this._value
       }
@@ -237,12 +207,14 @@ export function metafy <T, P = any> (
 
   // Add contextual meta information to Meta$
   Object.assign($, {
-    spec,
+    model,
     parent,
     key,
     state: proto?.$?.state || {},
     _value: value
   })
+  if (typeof index === "number") $.index = index
+
   const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
   // Assign the meta object to itself - useful for backlinks from values
@@ -262,16 +234,16 @@ export function metafy <T, P = any> (
     const valueArr = <unknown>value as any[] || []
     const metaArr = <unknown>result as MetaArray<any, P>
     metaArr.length = 0 // Remove any items from supplied prototype
-    for (const item of valueArr) {
+    for (const [itemIndex, item] of valueArr.entries()) {
       const itemMeta = item?.$?.meta
-      metaArr.push(metafy(spec.items || {}, item, parent, key, itemMeta))
+      metaArr.push(metafy(model.items || {}, item, parent, key, itemMeta, itemIndex))
     }
   } else {
-    for (const fieldKey of fieldKeys(spec)) {
+    for (const fieldKey of fieldKeys(model)) {
       const fieldValue = value?.[fieldKey]
-      const fieldSpec = result.$.spec.fields[fieldKey]
+      const fieldModel = result.$.model.fields[fieldKey]
       const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
-      if (fieldSpec) metafy(fieldSpec, fieldValue, result, fieldKey, fieldMeta)
+      if (fieldModel) metafy(fieldModel, fieldValue, result, fieldKey, fieldMeta)
     }
   }
 
@@ -288,22 +260,22 @@ export function metafy <T, P = any> (
  */
 export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
   const $ = (m$(valueOr$) || valueOr$) as Meta$<T>
-  metafy($.spec,
+  metafy($.model,
     typeof value === "undefined" ? $.value : value,
     $.parent as Meta<any>, $.key, $.meta)
 }
 
 /**
- * Apply a given spec to an existing meta.
+ * Apply a given MetaModel to an existing Meta$ object.
  */
-export function applySpec<T> ($: Meta$<T>, spec: MetaSpec<T>) {
-  $.spec = spec
+export function applyModel<T> ($: Meta$<T>, model: MetaModel<T>) {
+  $.model = model
   setupMeta($)
   if (isMeta($.meta)) {
-    for (const key of fieldKeys(spec)) {
-      const fieldSpec = <unknown>spec.fields[key] as MetaSpec<T[FieldKey<T>]>
+    for (const key of fieldKeys(model)) {
+      const fieldModel = <unknown>model.fields[key] as MetaModel<T[FieldKey<T>]>
       const fieldMeta = <unknown>$.meta[key] as Meta<T[FieldKey<T>]>
-      applySpec(fieldMeta.$, fieldSpec)
+      applyModel(fieldMeta.$, fieldModel)
     }
   }
 }
@@ -345,7 +317,7 @@ export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, 
  * Given either a meta info object or its underlying data value (but not a primitive),
  * return a reference to the value object for the parent.
  */
-export const parent = <T extends object, P = any> (v$: T | HasMeta$<T, P>): P => {
+export const parent = <T extends object, P = any> (v$: Meta$<T, P> | T): P => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
   return $?.parent?.$.value
 }
@@ -361,10 +333,10 @@ export type FieldKey<T> = Exclude<Extract<keyof T, string>, "__typename">
 export type FieldType<Parent, Key extends FieldKey<Parent>> = Parent[Key]
 
 /**
- * Return the keys of a field spec.
+ * Return the field keys of a given MetaModel.
  */
-export const fieldKeys = <T>(spec: MetaSpec<T>) =>
-  Object.keys(spec?.fields || {}) as Array<FieldKey<T>>
+export const fieldKeys = <T>(model: MetaModel<T>) =>
+  Object.keys(model?.fields || {}) as Array<FieldKey<T>>
 
 /**
  * The primary pattern for providing a processing function to MetaliQ.
@@ -406,7 +378,7 @@ export const $args = <Type, Parent> (value: Type, $?: Meta$<Type, Parent>, event
   if (!$ && typeof maybeValue === "object") {
     if (maybeValue.$) {
       $ = maybeValue.$
-    } else if (["value", "spec", "meta"].every(key => !!maybeValue[key])) {
+    } else if (["value", "model", "meta"].every(key => !!maybeValue[key])) {
       $ = maybeValue
       value = $.value
     }
@@ -417,14 +389,14 @@ export const $args = <Type, Parent> (value: Type, $?: Meta$<Type, Parent>, event
 /**
  * Convenient method of wrapping a MetaFn and adding the behaviour of $args.
  */
-export const $fn = <Type, Parent> (fn: MetaFn<Type, Parent>): MetaFn<Type, Parent> => (v, $, e) => {
+export const $fn = <Type, Parent, Return> (fn: MetaFn<Type, Parent, Return>): MetaFn<Type, Parent, Return> => (v, $, e) => {
   [v, $] = $args(v, $)
   return fn(v, $, e)
 }
 
-export type SpecKey = keyof Policy.Specification<any>
-export type SpecValue<K extends SpecKey> = Policy.Specification<any>[K]
-export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<any>>
+export type TermKey = keyof Policy.Terms<any>
+export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
+export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
 
 /**
  * A simple type guard for terms that may or may not be a meta function.
@@ -432,38 +404,37 @@ export type DerivedSpecValue<K extends SpecKey> = Exclude<SpecValue<K>, MetaFn<a
 export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "function"
 
 /**
- * Return the value of a spec term that is defined as being
+ * Return the value of a MetaModel term that is defined as being
  * either a particular type or a MetaFn that returns that type.
  */
-export const getDynamicTerm = <K extends SpecKey>(key: K): MetaFn<any, any, DerivedSpecValue<K>> =>
+export const getDynamicTerm = <K extends TermKey>(key: K): MetaFn<any, any, DerivedTermValue<K>> =>
   $fn((v, $) => {
-    const specValue = $.spec[key]
-    if (isMetaFn(specValue)) return specValue(v, $)
-    else return specValue
+    const termValue = $.model[key]
+    if (isMetaFn(termValue)) return termValue(v, $)
+    else return termValue
   })
 
 /**
- * Return the value of a spec term by searching the
- * immediate meta object and then stepping back through ancestors
+ * Return the value of a MetaModel term by searching the
+ * immediate object and then stepping back through ancestors
  * until a value is found.
  */
-export const getAncestorTerm = <K extends SpecKey>(
+export const getAncestorTerm = <K extends TermKey>(
   key: K, dynamic: boolean = false
-): MetaFn<any, any, SpecValue<K>> =>
+): MetaFn<any, any, TermValue<K>> =>
     $fn((v, $) => {
-      while ($ && typeof $.spec[key] === "undefined") $ = $.parent?.$
-      const termValue = $?.spec[key]
+      while ($ && typeof $.model[key] === "undefined") $ = $.parent?.$
+      const termValue = $?.model[key]
       return termValue
     })
 
 /**
- * Combine an array of meta functions into a single meta function
+ * Combine any number of meta functions into a single meta function
  * which returns the result of the last function.
- * Can be used recursively, i.e. `fns(fns(...), ...)`.
- * Useful for combining functionality in a single MetaFn spec term.
+ * Useful for combining functionality into a single MetaFn term.
  */
 export const fns = <T, P = any, R = any> (
-  metaFns: [...Array<MetaFn<T, P>>, MetaFn<T, P, R>]
+  ...metaFns: [...Array<MetaFn<T, P>>, MetaFn<T, P, R>]
 ): MetaFn<T, P, R> => (v, $) => {
     let result: R
     for (const fn of metaFns) {
@@ -471,3 +442,37 @@ export const fns = <T, P = any, R = any> (
     }
     return result
   }
+
+/**
+ * Return the {@link Meta$} for the root node in the meta graph containing the
+ * node with the given Meta$.
+ *
+ * In the case where you know what Meta$ type to expect,
+ * you can specify with `root$<MyType>(myNode$)`.
+ *
+ * Note that a root Meta$ won't have a parent type.
+ */
+export const root$ = <T> (v: any, $?: Meta$<any>) => {
+  [v, $] = $args(v, $)
+  let result = $
+  while (result.parent) {
+    result = result.parent.$
+  }
+  return result as Meta$<T>
+}
+
+/**
+ * Return a MetaFn that will run a given MetaFn on all descendant nodes
+ * of the provided node.
+ */
+export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => $fn((v, $) => {
+  const recurse = ($: Meta$<any>, onBase: boolean = true) => {
+    if (onBase) fn(v, $)
+    const keys = fieldKeys($.model)
+    for (const key of keys) {
+      recurse(child$($, key))
+    }
+  }
+
+  recurse($, onBase)
+})

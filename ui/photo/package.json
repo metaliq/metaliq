@@ -1,19 +1,19 @@
 {
   "name": "@metaliq/photo",
   "description": "Photo and image field for MetaliQ",
-  "version": "1.0.0-beta.29",
+  "version": "1.0.0-beta.54",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/forms": "workspace:*",
     "@metaliq/presentation": "workspace:*",
     "@metaliq/up": "workspace:*",
     "@metaliq/util": "workspace:*",
-    "compressorjs": "^1.1.1",
-    "lit": "2.3.1",
+    "compressorjs": "1.1.1",
+    "lit": "2.6.1",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^4.7.3"
+    "typescript": "4.7.3"
   },
   "license": "MIT",
   "main": "lib/photo.js",
