@@ -39,7 +39,7 @@ export type SignaturePadOptions = {
 
 const defaultSignaturePadOptions: SignaturePadOptions = {
   penColor: "black",
-  format: "PNG"
+  format: "RAW"
 }
 
 const sigPadFormatMap: { [index in SignaturePadFormat]: string } = {
