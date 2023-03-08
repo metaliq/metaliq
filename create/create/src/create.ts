@@ -47,8 +47,8 @@
  */
 
 import { URL } from "url"
-import { cp, readFile, writeFile, readdir } from "fs/promises"
-import { cwd } from "process"
+import { cp, readFile, writeFile, readdir, mkdir } from "fs/promises"
+import { cwd, chdir } from "process"
 import { resolve } from "path"
 import { templateUrl } from "@metaliq/template"
 import { execaCommand } from "execa"
@@ -57,6 +57,17 @@ import { dedent } from "ts-dedent"
 const exec = (command: string) => execaCommand(command, { stdio: "inherit" })
 
 const main = async () => {
+  console.log(`process.argv: ${process.argv.join(" ")}`)
+
+  const projectPath = process.argv.pop()
+  if (projectPath && !projectPath.match(/create\.js$/)) {
+    try {
+      await mkdir(projectPath)
+    } catch (e) {
+      console.log(`Directory ${projectPath} may already exist, continuing to use it if present and empty`)
+    }
+    chdir(projectPath)
+  }
 
   const projectDir = cwd()
   const projectName = projectDir.split(/[\\/]/).filter(Boolean).pop()
