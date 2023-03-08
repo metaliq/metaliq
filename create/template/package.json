@@ -6,7 +6,6 @@
   "types": "bin/models.d.ts",
   "description": "",
   "scripts": {
-    "install": "metaliq build",
     "start": "metaliq run"
   },
   "author": "",
