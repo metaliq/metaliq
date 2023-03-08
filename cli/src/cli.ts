@@ -36,7 +36,7 @@ type ServeOptions = {
 const program = new Command()
 program
   .name("metaliq")
-  .version("0.30.5")
+  .version("1.0.0-beta.55")
 
 program
   .command("run [modelName]")
@@ -106,7 +106,8 @@ async function run (modelName: string = "appModel", options: RunOptions = {}) {
   const simplePath = optionsSimplePath(options)
   const model = await importModel(modelName, simplePath)
   if (!model) {
-    return console.error(`Model not found: ${simplePath}.ts > ${modelName}`)
+    console.error(`Model not found: ${simplePath}.ts > ${modelName}`)
+    return
   }
 
   model.publicationTarget = model.publicationTarget || webPageApp()
@@ -135,7 +136,8 @@ async function build (modelNames: string[], options: BuildOptions = {}) {
     console.log(`Bundling modules for model ${modelName}...`)
     const model = await importModel(modelName, simplePath)
     if (!model) {
-      return console.error(`Model not found: ${simplePath} > ${modelName}`)
+      console.error(`Model not found: ${simplePath} > ${modelName}`)
+      return
     }
 
     bundles.push({
@@ -159,7 +161,8 @@ async function build (modelNames: string[], options: BuildOptions = {}) {
       console.log(`Building MetaModel ${modelName}...`)
       await target.builder(context)
     } else {
-      return console.error(`Model ${modelName} publication target ${target.name} for  has no builder`)
+      console.error(`Model ${modelName} publication target ${target.name} for  has no builder`)
+      return
     }
   }
 
