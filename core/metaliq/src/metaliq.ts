@@ -1,5 +1,5 @@
 /**
- * The Policy namespace holds the interfaces for meta model Terms and extended State.
+ * The Policy namespace holds the interfaces for meta model definition.
  * These interfaces are extended within policy modules in order to build an overall policy
  * that encompasses their system capablities.
  *
@@ -12,6 +12,9 @@
  */
 
 export declare namespace Policy {
+  /**
+   * Policies can define Terms to be used in MetaModel definitions.
+   */
   export interface Terms<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
@@ -24,11 +27,26 @@ export declare namespace Policy {
     policies?: string[]
   }
 
+  /**
+   * Policies can define and initialise State that will be maintained
+   * for each node in the meta-graph.
+   */
   export interface State<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
      */
     this?: State<T, P>
+  }
+
+  /**
+   * Policies can define Aspects - typically functions - that will be available
+   * for each of the Meta$ objects in the meta graph.
+   */
+  export interface Aspects<T, P = any> {
+    /**
+     * Self reference for easy inclusion of generic type parameters when merging.
+     */
+    this?: Aspects<T, P>
   }
 }
 
@@ -69,7 +87,7 @@ export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
 /**
  * Dollar property containing information for each node in the meta graph.
  */
-export type Meta$<T, P = any> = {
+export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
   /**
    * Link to the object in the meta graph containing this $ property.
    * Useful for backlinks from object values.
@@ -182,7 +200,7 @@ export function metafy <T, P = any> (
   proto = isArray
     ? Array.isArray(proto)
       ? proto
-      : Object.assign([], { $: proto?.$ }) as HasMeta$<T, P>
+      : Object.assign([], { $: proto?.$ }) as HasMeta$<T>
     : proto || {} as Meta<T, P>
 
   // Reuse existing Meta$ if present, otherwise create new one
@@ -307,11 +325,6 @@ export const child$ = <
  * A type guard to narrow a MetaField to a Meta.
  */
 export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => !Array.isArray(m)
-
-/**
- * A type guard to narrow a MetaField to a MetaArray.
- */
-export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> => Array.isArray(m)
 
 /**
  * Given either a meta info object or its underlying data value (but not a primitive),

@@ -10,7 +10,7 @@ export const equalTo = (equalTo: any, msg?: string): Validator<any> => value =>
 /**
  * Checks equality with another field in the same parent.
  */
-export const sameAs = <T, P>(other: FieldKey<P>, msg?: string): Validator<T, P> => (value, $ = m$(value)) => {
+export const sameAs = <T, P>(other: FieldKey<P>, msg?: string): Validator<T, P> => (value, $) => {
   const otherMeta$ = child$($.parent.$, other)
   return value === otherMeta$.value as any || msg || `Does not match ${otherMeta$.model.label}`
 }
@@ -69,7 +69,7 @@ export const allOf = <T, P>(...validators: Array<Validator<T>>): Validator<T, P>
  * Should provide the message that is displayed if none of the conditions are met,
  * rather than trying to guess which is appropriate.
  */
-export const oneOf = <T, P>(msg?: string, ...validators: Array<Validator<T>>): Validator<T, P> => (v, $ = m$(v)) => {
+export const oneOf = <T, P>(msg?: string, ...validators: Array<Validator<T>>): Validator<T, P> => (v, $) => {
   for (const validator of validators) {
     const result = validator(v, $)
     if (!(result === false || typeof result === "string")) return true

@@ -172,7 +172,8 @@ export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (messa
  *
  * If `context.local` is set to true then the promised `up` function
  * is local to the provided context and no global reference to it is exported.
- * This is useful for components with internal nested state.
+ * This enables components and frameworks to create multiple,
+ * separate reactive update containers.
  *
  * Example: to bootstrap a typical Lit app with console logging:
  * ```
@@ -187,7 +188,7 @@ export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (messa
  *```
  */
 export const startUp = async (context: UpContext): Promise<Up<any>> => {
-  const log = context.log === true
+  const log: LogFunction<any> = context.log === true
     ? console.log
     : typeof context.log === "function"
       ? context.log

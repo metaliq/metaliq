@@ -1,5 +1,5 @@
-import { Meta, MetaFn, metafy, MetaModel, reset } from "metaliq"
-import { LogFunction, startUp, Up } from "@metaliq/up"
+import { Meta, Meta$, MetaFn, metafy, MetaModel, metaSetups, reset } from "metaliq"
+import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
 
 /**
  * Policy module to define general model and operation of a Metaliq application.
@@ -35,11 +35,6 @@ export interface ApplicationTerms<T, P = any> {
    * Flag to create a localised context with state updates isolated from the rest of an application.
    */
   local?: boolean
-
-  /**
-   * Collection of application-defined hooks for integration etc.
-   */
-  actions?: ApplicationActions<T, P>
 }
 
 export interface ApplicationState<T> {
@@ -49,27 +44,28 @@ export interface ApplicationState<T> {
   up?: Up<Meta<T>>
 }
 
-/**
- * Application actions is an extensible interface to link processes
- * such as data persistence, file uploads and other downstream integration
- * tasks into defined application interaction points such as "save", "delete", "refresh" etc.
- */
-export interface ApplicationActions<T, P> {
-  this?: ApplicationActions<T, P>
+export interface ApplicationAspects<T, P = any> {
+  up?: (metaFn: MetaFn<T, P>, options?: UpOptions) => (message?: any) => any
 }
 
 declare module "metaliq" {
   namespace Policy {
     interface Terms<T, P> extends ApplicationTerms<T, P> {}
 
-    interface State<T, P> extends ApplicationState<T>{
+    interface State<T, P> extends ApplicationState<T> {
       this?: State<T, P>
     }
+
+    interface Aspects<T, P> extends ApplicationAspects<T, P> {}
   }
 }
 
 export type InitFunction<T> = ((model?: MetaModel<T>) => T) | ((model?: MetaModel<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
+
+metaSetups.push(<T, P = any>($: Meta$<T, P>) => {
+  $.up = (metaFn: MetaFn<T, P>) => up($ => metaFn($.value, $), $)
+})
 
 /**
  * Run a MetaModel - initialise its data value and set `up`

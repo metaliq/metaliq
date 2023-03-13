@@ -1,4 +1,4 @@
-import { addDynamicState, fieldKeys, isMeta, isMetaArray, m$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { addDynamicState, fieldKeys, isMeta, m$, Meta$, MetaFn, metaSetups } from "metaliq"
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
@@ -133,7 +133,7 @@ export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
     validate($)
     if ($.state.error) result.push($)
     const { meta } = $
-    if (isMetaArray(meta)) {
+    if (Array.isArray(meta)) {
       for (const sub of meta) {
         appendTo(result, validateAll(sub.$))
       }
@@ -153,7 +153,7 @@ export const unvalidate = <T, P>(v$: T | Meta$<T, P>) => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
   delete $.state.error
   const { meta } = $
-  if (isMetaArray(meta)) {
+  if (Array.isArray(meta)) {
     for (const sub of meta) {
       unvalidate(sub.$)
     }

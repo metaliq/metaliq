@@ -41,5 +41,5 @@ export type ChannelCall<M> = (msg: M) => any
  */
 export const call = <T, P, M> (channel: MetaFn<T, P, ChannelCall<M>>) => (msg?: M) => {
   const $ = policy.channelMap.get(channel)
-  if ($) return channel($.value, $)(msg)
+  if ($) return channel($.value, $ as Meta$<T, P>)(msg)
 }

@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, isMetaArray, m$, Meta$, MetaFn } from "metaliq"
+import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, m$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { MetaView, MetaViewTerm, view, ViewResult } from "@metaliq/presentation"
@@ -42,7 +42,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
 }
 
 export const repeatView: MetaView<any[]> = (v, $) => {
-  if (isMetaArray($.meta)) {
+  if (Array.isArray($.meta)) {
     const itemView = view($.model.items?.view || defaultFieldView($.meta[0].$))
 
     return $.meta.map(({ $ }) => {
