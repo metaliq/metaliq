@@ -134,6 +134,11 @@ export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
    * The internal version of the data value.
    */
   _value?: T
+
+  /**
+   * Call the provided MetaFunction on this Meta$.
+   */
+  fn: <R>(metaFn: MetaFn<T, P, R>) => R
 }
 
 /**
@@ -229,7 +234,10 @@ export function metafy <T, P = any> (
     parent,
     key,
     state: proto?.$?.state || {},
-    _value: value
+    _value: value,
+    fn (metaFn: MetaFn<T, P>) {
+      return metaFn(this.value, this)
+    }
   })
   if (typeof index === "number") $.index = index
 
@@ -365,6 +373,11 @@ export type MetaFn<Type, Parent = any, Result = any> =
   Result
 
 /**
+ * An array of MetaFns of a particular type.
+ */
+export type MetaFns<Type, Parent = any, Result = any> = Array<MetaFn<Type, Parent, Result>>
+
+/**
  * Sanitise the arguments to a MetaFn.
  * Use at the top of any MetaFn like:
  *
@@ -443,18 +456,16 @@ export const getAncestorTerm = <K extends TermKey>(
 
 /**
  * Combine any number of meta functions into a single meta function
- * which returns the result of the last function.
+ * which filters out any null entries provided and
+ * returns an array of the individual results.
+ *
  * Useful for combining functionality into a single MetaFn term.
  */
 export const fns = <T, P = any, R = any> (
-  ...metaFns: [...Array<MetaFn<T, P>>, MetaFn<T, P, R>]
-): MetaFn<T, P, R> => (v, $) => {
-    let result: R
-    for (const fn of metaFns) {
-      if (typeof fn === "function") result = fn(v, $)
-    }
-    return result
-  }
+  ...metaFns: Array<MetaFn<T, P, R>>
+): MetaFn<T, P, R[]> => (v, $) => metaFns
+    .filter(f => typeof f === "function")
+    .map(f => f(v, $))
 
 /**
  * Return the {@link Meta$} for the root node in the meta graph containing the
