@@ -5,7 +5,7 @@ import { up } from "@metaliq/up"
 import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, m$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { MetaView, MetaViewTerm, view, ViewResult } from "@metaliq/presentation"
+import { MetaView, MetaViewTerm, view, ViewResult, setViewResolver } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 
 export { expander } from "@metaliq/elements"
@@ -33,7 +33,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
           )
           .map(key => {
             const fieldMeta = meta[key] as HasMeta$<any>
-            const itemView = fieldMeta.$.model.view || defaultFieldView(fieldMeta.$)
+            const itemView = fieldMeta.$.model.view || defaultView(fieldMeta.$)
             return view(itemView)(fieldMeta.$.value, fieldMeta.$)
           })}
       </div>
@@ -43,7 +43,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
 
 export const repeatView: MetaView<any[]> = (v, $) => {
   if (Array.isArray($.meta)) {
-    const itemView = view($.model.items?.view || defaultFieldView($.meta[0].$))
+    const itemView = view($.model.items?.view || defaultView($.meta[0].$))
 
     return $.meta.map(({ $ }) => {
       return itemView($.value, $)
@@ -55,29 +55,31 @@ export const repeatView: MetaView<any[]> = (v, $) => {
  * Display a field for the given parent and key, optionally with a specific view.
  */
 export const field = <P, K extends FieldKey<P>> (
-  parent: P, key: K, fieldView?: MetaViewTerm<FieldType<P, K>, P>
+  parent: P, key: K, fieldView?: MetaView<FieldType<P, K>, P>
 ) => {
   const field$ = child$(parent, key)
-  return view(fieldView || field$.model.view || defaultFieldView(field$))(field$.value, field$)
+  return view(fieldView || field$.model.view || defaultView(field$))(field$.value, field$)
 }
 
 /**
  * Return a default view for a meta based upon its value type.
  */
-const defaultFieldView = <T> ($: Meta$<T>): MetaView<T> => {
+const defaultView: MetaFn<any, any, MetaView> = (v, $) => {
   if (!$) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
   } else if (Array.isArray($.meta)) {
     // T is an array type
-    return <unknown>repeatView as MetaView<T>
+    return <unknown>repeatView as MetaView
   } else if ($.value && typeof $.value === "object") {
     return metaForm()
   } else if (typeof $.value === "boolean") {
-    return <unknown>checkboxField() as MetaView<T>
+    return <unknown>checkboxField() as MetaView
   } else if (typeof $.value === "number") {
     return inputField({ type: "number" })
   } else return inputField()
 }
+
+setViewResolver(defaultView)
 
 /**
  * Return a view that consists of the given text or HTML template.
