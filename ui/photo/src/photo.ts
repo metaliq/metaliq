@@ -37,7 +37,7 @@ const defaultPhotoFieldOptions: PhotoFieldOptions = {
 export const photoField = (options: PhotoFieldOptions = {}): MetaView<string> => (value, $) => {
   options = { ...defaultPhotoFieldOptions, ...options }
 
-  const disabled = isDisabled($)
+  const disabled = $.fn(isDisabled)
   return html`
     <label class="mq-field mq-photo-field ${classMap(fieldClasses($))}">
       ${fieldLabel<string>({})(value, $)}

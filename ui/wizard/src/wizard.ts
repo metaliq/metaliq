@@ -1,8 +1,7 @@
-import { child$, FieldKey, isMeta, isMetaFn, Meta, Meta$, MetaFn, metaSetups } from "metaliq"
+import { FieldKey, isMeta, isMetaFn, Meta, Meta$, MetaFn, metaSetups } from "metaliq"
 import { validateAll } from "@metaliq/validation"
 import { metaForm } from "@metaliq/forms"
 import { wait } from "@metaliq/util"
-import { up } from "@metaliq/up"
 import { MetaView } from "@metaliq/presentation"
 
 export type StepLabel = string | boolean
@@ -41,7 +40,7 @@ export interface WizardState<T> {
 declare module "metaliq" {
   namespace Policy {
     interface Terms<T, P> extends WizardTerms<T, P> {}
-    interface State<T, P> extends WizardState<T>{
+    interface State<T, P> extends WizardState<T> {
       this?: State<T, P>
     }
   }
@@ -94,11 +93,11 @@ metaSetups.push(<T>($: Meta$<T>) => {
 export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
   const stepNames = Object.keys(wizard$.model.fields) as Array<FieldKey<T>>
   const nowIndex = stepNames.indexOf(wizard$.state.step)
-  const nowStep$ = child$(wizard$, stepNames[nowIndex])
+  const nowStep$ = wizard$.child(stepNames[nowIndex])
   return { stepNames, nowIndex, nowStep$ }
 }
 
-export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Meta$<T>) => {
+export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v, wizard$) => {
   // Deduce indices of current and next step
   const { stepNames, nowIndex, nowStep$ } = getWizardInfo(wizard$)
 
@@ -106,9 +105,9 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
     ? stepChange.direction === "forwards" ? nowIndex + 1 : nowIndex - 1
     : stepNames.indexOf(stepChange.stepName)
   if (nextIndex < 0 || nextIndex >= stepNames.length) { // Index out of bounds
-    if (wizard$.parent?.$.model.wizard) {
+    if (wizard$.parent?.model.wizard) {
       const direction: StepDirection = nextIndex < 0 ? "backwards" : "forwards"
-      await changeStep({ direction })(wizard$.parent.$)
+      await wizard$.parent.fn(changeStep({ direction }))
     }
     return
   }
@@ -139,7 +138,7 @@ export const changeStep = <T> (stepChange: StepChange<T>) => async (wizard$: Met
 
   window.history.pushState({}, nowStep$.state.label)
   window.onpopstate = (evt: PopStateEvent) => {
-    up(changeStep({ stepName: stepNames[nowIndex] }), wizard$)()
+    wizard$.up(changeStep({ stepName: stepNames[nowIndex] }))()
   }
 
   wizard$.state.stepChangeDirection = (nextIndex > nowIndex) ? "forwards" : "backwards"

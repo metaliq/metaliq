@@ -41,10 +41,10 @@ metaSetups.push(<T>($: Meta$<T>) => {
 /**
  * Return a full path string for the given meta within it's given ancestor.
  */
-export function labelPath (from: HasMeta$<any>, to: HasMeta$<any>) {
+export function labelPath (from: Meta$<any>, to: Meta$<any>) {
   const labels = [labelOrKey(to)]
-  while (to.$.parent && to.$.parent !== from) {
-    to = to.$.parent
+  while (to.parent && to.parent !== from) {
+    to = to.parent
     const toLabel = labelOrKey(to)
     if (toLabel) labels.unshift(toLabel)
   }

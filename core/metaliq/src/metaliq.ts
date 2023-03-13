@@ -51,6 +51,21 @@ export declare namespace Policy {
 }
 
 /**
+ * A valid key for an implemented and imported Policy term.
+ */
+export type TermKey = keyof Policy.Terms<any>
+
+/**
+ * The value type for a given Policy term key.
+ */
+export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
+
+/**
+ * The value type for an optionally dynamic Policy term key.
+ */
+export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
+
+/**
  * A meta object for an underlying value of a particular Type,
  * optionally within parent of type Parent.
  * Type can be any type other than an array, for which MetaArrays are used.
@@ -85,25 +100,22 @@ export type MetaArray<Type, Parent = any> = Array<Meta<Type, Parent>> & HasMeta$
 export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
 
 /**
- * Dollar property containing information for each node in the meta graph.
+ * Dollar property containing information and aspects for each node in the meta graph.
  */
 export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
   /**
-   * Link to the object in the meta graph containing this $ property.
+   * Link to the node in the meta graph containing this $ property.
    * Useful for backlinks from object values.
    */
   meta?: HasMeta$<T, P>
 
   /**
-   * Ancestor node within meta graph (if applicable).
-   * This node's meta info is at `parent.$`.
-   * The `parent` function of this module provides convenient, typed access to
-   * the data at `parent.$.value`
+   * Ancestor meta info within meta graph (if applicable).
    */
-  parent?: HasMeta$<P>
+  parent?: Meta$<P>
 
   /**
-   * Key within parent (if applicable).
+   * Key within parent node (if applicable).
    * If this node of the graph is in an array then this is the key of the
    * containing array within its parent, and can be used with the `index`
    * property to determine this node's location.
@@ -111,7 +123,7 @@ export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
   key?: FieldKey<P>
 
   /**
-   * Index of parent within array (if applicable).
+   * Index of parent within meta graph array (if applicable).
    */
   index?: number
 
@@ -136,9 +148,41 @@ export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
   _value?: T
 
   /**
-   * Call the provided MetaFunction on this Meta$.
+   * Call the provided MetaFunction with this Meta$ and its associated value.
    */
   fn: <R>(metaFn: MetaFn<T, P, R>) => R
+
+  /**
+   * Access an optionally dynamic value.
+   *
+   * Given a reference to either
+   *  * a value of a specific type or
+   *  * a MetaFn that returns a value of a specific type,
+   * return that value.
+   *
+   * Useful for querying potentially dynamic values of the options
+   * of a configurable MetaFunction.
+   *
+   * For potentially dynamic terms, use the shortcut {@link term}.
+   */
+  opt: <R>(value: R | MetaFn<T, P, R>) => R
+
+  /**
+   * Access an optionally dynamic term.
+   *
+   * Given a key to a term that is of either
+   *  * a value of a specific type or
+   *  * a MetaFn that returns a value of a specific type,
+   * return that value.
+   *
+   * Shortcut to accessing optionally dynamic values via {@link opt}.
+   */
+  term: <K extends TermKey>(key: K) => DerivedTermValue<K>
+
+  /**
+   * Navigate to the child meta info for the given key within this node of the meta graph.
+   */
+  child: <K extends FieldKey<T>>(key: K) => Meta$<T[K]>
 }
 
 /**
@@ -175,6 +219,10 @@ function setupMeta ($: Meta$<any>) {
 /**
  * Use within a MetaSetup to establish a possibly dynamic state value based on a
  * MetaModel term that is either a literal or a meta function returning the literal.
+ *
+ * This implementation currently adds a getter that calls the function if it is dynamic.
+ * TODO: Consider an option to auto-update the value on each review.
+ *
  */
 export const addDynamicState = <T, P = any, K extends TermKey = any>($: Meta$<T, P>, modelKey: K) => {
   const termValue = $.model[modelKey]
@@ -196,7 +244,7 @@ export const addDynamicState = <T, P = any, K extends TermKey = any>($: Meta$<T,
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  model: MetaModel<T, P>, value: T, parent?: Meta<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
+  model: MetaModel<T, P>, value: T, parent?: Meta$<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
 ): Meta<T, P> {
   const hasProto = !!proto
   const isArray = model.items || Array.isArray(value)
@@ -215,9 +263,9 @@ export function metafy <T, P = any> (
     get value () {
       if (this.parent) {
         if (typeof this.index === "number") {
-          return this.parent[this.key]?.[this.index]?.$._value
+          return this.parent[this.key]?.value?.[this.index]?.$._value
         } else {
-          return this.parent[this.key]?.$._value
+          return this.parent[this.key]?._value
         }
       } else {
         return this._value
@@ -234,11 +282,23 @@ export function metafy <T, P = any> (
     parent,
     key,
     state: proto?.$?.state || {},
-    _value: value,
-    fn (metaFn: MetaFn<T, P>) {
-      return metaFn(this.value, this)
-    }
+    _value: value
   })
+  $.fn = metaFn => metaFn($.value, $)
+  $.opt = ref => isMetaFn(ref)
+    ? $.fn(ref)
+    : ref
+  $.term = <K extends TermKey>(key: K) => {
+    const ref = $.model[key]
+    return $.opt(ref) as DerivedTermValue<K>
+  }
+  $.child = <K extends FieldKey<T>>(key: K) => {
+    const { meta } = $
+    if (isMeta(meta)) {
+      return <unknown>meta[key].$ as Meta$<T[K]>
+    } else return null
+  }
+
   if (typeof index === "number") $.index = index
 
   const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
@@ -250,9 +310,9 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
-  if (parent && key && !Array.isArray(parent[key])) {
-    Object.assign(parent, { [key]: result }) // (Re)attach this meta to its parent
-    Object.assign(parent.$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
+  if (parent && key && !Array.isArray(parent.value[key])) {
+    Object.assign(parent.meta, { [key]: result }) // (Re)attach this meta to its parent
+    Object.assign(parent.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
   }
 
   // Descend through children creating further meta objects
@@ -269,7 +329,7 @@ export function metafy <T, P = any> (
       const fieldValue = value?.[fieldKey]
       const fieldModel = result.$.model.fields[fieldKey]
       const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
-      if (fieldModel) metafy(fieldModel, fieldValue, result, fieldKey, fieldMeta)
+      if (fieldModel) metafy(fieldModel, fieldValue, result.$, fieldKey, fieldMeta)
     }
   }
 
@@ -288,7 +348,7 @@ export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
   const $ = (m$(valueOr$) || valueOr$) as Meta$<T>
   metafy($.model,
     typeof value === "undefined" ? $.value : value,
-    $.parent as Meta<any>, $.key, $.meta)
+    $.parent, $.key, $.meta)
 }
 
 /**
@@ -317,31 +377,9 @@ export const m$ = <T>(value: T): Meta$<T> => {
 }
 
 /**
- * Shortcut from a parent (either its value or its Meta$) to the $ meta info of one of its child keys.
- */
-export const child$ = <
-  P, K extends FieldKey<P>, T extends FieldType<P, K>
-> (parent: P | Meta$<P>, key: K) => {
-  const parent$ = (m$(parent) || parent) as Meta$<P>
-  const valueMeta = parent$.meta as Meta<any>
-  const keyMeta = valueMeta[key]
-  const key$ = <unknown>keyMeta?.$ as Meta$<T, P>
-  return key$
-}
-
-/**
  * A type guard to narrow a MetaField to a Meta.
  */
 export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => !Array.isArray(m)
-
-/**
- * Given either a meta info object or its underlying data value (but not a primitive),
- * return a reference to the value object for the parent.
- */
-export const parent = <T extends object, P = any> (v$: Meta$<T, P> | T): P => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
-  return $?.parent?.$.value
-}
 
 /**
  * Works better than keyof T where you know that T is not an array.
@@ -376,6 +414,13 @@ export type MetaFn<Type, Parent = any, Result = any> =
  * An array of MetaFns of a particular type.
  */
 export type MetaFns<Type, Parent = any, Result = any> = Array<MetaFn<Type, Parent, Result>>
+
+/**
+ * A Configurable MetaFunction takes a set of configuration options
+ * and returns a MetaFunction configured with those options.
+ */
+export type ConfigurableMetaFn<Config, Type = any, Parent = any, Result = any> =
+  (c: Config) => MetaFn<Type, Parent, Result>
 
 /**
  * Sanitise the arguments to a MetaFn.
@@ -420,39 +465,22 @@ export const $fn = <Type, Parent, Return> (fn: MetaFn<Type, Parent, Return>): Me
   return fn(v, $, e)
 }
 
-export type TermKey = keyof Policy.Terms<any>
-export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
-export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
-
 /**
  * A simple type guard for terms that may or may not be a meta function.
  */
 export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "function"
 
 /**
- * Return the value of a MetaModel term that is defined as being
- * either a particular type or a MetaFn that returns that type.
- */
-export const getDynamicTerm = <K extends TermKey>(key: K): MetaFn<any, any, DerivedTermValue<K>> =>
-  $fn((v, $) => {
-    const termValue = $.model[key]
-    if (isMetaFn(termValue)) return termValue(v, $)
-    else return termValue
-  })
-
-/**
  * Return the value of a MetaModel term by searching the
  * immediate object and then stepping back through ancestors
  * until a value is found.
  */
-export const getAncestorTerm = <K extends TermKey>(
-  key: K, dynamic: boolean = false
-): MetaFn<any, any, TermValue<K>> =>
-    $fn((v, $) => {
-      while ($ && typeof $.model[key] === "undefined") $ = $.parent?.$
-      const termValue = $?.model[key]
-      return termValue
-    })
+export const getAncestorTerm = <K extends TermKey>(key: K): MetaFn<any, any, DerivedTermValue<K>> =>
+  $fn((v, $) => {
+    while ($ && typeof $.model[key] === "undefined") $ = $.parent
+    const termValue = $.term(key)
+    return termValue
+  })
 
 /**
  * Combine any number of meta functions into a single meta function
@@ -480,7 +508,7 @@ export const root$ = <T> (v: any, $?: Meta$<any>) => {
   [v, $] = $args(v, $)
   let result = $
   while (result.parent) {
-    result = result.parent.$
+    result = result.parent
   }
   return result as Meta$<T>
 }
@@ -494,7 +522,7 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
     if (onBase) fn(v, $)
     const keys = fieldKeys($.model)
     for (const key of keys) {
-      recurse(child$($, key))
+      recurse(($.child(key)))
     }
   }
 

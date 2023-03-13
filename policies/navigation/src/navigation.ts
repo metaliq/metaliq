@@ -1,7 +1,6 @@
 import { Route, RouteHandler, Router } from "./router"
 import {
   $fn,
-  child$,
   FieldKey,
   fieldKeys,
   fns,
@@ -187,7 +186,7 @@ export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
  */
 export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
   const key: FieldKey<T> = navMeta$.state.nav?.selected
-  return child$(navMeta$, key)
+  return navMeta$.child(key)
 }
 
 /**
@@ -211,7 +210,7 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
 
   // Set any upper selections
   const setParentSelection: MetaFn<any> = (v, $) => {
-    const parent$ = $.parent?.$
+    const parent$ = $.parent
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
       parent$.state.nav.selected = $.key
@@ -257,7 +256,7 @@ export const setNavSelectionResponsive = (width: number) =>
 export const goNavRoute = (item$: Meta$<any>) => {
   while (item$ && !item$.model.route) {
     const firstChildKey = fieldKeys(item$.model)[0]
-    item$ = child$(item$, firstChildKey)
+    item$ = item$.child(firstChildKey)
   }
   item$.model.route?.go()
 }
@@ -284,7 +283,7 @@ export const closeMenu = ($: Meta$<any>) => {
  */
 export const isMenuShown = (item$: Meta$<any>) => {
   while (item$) {
-    item$ = item$.parent?.$
+    item$ = item$.parent
     if (item$?.state?.nav?.showMenu === false) return false
   }
   return true

@@ -27,7 +27,7 @@ export type DatePickerOptions = {
 }
 
 export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
-  const disabled = isDisabled($)
+  const disabled = $.fn(isDisabled)
 
   return html`
     <label class="mq-field mq-date-field ${classMap({

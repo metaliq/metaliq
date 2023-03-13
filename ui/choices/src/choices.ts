@@ -87,7 +87,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
     choicesJs.setChoices($.state.choices, "value", "label", true)
   }
 
-  const disabled = isDisabled($)
+  const disabled = $.fn(isDisabled)
 
   if (typeof options.choices === "function") {
     const oldChoices = JSON.parse(JSON.stringify(
@@ -133,7 +133,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
             const asyncListener = async (e: any) => {
               // TODO: Debounce
               const searchText = e.detail.value
-              $.state.choices = await options.searchFn(searchText, $.parent.$)
+              $.state.choices = await options.searchFn(searchText, $.parent)
               resetChoices()
             }
 

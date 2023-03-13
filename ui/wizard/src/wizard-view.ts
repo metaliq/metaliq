@@ -1,13 +1,12 @@
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-import { child$, fieldKeys, Meta, Meta$ } from "metaliq"
-import { up } from "@metaliq/up"
+import { fieldKeys, Meta, Meta$ } from "metaliq"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "@metaliq/forms"
-import { MetaView, view } from "@metaliq/presentation"
+import { MetaView } from "@metaliq/presentation"
 
-export const wizardView: MetaView<any> = (value, $) => [
+export const wizardView: MetaView<object> = (value, $) => [
   wizardTramline(value, $),
   wizardStep(value, $)
 ]
@@ -17,15 +16,15 @@ export const wizardTramline: MetaView<object> = (value, $) => {
     <div class="mq-wizard-nav">
       ${fieldKeys($.model).map((stepName) => html`
         <div class="mq-wizard-nav-item ${classMap({
-      current: $.state.step === stepName,
-      visited: ($.meta as Meta<any>)[stepName].$.state.validated,
-      enabled: false
-    })}" @click=${up(changeStep({ stepName }), $)}>
+          current: $.state.step === stepName,
+          visited: $.child(stepName).state.validated,
+          enabled: false
+        })}" @click=${$.up(changeStep({ stepName }))}>
           <div class="mq-wizard-nav-pre"></div>
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${child$(value, stepName).state.label}</span>
+          <span class="mq-wizard-nav-label">${$.child(stepName).term("label")}</span>
         </div>
       `)}
     </div>
@@ -47,26 +46,28 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
     })}">
       <div class="mq-wizard-page-title">
         ${currentStep$
-          ? currentStep$.model.helpText
-          : notConfiguredWarning}
+          ? currentStep$.term("helpText")
+          : notConfiguredWarning
+        }
       </div>
       <div>
         ${currentStep$
-          ? view()(currentValue, currentStep$)
-          : notConfiguredWarning}
+          ? currentStep$.view()
+          : notConfiguredWarning
+        }
         ${pageError(currentValue, currentStep$)}
       </div>
       ${currentStep$.model.wizard ? "" : html`
         <div class="mq-wizard-buttons">
           ${labels.backwards === false ? "" : html`
             <button class="mq-button"
-              @click=${up(changeStep({ direction: "backwards" }), wizard$)}>
+              @click=${wizard$.up(changeStep({ direction: "backwards" }))}>
               ${labels.backwards || "Previous"}
             </button>
           `}
           ${labels.forwards === false ? "" : html`
             <button class="mq-button mq-primary-button"
-              @click=${up(changeStep({ direction: "forwards" }), wizard$)}>
+              @click=${wizard$.up(changeStep({ direction: "forwards" }))}>
               ${labels.forwards || "Next"}
             </button>
           `}

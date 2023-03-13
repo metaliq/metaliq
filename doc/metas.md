@@ -49,7 +49,7 @@ This is a reference back to the Meta object itself (the object containing this `
 
 * `parent`
 
-If this Meta object is a child of another Meta object, the `parent` key provides a reference to the parent Meta.
+If this Meta object is a child of another Meta object, the `parent` key provides a reference to the parent Meta info (`Meta$`) object.
 
 * `key`
 

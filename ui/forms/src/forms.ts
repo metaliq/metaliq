@@ -2,10 +2,10 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { child$, FieldKey, fieldKeys, FieldType, HasMeta$, isMeta, m$, Meta$, MetaFn } from "metaliq"
+import { FieldKey, fieldKeys, getAncestorTerm, HasMeta$, isMeta, m$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { MetaView, MetaViewTerm, view, ViewResult, setViewResolver } from "@metaliq/presentation"
+import { MetaView, setViewResolver, ViewResult } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 
 export { expander } from "@metaliq/elements"
@@ -29,51 +29,33 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
         ${fieldKeys($.model)
           .filter(key =>
             (!options.include || options.include.includes(key)) &&
-            (!(options.exclude || []).includes(key))
+            (!options.exclude?.includes(key))
           )
-          .map(key => {
-            const fieldMeta = meta[key] as HasMeta$<any>
-            const itemView = fieldMeta.$.model.view || defaultView(fieldMeta.$)
-            return view(itemView)(fieldMeta.$.value, fieldMeta.$)
-          })}
+          .map(key => $.field(key))}
       </div>
     `
   }
 }
 
-export const repeatView: MetaView<any[]> = (v, $) => {
+export const repeatView: MetaView<any> = (v, $) => {
   if (Array.isArray($.meta)) {
-    const itemView = view($.model.items?.view || defaultView($.meta[0].$))
-
-    return $.meta.map(({ $ }) => {
-      return itemView($.value, $)
-    })
+    return $.meta.map(({ $ }) => $.view())
   } else return ""
-}
-
-/**
- * Display a field for the given parent and key, optionally with a specific view.
- */
-export const field = <P, K extends FieldKey<P>> (
-  parent: P, key: K, fieldView?: MetaView<FieldType<P, K>, P>
-) => {
-  const field$ = child$(parent, key)
-  return view(fieldView || field$.model.view || defaultView(field$))(field$.value, field$)
 }
 
 /**
  * Return a default view for a meta based upon its value type.
  */
-const defaultView: MetaFn<any, any, MetaView> = (v, $) => {
+const defaultView = <T>(v: T, $: Meta$<T>): MetaView<T> => {
   if (!$) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
   } else if (Array.isArray($.meta)) {
     // T is an array type
-    return <unknown>repeatView as MetaView
+    return repeatView
   } else if ($.value && typeof $.value === "object") {
     return metaForm()
-  } else if (typeof $.value === "boolean") {
-    return <unknown>checkboxField() as MetaView
+  } else if (typeof v === "boolean") {
+    return checkboxField()
   } else if (typeof $.value === "number") {
     return inputField({ type: "number" })
   } else return inputField()
@@ -134,7 +116,7 @@ export type InputOptions<T> = FieldOptions<T> & {
  * To get full use of all options use `inputField`.
  */
 export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) => {
-  const disabled = isDisabled($)
+  const disabled = $.fn(isDisabled)
   return html`
     <input type=${options.type || "text"}
       ?disabled=${disabled}
@@ -160,15 +142,8 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) =
  * Returns the first explicitly defined disabled state by searching on the meta
  * and then ascending through its ancestors. If none is found, return false.
  */
-export const isDisabled = <T, P>(v$: T | Meta$<T, P>): boolean => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
-  let parent: HasMeta$<any> = $.meta
-  while (parent) {
-    if (typeof parent.$.state.disabled === "boolean") return parent.$.state.disabled
-    parent = parent.$.parent
-  }
-  return false
-}
+export const isDisabled: MetaFn<any, any, boolean> = (v, $) =>
+  $.fn(getAncestorTerm("disabled")) ?? false
 
 /**
  * A standard set of field classes for the meta.
@@ -181,7 +156,7 @@ export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
     "mq-mandatory": $.state.mandatory,
     "mq-active": $.state.active,
     "mq-populated": hasValue($),
-    "mq-disabled": isDisabled($)
+    "mq-disabled": $.fn(isDisabled)
   }
 }
 
@@ -218,7 +193,7 @@ export const fieldContainer = <T>(fieldContent: MetaView<T>, options?: FieldOpti
 /**
  * Input field with default options for a validated checkbox
  */
-export const checkboxField = (options: InputOptions<boolean> = {}): MetaView<boolean> =>
+export const checkboxField = <T> (options: InputOptions<T> = {}): MetaView<T> =>
   inputField({
     type: "checkbox",
     ...options
@@ -261,7 +236,7 @@ export const errorsBlock: MetaView<any> = (v, $ = m$(v)) => {
   return html`
     <div class="mq-error-msg mq-page-error">
       ${$.state.allErrors?.map(error$ => html`
-        <div class="mq-error-label">${labelPath($.meta, error$.meta)}</div>
+        <div class="mq-error-label">${labelPath($, error$)}</div>
         <div>${error$.state.error}</div>
       `)}
     </div>

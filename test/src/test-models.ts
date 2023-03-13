@@ -47,7 +47,7 @@ export const contactModel: MetaModel<Contact, any> = {
     },
     isSelfEmployed: {
       label: "Is Self-Employed",
-      hidden: (v, $) => $.parent.$.value.age < 18
+      hidden: (v, $) => $.parent.value.age < 18
     }
   }
 }

@@ -95,6 +95,7 @@ export type Widget<T, P = any> = (...params: any[]) => MetaView<T, P>
  * produces a global-state single page app.
  */
 export const renderPage: MetaFn<any> = (v, $) => {
+  document.title = $.state.label
   render($.view(), document.body)
 }
 
