@@ -474,13 +474,16 @@ export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "fun
  * Return the value of a MetaModel term by searching the
  * immediate object and then stepping back through ancestors
  * until a value is found.
+ *
+ * If the dynamic behaviour is enabled (default is true) then
+ * if the term value is a function it will be called to get the underlying value.
+ * Turn this off if you're trying to access a term value that is itelf a function.
  */
-export const getAncestorTerm = <K extends TermKey>(key: K): MetaFn<any, any, DerivedTermValue<K>> =>
-  $fn((v, $) => {
+export const getAncestorTerm = <K extends TermKey>(key: K, dynamic: boolean = true): MetaFn<any, any, TermValue<K>> =>
+  (v, $) => {
     while ($ && typeof $.model[key] === "undefined") $ = $.parent
-    const termValue = $.term(key)
-    return termValue
-  })
+    return dynamic ? $.term(key) : $.model[key]
+  }
 
 /**
  * Combine any number of meta functions into a single meta function

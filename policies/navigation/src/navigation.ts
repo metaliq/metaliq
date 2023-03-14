@@ -122,7 +122,7 @@ metaSetups.push($ => {
         const routeResult = await model.onEnter($.value, $)(params)
         if (routeResult === false) return false
       }
-      const onNavigate = getAncestorTerm("onNavigate")($.value, $)
+      const onNavigate = $.fn(getAncestorTerm("onNavigate", false))
       if (typeof onNavigate === "function") {
         const navTypeResult = onNavigate($.value, $)
         if (navTypeResult === false) return false
