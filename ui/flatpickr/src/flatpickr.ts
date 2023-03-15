@@ -32,7 +32,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
   return html`
     <label class="mq-field mq-date-field ${classMap({
       [options.classes]: !!options.classes,
-      "mq-mandatory": $.state.mandatory,
+      "mq-mandatory": $.my("mandatory"),
       "mq-active": $.state.active,
       "mq-populated": !!value
     })}">

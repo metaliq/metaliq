@@ -1,4 +1,4 @@
-import { Meta, Meta$, MetaFn, metafy, MetaModel, metaSetups, reset } from "metaliq"
+import { Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
 import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -44,7 +44,7 @@ export interface ApplicationState<T> {
   up?: Up<Meta<T>>
 }
 
-export interface ApplicationAspects<T, P = any> {
+export interface Application$<T, P = any> {
   up?: (metaFn: MetaFn<T, P>, options?: UpOptions) => (message?: any) => any
 }
 
@@ -55,17 +55,17 @@ declare module "metaliq" {
     interface State<T, P> extends ApplicationState<T> {
       this?: State<T, P>
     }
-
-    interface Aspects<T, P> extends ApplicationAspects<T, P> {}
   }
+
+  interface Meta$<T, P> extends Application$<T, P> {}
 }
 
 export type InitFunction<T> = ((model?: MetaModel<T>) => T) | ((model?: MetaModel<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 
-metaSetups.push(<T, P = any>($: Meta$<T, P>) => {
-  $.up = (metaFn: MetaFn<T, P>) => up(($, event) => metaFn($.value, $, event), $)
-})
+Meta$.prototype.up = function (metaFn, options) {
+  return up(($, event) => metaFn($.value, $, event), this, options)
+}
 
 /**
  * Run a MetaModel - initialise its data value and set `up`

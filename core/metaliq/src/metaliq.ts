@@ -1,7 +1,5 @@
 /**
- * The Policy namespace holds the interfaces for meta model definition.
- * These interfaces are extended within policy modules in order to build an overall policy
- * that encompasses their system capablities.
+ * The Policy namespace holds the interfaces for defining meta model terms and meta state.
  *
  * See one of the included policy modules (such as validation) for a usage example.
  *
@@ -37,76 +35,7 @@ export declare namespace Policy {
      */
     this?: State<T, P>
   }
-
-  /**
-   * Policies can define Aspects - functions that will be available
-   * on each of the Meta$ objects in the meta graph.
-   *
-   * The core package defines several default Aspects.
-   */
-  export interface Aspects<T, P = any> {
-    /**
-     * Self reference for easy inclusion of generic type parameters when merging.
-     */
-    this?: Aspects<T, P>
-
-    /**
-     * Call the specified meta function with this node's value and meta value.
-     *
-     * If provided with a raw value instead of a meta function,
-     * returns the provided value, otherwise provides the result of the
-     * function call.
-     *
-     * This value / meta function handling is useful for
-     * querying potentially dynamic values of the options of a
-     * configurable meta function, and mirrors the default handling
-     * when fetching term values with {@link my}.
-     */
-    fn: <R>(valueOrMetaFn: R | MetaFn<T, P, R>) => R
-
-    /**
-     * Access a term of the associated MetaModel.
-     *
-     * By default, if the term is a MetaFn its result will be returned.
-     * If you need to obtain the function itself rather than call it,
-     * then use {@link raw} instead.
-     *
-     * Specify `ancestor` to continue searching back through
-     * the node's ancestry until a value is found for the given term.
-     */
-    my: <K extends TermKey>(key: K, ancestor?: boolean) => DerivedTermValue<K>
-
-    /**
-     * Access a raw term value without calling any MetaFn that is found there.
-     * When used without the `ancestor` flag, this is equivalent to:
-     * `$.model[key]`.
-     *
-     * Specify `ancestor` to continue searching back through
-     * the node's ancestry until a value is found for the given term.
-     */
-    raw: <K extends TermKey> (key: K, ancestor?: boolean) => TermValue<K>
-
-    /**
-     * Navigate to the child Meta$ for the given key within this node of the meta graph.
-     */
-    child: <K extends FieldKey<T>>(key: K) => Meta$<T[K]>
-  }
 }
-
-/**
- * A valid key for an implemented and imported Policy term.
- */
-export type TermKey = keyof Policy.Terms<any>
-
-/**
- * The value type for a given Policy term key.
- */
-export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
-
-/**
- * The value type for an optionally dynamic Policy term key.
- */
-export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
 
 /**
  * The MetaModel is the core modelling type in MetaliQ.
@@ -177,13 +106,13 @@ export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
  * "meta value" this is it. The underlying value within the data graph to which it is linked
  * can be accessed via `$.value`, and can be any type including primitives and arrays.
  */
-export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
+export class Meta$<T, P = any> {
   /**
    * Link to the node in the meta graph containing this $ property.
    * Used in navigating the metagraph and for backlinks from object values.
    * Although this may be of interest, most solution-focussed code is concerned
-   * with the meta value object ($) along with its associated data value ($.value),
-   * and navigates to other meta values via $.parent and $.child(fieldName).
+   * with the meta value object {@link HasMeta$.$} along with its associated data value ($.value),
+   * and navigates to other meta values via the `$.parent` property and `$.child`(fieldName).
    */
   meta?: HasMeta$<T, P>
 
@@ -213,20 +142,82 @@ export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
   model: MetaModel<T, P>
 
   /**
-   * The runtime Meta state.
-   */
-  state: Policy.State<T, P>
-
-  /**
-   * The underlying data value getter / setter.
+   * The data value associated with this mode in the meta graph.
    */
   value?: T
 
   /**
-   * The internal version of the data value.
+   * The runtime Meta state.
    */
-  _value?: T
+  state: Policy.State<T, P>
+
+  fn <R>(ref: R | MetaFn<T, P, R>): R {
+    return isMetaFn(ref) ? ref(this.value, this) : ref
+  }
+
+  my <K extends TermKey>(key: K, ancestor?: boolean): DerivedTermValue<K> {
+    const value = this.raw(key, ancestor)
+    return this.fn(value) as DerivedTermValue<K>
+  }
+
+  raw <K extends TermKey> (key: K, ancestor?: boolean): TermValue<K> {
+    let t$: Meta$<any> = this
+    if (ancestor) {
+      while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent
+    }
+    return t$.model[key]
+  }
+
+  child <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
+    const meta = this.meta
+    if (isMeta(meta)) {
+      const childMeta = meta[key]
+      return childMeta.$ as Meta$<T[K]>
+    } else return null
+  }
 }
+
+/**
+ * The primary pattern for providing a processing function to MetaliQ.
+ * The first parameter is the data value to be processed.
+ * The second parameter is the data value's associated meta info object.
+ *
+ * Although named MetaFn for brevity in code,
+ * will often be referred in text as a meta function or MetaFunction.
+ */
+export type MetaFn<Type, Parent = any, Result = any> =
+  (
+    value: Type,
+    $?: Meta$<Type, Parent>,
+    event?: Event
+  ) => Result
+
+/**
+ * An array of MetaFns of a particular type.
+ */
+export type MetaFns<Type, Parent = any, Result = any> = Array<MetaFn<Type, Parent, Result>>
+
+/**
+ * A Configurable MetaFunction takes a set of configuration options
+ * and returns a {@link MetaFn} configured with those options.
+ */
+export type ConfigurableMetaFn<Config, Type = any, Parent = any, Result = any> =
+  (c: Config) => MetaFn<Type, Parent, Result>
+
+/**
+ * A valid key for an implemented and imported Policy term.
+ */
+export type TermKey = keyof Policy.Terms<any>
+
+/**
+ * The value type for a given Policy term key.
+ */
+export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
+
+/**
+ * The value type for an optionally dynamic Policy term key.
+ */
+export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
 
 /**
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
@@ -260,24 +251,7 @@ export function metafy <T, P = any> (
     : proto || {} as Meta<T, P>
 
   // Reuse existing Meta$ if present, otherwise create new one
-  const $ = proto?.$ || {
-    // Value getter and setter defaults to keyed value within parent object if present,
-    // so that primitive values are assigned properly to their place in the containing object.
-    get value () {
-      if (this.parent) {
-        if (typeof this.index === "number") {
-          return this.parent[this.key]?.value?.[this.index]?.$._value
-        } else {
-          return this.parent[this.key]?._value
-        }
-      } else {
-        return this._value
-      }
-    },
-    set value (val) {
-      reset(this, val)
-    }
-  } as Meta$<T>
+  const $ = proto?.$ || new Meta$<T, P>()
 
   // Add contextual meta information to Meta$
   Object.assign($, {
@@ -287,26 +261,6 @@ export function metafy <T, P = any> (
     state: proto?.$?.state || {},
     _value: value
   })
-  $.fn = ref => isMetaFn(ref)
-    ? ref($.value, $)
-    : ref
-  $.my = <K extends TermKey>(key: K, ancestor?: boolean) => {
-    const value = $.raw(key, ancestor)
-    return $.fn(value) as DerivedTermValue<K>
-  }
-  $.raw = (key, ancestor?) => {
-    let t$: Meta$<any> = $
-    if (ancestor) {
-      while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent
-    }
-    return t$.model[key]
-  }
-  $.child = <K extends FieldKey<T>>(key: K) => {
-    const { meta } = $
-    if (isMeta(meta)) {
-      return <unknown>meta[key].$ as Meta$<T[K]>
-    } else return null
-  }
 
   if (typeof index === "number") $.index = index
 
@@ -405,31 +359,6 @@ export type FieldType<Parent, Key extends FieldKey<Parent>> = Parent[Key]
  */
 export const fieldKeys = <T>(model: MetaModel<T>) =>
   Object.keys(model?.fields || {}) as Array<FieldKey<T>>
-
-/**
- * The primary pattern for providing a processing function to MetaliQ.
- * The first parameter is the data value to be processed.
- * The second parameter is the data value's associated meta info object.
- */
-export type MetaFn<Type, Parent = any, Result = any> =
-  (
-    value: Type,
-    $?: Meta$<Type, Parent>,
-    event?: Event
-  ) =>
-  Result
-
-/**
- * An array of MetaFns of a particular type.
- */
-export type MetaFns<Type, Parent = any, Result = any> = Array<MetaFn<Type, Parent, Result>>
-
-/**
- * A Configurable MetaFunction takes a set of configuration options
- * and returns a MetaFunction configured with those options.
- */
-export type ConfigurableMetaFn<Config, Type = any, Parent = any, Result = any> =
-  (c: Config) => MetaFn<Type, Parent, Result>
 
 /**
  * Sanitise the arguments to a MetaFn.

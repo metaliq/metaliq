@@ -153,7 +153,7 @@ export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
 export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
   return {
-    "mq-mandatory": $.state.mandatory,
+    "mq-mandatory": $.my("mandatory"),
     "mq-active": $.state.active,
     "mq-populated": hasValue($),
     "mq-disabled": $.fn(isDisabled)

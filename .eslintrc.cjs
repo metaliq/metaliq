@@ -57,6 +57,8 @@ module.exports = {
     // Allow more flexibility around ternary operator
     "multiline-ternary": "off",
     // Disabled due to causing strange errors at start of some files in Webstorm, TODO: Investigate further
-    "@typescript-eslint/prefer-nullish-coalescing": "off"
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
+    // Enable assign starting point to this for hierarchical steps
+    "@typescript-eslint/no-this-alias": "off"
   }
 }

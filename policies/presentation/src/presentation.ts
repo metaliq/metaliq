@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { $fn, FieldKey, MetaFn, metaSetups } from "metaliq"
+import { FieldKey, Meta$, MetaFn } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationTerms } from "@metaliq/application"
@@ -27,7 +27,7 @@ export interface PresentationState {
   active?: boolean
 }
 
-export interface PresentationAspects<T, P = any> {
+export interface Presentation$<T, P = any> {
   /**
    * Render a view for the Meta$ and its associated data value.
    *
@@ -64,12 +64,14 @@ export interface PresentationAspects<T, P = any> {
 
 declare module "metaliq" {
   namespace Policy {
-    interface Terms<T, P> extends PresentationTerms<T, P> { }
+    interface Terms<T, P> extends PresentationTerms<T, P> {}
+
     interface State<T, P> extends PresentationState {
       this?: State<T, P>
     }
-    interface Aspects<T, P> extends PresentationAspects<T, P> { }
   }
+
+  interface Meta$<T, P> extends Presentation$<T, P> {}
 }
 
 /**
@@ -99,12 +101,39 @@ export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
  */
 export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
 
+Meta$.prototype.view = function (viewTerm?, options?) {
+  const $ = this as Meta$<any>
+  const wrapper = typeof options?.wrapper === "boolean"
+    ? options?.wrapper ? viewWrapper : undefined
+    : options?.wrapper || viewWrapper
+  const resolver = typeof options?.resolver === "boolean"
+    ? options?.resolver ? viewResolver : undefined
+    : options?.resolver || viewResolver
+
+  viewTerm = viewTerm || $.model.view || $.fn(resolver)
+  if (!viewTerm) {
+    return ""
+  } else if (Array.isArray(viewTerm)) {
+    return viewTerm.map((each) => $.view(each))
+  } else if (wrapper) {
+    return wrapper(viewTerm)($.value, $)
+  } else {
+    return $.my("hidden") ? "" : viewTerm($.value, $)
+  }
+}
+
+Meta$.prototype.field = function (key, view?, options?) {
+  const $ = this as Meta$<any>
+  const field$ = $.child(key)
+  return field$.view(view, options)
+}
+
 /**
- * The renderPage function, if specified as the review property from the app policy,
- * produces a global-state single page app.
+ * The `renderPage` meta function can be provided to the `review` term from the app policy
+ * to produce a global-state single page app.
  */
 export const renderPage: MetaFn<any> = (v, $) => {
-  document.title = $.state.label
+  document.title = $.my("label")
   render($.view(), document.body)
 }
 
@@ -148,30 +177,3 @@ export type ViewOptions<T, P = any> = {
    */
   resolver?: ViewResolver | boolean
 }
-
-metaSetups.push($ => {
-  $.view = (viewTerm?, options?) => {
-    const wrapper = typeof options?.wrapper === "boolean"
-      ? options?.wrapper ? viewWrapper : undefined
-      : options?.wrapper || viewWrapper
-    const resolver = typeof options?.resolver === "boolean"
-      ? options?.resolver ? viewResolver : undefined
-      : options?.resolver || viewResolver
-
-    viewTerm = viewTerm || $.model.view || $.fn(resolver)
-    if (!viewTerm) {
-      return ""
-    } else if (Array.isArray(viewTerm)) {
-      return viewTerm.map((each) => $.view(each))
-    } else if (wrapper) {
-      return wrapper(viewTerm)($.value, $)
-    } else {
-      return $.state.hidden ? "" : viewTerm($.value, $)
-    }
-  }
-
-  $.field = (key, view?, options?) => {
-    const field$ = $.child(key)
-    return field$.view(view, options)
-  }
-})

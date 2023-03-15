@@ -16,11 +16,11 @@ describe("Hide / Show rules", () => {
     await up(contact => {
       contact.age = 15
     }, appVal.principal)()
-    mApplication.principal.isSelfEmployed.$.state.hidden.should.be.a("boolean").equal(true)
+    mApplication.principal.isSelfEmployed.$.my("hidden").should.be.a("boolean").equal(true)
 
     await up(contact => {
       contact.age = 21
     }, appVal.principal)()
-    mApplication.principal.isSelfEmployed.$.state.hidden.should.be.a("boolean").equal(false)
+    mApplication.principal.isSelfEmployed.$.my("hidden").should.be.a("boolean").equal(false)
   })
 })
