@@ -15,9 +15,6 @@ export interface ValidationState {
   validated?: boolean // Indicates that this field has been visited for validation
   error?: ValidationResult // An error message string or true for an unspecified error,
   allErrors?: Array<Meta$<any>>
-  mandatory?: boolean
-  disabled?: boolean
-  hidden?: boolean
   active?: boolean
   showing?: boolean // Support animated hide/show
 }
@@ -83,8 +80,8 @@ export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
   $.state.validated = true
   delete $.state.error
-  if ($.state.hidden) return
-  if ($.state.mandatory && !hasValue($)) {
+  if ($.my("hidden")) return
+  if ($.my("mandatory") && !hasValue($)) {
     return ($.state.error = requiredLabelFn($.value, $))
   } else {
     const validator = $.model.validator
@@ -125,7 +122,7 @@ export const hasValue = <T, P> (v$: T | Meta$<T, P>) => {
 export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
   const result: Array<Meta$<any>> = []
-  if (!$.state.hidden) {
+  if (!$.my("hidden")) {
     validate($)
     if ($.state.error) result.push($)
     const { meta } = $

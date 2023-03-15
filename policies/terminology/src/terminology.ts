@@ -17,18 +17,9 @@ export interface TerminologyTerms<T, P = any> {
   symbol?: string | MetaFn<T, P, string>
 }
 
-export interface TerminologyState {
-  label?: string
-  helpText?: string
-  symbol?: string
-}
-
 declare module "metaliq" {
   namespace Policy {
     interface Terms<T, P> extends TerminologyTerms<T, P> {}
-    interface State<T, P> extends TerminologyState {
-      this?: State<T, P>
-    }
   }
 }
 
@@ -52,5 +43,5 @@ export function labelPath (from: Meta$<any>, to: Meta$<any>) {
  */
 export const labelOrKey = <T, P>(v$: T | Meta$<T, P>) => {
   const $ = (m$(v$) || v$) as Meta$<T, P>
-  return $.state.label || $.key
+  return $.my("label") || $.key
 }
