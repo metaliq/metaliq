@@ -1,4 +1,4 @@
-import { addDynamicState, HasMeta$, m$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { m$, Meta$, MetaFn } from "metaliq"
 
 export interface TerminologyTerms<T, P = any> {
   /**
@@ -31,12 +31,6 @@ declare module "metaliq" {
     }
   }
 }
-
-metaSetups.push(<T>($: Meta$<T>) => {
-  addDynamicState($, "label")
-  addDynamicState($, "helpText")
-  addDynamicState($, "symbol")
-})
 
 /**
  * Return a full path string for the given meta within it's given ancestor.

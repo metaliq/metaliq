@@ -68,10 +68,11 @@ export declare namespace Policy {
      * Access a term of the associated MetaModel.
      *
      * By default, if the term is a MetaFn its result will be returned.
-     * Specify `raw` to prevent this and return the MetaFn.
+     * If you need to obtain the function itself rather than call it,
+     * then use {@link raw} instead.
+     *
      * Specify `ancestor` to continue searching back through
      * the node's ancestry until a value is found for the given term.
-     * Specify `rawAncestor` to get both behaviors.
      */
     my: <K extends TermKey>(key: K, ancestor?: boolean) => DerivedTermValue<K>
 
@@ -108,8 +109,37 @@ export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
 export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
 
 /**
- * A meta object for an underlying value of a particular Type,
- * optionally within parent of type Parent.
+ * The MetaModel is the core modelling type in MetaliQ.
+ * A MetaModel enhances a given data model Type,
+ * along with an optional Parent container type.
+ */
+export type MetaModel<Type, Parent = any> = Policy.Terms<Type, Parent> & {
+  /**
+   * If the underlying data Type is an object type, fields contains a collection
+   * of nested MetaModels for each model field.
+   */
+  fields?: Type extends any[]
+    ? never
+    : MetaModelFields<Type>
+
+  /**
+   * If the underlying data type is an array, items contains a single MetaModel
+   * which is applied to each item in the array.
+   */
+  items?: Type extends Array<infer I>
+    ? MetaModel<I>
+    : never
+}
+
+/**
+ * The type of the `fields` definition collection in a MetaModel.
+ */
+export type MetaModelFields<Type> = { [K in FieldKey<Type>]?: MetaModel<Type[K], Type> }
+
+/**
+ * A node created in the runtime meta graph,
+ * associated with an underlying value of a particular Type in the data graph,
+ * optionally within parent container of type Parent.
  * Type can be any type other than an array, for which MetaArrays are used.
  */
 export type Meta<Type, Parent = any> = MetaFields<Type> & HasMeta$<Type, Parent>
@@ -142,17 +172,25 @@ export type MetaArray<Type, Parent = any> = Array<Meta<Type, Parent>> & HasMeta$
 export type HasMeta$<T, P = any> = { $: Meta$<T, P> }
 
 /**
- * Dollar property containing information and aspects for each node in the meta graph.
+ * The meta value object, contained within the `$` property of each node in the meta graph.
+ * Hence - and for conciseness - the type is written as Meta$, but when we refer to a node's
+ * "meta value" this is it. The underlying value within the data graph to which it is linked
+ * can be accessed via `$.value`, and can be any type including primitives and arrays.
  */
 export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
   /**
    * Link to the node in the meta graph containing this $ property.
-   * Useful for backlinks from object values.
+   * Used in navigating the metagraph and for backlinks from object values.
+   * Although this may be of interest, most solution-focussed code is concerned
+   * with the meta value object ($) along with its associated data value ($.value),
+   * and navigates to other meta values via $.parent and $.child(fieldName).
    */
   meta?: HasMeta$<T, P>
 
   /**
-   * Ancestor meta info within meta graph (if applicable).
+   * The meta value associated with the immediate ancestor within the meta graph.
+   * This will be null for the meta value created at the base level of the
+   * running MetaModel.
    */
   parent?: Meta$<P>
 
@@ -191,23 +229,6 @@ export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
 }
 
 /**
- * The type of the `fields` definition collection in a MetaModel.
- */
-export type MetaModelFields<Type> = { [K in FieldKey<Type>]?: MetaModel<Type[K], Type> }
-
-/**
- * MetaModel that extends a given data model Type and optional Parent.
- */
-export type MetaModel<Type, Parent = any> = Policy.Terms<Type, Parent> & {
-  fields?: Type extends any[]
-    ? never
-    : MetaModelFields<Type>
-  items?: Type extends Array<infer I>
-    ? MetaModel<I>
-    : never
-}
-
-/**
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
  * Setups should check the policy's term(s) in the MetaModel to determine applicability of any such setup.
  */
@@ -218,29 +239,6 @@ export const metaSetups: Array<MetaSetup<any>> = []
 function setupMeta ($: Meta$<any>) {
   for (const metaSetup of metaSetups) {
     metaSetup($)
-  }
-}
-
-/**
- * Use within a MetaSetup to establish a possibly dynamic state value based on a
- * MetaModel term that is either a literal or a meta function returning the literal.
- *
- * This implementation currently adds a getter that calls the function if it is dynamic.
- * TODO: Consider an option to auto-update the value on each review.
- *
- */
-export const addDynamicState = <T, P = any, K extends TermKey = any>($: Meta$<T, P>, modelKey: K) => {
-  const termValue = $.model[modelKey]
-  if (isMetaFn(termValue)) {
-    const modelValueFn = termValue as MetaFn<T, P, DerivedTermValue<K>>
-    Object.defineProperty($.state, modelKey, {
-      enumerable: true,
-      get () {
-        return modelValueFn($.value, $)
-      }
-    })
-  } else {
-    Object.assign($.state, { [modelKey]: termValue })
   }
 }
 

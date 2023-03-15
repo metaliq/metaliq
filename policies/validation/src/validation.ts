@@ -1,4 +1,4 @@
-import { addDynamicState, fieldKeys, isMeta, m$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { fieldKeys, isMeta, m$, Meta$, MetaFn, metaSetups } from "metaliq"
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
@@ -55,10 +55,6 @@ metaSetups.push(<T>($: Meta$<T>) => {
     $.state.error = false
     $.state.validated = false
   }
-
-  addDynamicState($, "hidden")
-  addDynamicState($, "disabled")
-  addDynamicState($, "mandatory")
 })
 
 /**
