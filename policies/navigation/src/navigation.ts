@@ -4,7 +4,6 @@ import {
   FieldKey,
   fieldKeys,
   fns,
-  getAncestorTerm,
   Meta$,
   MetaFn,
   metaSetups,
@@ -21,12 +20,12 @@ export { ApplicationTerms } from "@metaliq/application"
 export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> {
   /**
    * Set this term on any parent node within the navigation structure
-   * to define the basic navigation behaviour within that node.
+   * to define the basic navigation handling within that node.
    *
    * The MetaFn should expect to receive the selected navigation node and behave accordingly.
    *
-   * This policy provides several standard functions `setNavSelection` which is
-   * a basic behaviour allowing free navigation between all the immediate child nodes.
+   * This policy provides several standard functions {@link setNavSelection} which is
+   * a basic handler allowing free navigation between all the immediate child nodes.
    * Alternative behaviours such as step-by-step wizard navigation
    * can be provided by other policies.
    */
@@ -113,7 +112,7 @@ metaSetups.push($ => {
     policy.route$s.set(model.route, $)
     if (typeof model.onLeave === "function") {
       model.route.onLeave = async () => {
-        const result = await model.onLeave($.value, $)
+        const result = await model.onLeave($.value, $)()
         return result
       }
     }
@@ -122,7 +121,7 @@ metaSetups.push($ => {
         const routeResult = await model.onEnter($.value, $)(params)
         if (routeResult === false) return false
       }
-      const onNavigate = $.fn(getAncestorTerm("onNavigate", false))
+      const onNavigate = $.raw("onNavigate", true)
       if (typeof onNavigate === "function") {
         const navTypeResult = onNavigate($.value, $)
         if (navTypeResult === false) return false

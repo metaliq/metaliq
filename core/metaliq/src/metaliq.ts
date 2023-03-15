@@ -39,14 +39,56 @@ export declare namespace Policy {
   }
 
   /**
-   * Policies can define Aspects - typically functions - that will be available
-   * for each of the Meta$ objects in the meta graph.
+   * Policies can define Aspects - functions that will be available
+   * on each of the Meta$ objects in the meta graph.
+   *
+   * The core package defines several default Aspects.
    */
   export interface Aspects<T, P = any> {
     /**
      * Self reference for easy inclusion of generic type parameters when merging.
      */
     this?: Aspects<T, P>
+
+    /**
+     * Call the specified meta function with this node's value and meta value.
+     *
+     * If provided with a raw value instead of a meta function,
+     * returns the provided value, otherwise provides the result of the
+     * function call.
+     *
+     * This value / meta function handling is useful for
+     * querying potentially dynamic values of the options of a
+     * configurable meta function, and mirrors the default handling
+     * when fetching term values with {@link my}.
+     */
+    fn: <R>(valueOrMetaFn: R | MetaFn<T, P, R>) => R
+
+    /**
+     * Access a term of the associated MetaModel.
+     *
+     * By default, if the term is a MetaFn its result will be returned.
+     * Specify `raw` to prevent this and return the MetaFn.
+     * Specify `ancestor` to continue searching back through
+     * the node's ancestry until a value is found for the given term.
+     * Specify `rawAncestor` to get both behaviors.
+     */
+    my: <K extends TermKey>(key: K, ancestor?: boolean) => DerivedTermValue<K>
+
+    /**
+     * Access a raw term value without calling any MetaFn that is found there.
+     * When used without the `ancestor` flag, this is equivalent to:
+     * `$.model[key]`.
+     *
+     * Specify `ancestor` to continue searching back through
+     * the node's ancestry until a value is found for the given term.
+     */
+    raw: <K extends TermKey> (key: K, ancestor?: boolean) => TermValue<K>
+
+    /**
+     * Navigate to the child Meta$ for the given key within this node of the meta graph.
+     */
+    child: <K extends FieldKey<T>>(key: K) => Meta$<T[K]>
   }
 }
 
@@ -146,43 +188,6 @@ export type Meta$<T, P = any> = Policy.Aspects<T, P> & {
    * The internal version of the data value.
    */
   _value?: T
-
-  /**
-   * Call the provided MetaFunction with this Meta$ and its associated value.
-   */
-  fn: <R>(metaFn: MetaFn<T, P, R>) => R
-
-  /**
-   * Access an optionally dynamic value.
-   *
-   * Given a reference to either
-   *  * a value of a specific type or
-   *  * a MetaFn that returns a value of a specific type,
-   * return that value.
-   *
-   * Useful for querying potentially dynamic values of the options
-   * of a configurable MetaFunction.
-   *
-   * For potentially dynamic terms, use the shortcut {@link term}.
-   */
-  opt: <R>(value: R | MetaFn<T, P, R>) => R
-
-  /**
-   * Access an optionally dynamic term.
-   *
-   * Given a key to a term that is of either
-   *  * a value of a specific type or
-   *  * a MetaFn that returns a value of a specific type,
-   * return that value.
-   *
-   * Shortcut to accessing optionally dynamic values via {@link opt}.
-   */
-  term: <K extends TermKey>(key: K) => DerivedTermValue<K>
-
-  /**
-   * Navigate to the child meta info for the given key within this node of the meta graph.
-   */
-  child: <K extends FieldKey<T>>(key: K) => Meta$<T[K]>
 }
 
 /**
@@ -284,13 +289,19 @@ export function metafy <T, P = any> (
     state: proto?.$?.state || {},
     _value: value
   })
-  $.fn = metaFn => metaFn($.value, $)
-  $.opt = ref => isMetaFn(ref)
-    ? $.fn(ref)
+  $.fn = ref => isMetaFn(ref)
+    ? ref($.value, $)
     : ref
-  $.term = <K extends TermKey>(key: K) => {
-    const ref = $.model[key]
-    return $.opt(ref) as DerivedTermValue<K>
+  $.my = <K extends TermKey>(key: K, ancestor?: boolean) => {
+    const value = $.raw(key, ancestor)
+    return $.fn(value) as DerivedTermValue<K>
+  }
+  $.raw = (key, ancestor?) => {
+    let t$: Meta$<any> = $
+    if (ancestor) {
+      while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent
+    }
+    return t$.model[key]
   }
   $.child = <K extends FieldKey<T>>(key: K) => {
     const { meta } = $
@@ -469,21 +480,6 @@ export const $fn = <Type, Parent, Return> (fn: MetaFn<Type, Parent, Return>): Me
  * A simple type guard for terms that may or may not be a meta function.
  */
 export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "function"
-
-/**
- * Return the value of a MetaModel term by searching the
- * immediate object and then stepping back through ancestors
- * until a value is found.
- *
- * If the dynamic behaviour is enabled (default is true) then
- * if the term value is a function it will be called to get the underlying value.
- * Turn this off if you're trying to access a term value that is itelf a function.
- */
-export const getAncestorTerm = <K extends TermKey>(key: K, dynamic: boolean = true): MetaFn<any, any, TermValue<K>> =>
-  (v, $) => {
-    while ($ && typeof $.model[key] === "undefined") $ = $.parent
-    return dynamic ? $.term(key) : $.model[key]
-  }
 
 /**
  * Combine any number of meta functions into a single meta function

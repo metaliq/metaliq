@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { $fn, child$, FieldKey, MetaFn, metaSetups } from "metaliq"
+import { $fn, FieldKey, MetaFn, metaSetups } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationTerms } from "@metaliq/application"
@@ -27,30 +27,39 @@ export interface PresentationState {
   active?: boolean
 }
 
-export interface PresentationAspects<T, P> {
+export interface PresentationAspects<T, P = any> {
   /**
    * Render a view for the Meta$ and its associated data value.
    *
-   * Calling `$.view({ view: myView })` has several advantages over calling `myView(myValue, myMeta$)`:
+   * Calling `$.view(myView)` has several advantages over calling `myView(v, $)`:
    *
-   * First, it automatically uses any default wrapper assigned using setViewWrapper.
-   * This allows for central handling of animated hide/show, for example.
+   * * `myView` can be a MetaViewTerm, in other words can be an array of MetaViews.
    *
-   * Second, the $ backlink on the value object will be re-established.
+   * * If `myView` is undefined it will fall back to a view defined in the MetaModel.
+   *
+   * * If no `myView` or MetaModel view is defined, falls back to a view provided by
+   * the {@link ViewResolver} assigned via {@link setViewResolver}. This can be overriden
+   * or disabled with the {@link ViewOptions.resolver} option.
+   *
+   * * It automatically uses any default wrapper assigned using {@link setViewWrapper}.
+   * This allows for global handling of animated hide/show, for example.
+   * This can be overriden / disabled with the {@link ViewOptions.wrapper} option.
+   *
+   * * The $ backlink on the value object will be re-established.
    * This can assist in situations where a single value object is being shared
    * (with possibly different MetaModels) across multiple points in the meta graph.
    *
    * ```
    * $.view() // View the data value with the view from the model, if present
-   * $.view({ view: maybeView }) // View using maybeView if present, otherwise fall back to model view if present
+   * $.view(maybeView) // View using maybeView if present, otherwise fall back to model view if present
    * ```
    */
-  view: (options?: ViewOptions<T, P>) => ViewResult
+  view: (view?: MetaViewTerm<T, P>, options?: ViewOptions<T, P>) => ViewResult
 
   /**
    * Present a view for the given child field
    */
-  field: (key: FieldKey<T>, options?: ViewOptions<T, P>) => ViewResult
+  field: (key: FieldKey<T>, view?: MetaViewTerm<T, P>, options?: ViewOptions<T, P>) => ViewResult
 }
 
 declare module "metaliq" {
@@ -86,9 +95,9 @@ export type SingularViewResult = TemplateResult | string
 export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
 
 /**
- * A widget takes some configuration and returns a View.
+ * A MetaView that can be configured with various options.
  */
-export type Widget<T, P = any> = (...params: any[]) => MetaView<T, P>
+export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
 
 /**
  * The renderPage function, if specified as the review property from the app policy,
@@ -102,7 +111,7 @@ export const renderPage: MetaFn<any> = (v, $) => {
 /**
  * A view designed to accept and wrap another view.
  */
-export type ViewWrapper<T = any> = (metaView: MetaView<T>) => MetaView<T>
+export type ViewWrapper<T = any, P = any> = (metaView: MetaView<T, P>) => MetaView<T, P>
 
 /**
  * Assign a default view wrapper, for example to do animation for dynamic hide-show fields.
@@ -130,15 +139,9 @@ let viewResolver: ViewResolver = null
  */
 export type ViewOptions<T, P = any> = {
   /**
-   * Optionally specify the view to use like `$.view({ view: myView })`.
-   * If not provided then revert to the default view for the
-   */
-  view?: MetaView<T, P>
-
-  /**
    * Override or disable (by passing `false`) any default wrapper provided to {@link setViewWrapper}.
    */
-  wrapper?: ViewWrapper | boolean
+  wrapper?: ViewWrapper<T, P> | boolean
 
   /**
    * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
@@ -147,74 +150,28 @@ export type ViewOptions<T, P = any> = {
 }
 
 metaSetups.push($ => {
-  $.view = options => {
-    const wrapper = typeof options.wrapper === "boolean"
-      ? options.wrapper ? viewWrapper : undefined
-      : options.wrapper || viewWrapper
-    const resolver = typeof options.resolver === "boolean"
-      ? options.resolver ? viewResolver : undefined
-      : options.resolver || viewResolver
+  $.view = (viewTerm?, options?) => {
+    const wrapper = typeof options?.wrapper === "boolean"
+      ? options?.wrapper ? viewWrapper : undefined
+      : options?.wrapper || viewWrapper
+    const resolver = typeof options?.resolver === "boolean"
+      ? options?.resolver ? viewResolver : undefined
+      : options?.resolver || viewResolver
 
-    const view = options.view || $.model.view || resolver($.value, $)
-    if (!view) return ""
-
-    if (wrapper) return wrapper(view)($.value, $)
-
-    return $.state.hidden ? "" : view($.value, $)
+    viewTerm = viewTerm || $.model.view || $.fn(resolver)
+    if (!viewTerm) {
+      return ""
+    } else if (Array.isArray(viewTerm)) {
+      return viewTerm.map((each) => $.view(each))
+    } else if (wrapper) {
+      return wrapper(viewTerm)($.value, $)
+    } else {
+      return $.state.hidden ? "" : viewTerm($.value, $)
+    }
   }
 
-  $.field = (key, options) => {
-    const field$ = child$($, key)
-    return field$.view(options)
+  $.field = (key, view?, options?) => {
+    const field$ = $.child(key)
+    return field$.view(view, options)
   }
 })
-
-/**
- * Get a ViewResult for the given value and meta info.
- * If the view is not specified, will fall back to the MetaModel's view.
- * Calling `view(myView)(myValue, myMeta$?)` has several advantages over calling `myView(myValue, myMeta$)`:
- *
- * First, it can accommodate either a single view or an array of views - enabling the
- * view term of a meta to accommodate multiple views.
- *
- * Second, it automatically handles dynamic hide / show.
- *
- * Third, it returns a meta view that, if provided with only a value,
- * will attempt to deduce the meta info,
- * so the "inner" view function does not necessarily have to.
- * As with other meta functions, meta info deduction does not work for primitives
- * and may be unreliable where the same value object is shared by multiple meta-model objects.
- *
- * Fourth, if both a value and meta info are provided,
- * the $ backlink on the value object will be re-established.
- * This can assist in situations where a single value object is being shared
- * (with possibly different MetaModels) across multiple points in the meta graph.
- *
- * ```
- * view()(myValue) // View myValue with the view from the model, if present
- * view(maybeView)(myValue) // View using maybeView if present, otherwise fall back to model view if present
- * view([firstView, secondView])(myValue) // View myValue using two different views sequentially
- * ```
- */
-export function view <T, P = any> (
-  metaViewTerm?: MetaViewTerm<T, P>
-): MetaView<T, P> {
-  return $fn((v, $) => {
-    if (typeof (v ?? false) === "object") {
-      // Establish correct value/meta link prior to viewing
-      Object.assign(v, { $ })
-    }
-    metaViewTerm = metaViewTerm ?? $.model.view
-    if (!metaViewTerm) {
-      return ""
-    } else if (Array.isArray(metaViewTerm)) {
-      return metaViewTerm.map(mv => view(mv)(v, $))
-    } else {
-      if (typeof $.model.hidden === "function") {
-        return viewWrapper(metaViewTerm)(v, $)
-      } else {
-        return $.state.hidden ? "" : metaViewTerm(v, $)
-      }
-    }
-  })
-}

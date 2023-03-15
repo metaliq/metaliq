@@ -136,7 +136,7 @@ export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v
   }
   wizard$.state.step = stepNames[nextIndex]
 
-  window.history.pushState({}, nowStep$.state.label)
+  window.history.pushState({}, nowStep$.my("label"))
   window.onpopstate = (evt: PopStateEvent) => {
     wizard$.up(changeStep({ stepName: stepNames[nowIndex] }))()
   }

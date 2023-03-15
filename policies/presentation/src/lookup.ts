@@ -23,7 +23,7 @@ export type LookupTemplate = (id: string) => ViewResult
  *
  * The lookup will be initialised upon first render,
  * and thereafter only upon change of object identity of the data parameter,
- * enabling efficient behaviour across intermediate renders.
+ * enabling efficient handling across intermediate renders.
  */
 export const lookupFromTemplate = <T>(initLookup: InitLookup<T>) => (
   data: T,

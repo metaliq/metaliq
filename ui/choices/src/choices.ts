@@ -153,7 +153,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
           class="mq-input ${classMap({ "mq-disabled": disabled })}"
         >
           ${options.multiple ? "" : html`
-            <option value="">${$.state.label}</option>
+            <option value="">${$.my("label")}</option>
           `}
         </select>
       `

@@ -17,12 +17,12 @@ export const repeatControls = (config: RepeatConfig<any>): MetaView<any[]> => (v
   config = { ...defaultRepeatConfig, ...config }
   return html`
     <div>
-      <button class="mq-button" @click=${$.up(addItem(config))}>${$.opt(config.addLabel)}</button>
+      <button class="mq-button" @click=${$.up(addItem(config))}>${$.fn(config.addLabel)}</button>
     </div>
   `
 }
 
 export const addItem = <T extends any[], P>(config: RepeatConfig<T, P>): MetaFn<T, P> => (v, $) => {
-  const newItem = $.opt(config.newItem)
+  const newItem = $.fn(config.newItem)
   newItem && $.value.push(newItem)
 }

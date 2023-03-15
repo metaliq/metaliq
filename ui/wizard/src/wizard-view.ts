@@ -24,7 +24,7 @@ export const wizardTramline: MetaView<object> = (value, $) => {
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${$.child(stepName).term("label")}</span>
+          <span class="mq-wizard-nav-label">${$.child(stepName).my("label")}</span>
         </div>
       `)}
     </div>
@@ -46,7 +46,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
     })}">
       <div class="mq-wizard-page-title">
         ${currentStep$
-          ? currentStep$.term("helpText")
+          ? currentStep$.my("helpText")
           : notConfiguredWarning
         }
       </div>

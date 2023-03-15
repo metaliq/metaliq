@@ -64,7 +64,7 @@ export type InitFunction<T> = ((model?: MetaModel<T>) => T) | ((model?: MetaMode
 export type Init<T> = T | InitFunction<T>
 
 metaSetups.push(<T, P = any>($: Meta$<T, P>) => {
-  $.up = (metaFn: MetaFn<T, P>) => up($ => metaFn($.value, $), $)
+  $.up = (metaFn: MetaFn<T, P>) => up(($, event) => metaFn($.value, $, event), $)
 })
 
 /**

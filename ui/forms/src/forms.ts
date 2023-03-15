@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { FieldKey, fieldKeys, getAncestorTerm, HasMeta$, isMeta, m$, Meta$, MetaFn } from "metaliq"
+import { FieldKey, fieldKeys, isMeta, m$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { MetaView, setViewResolver, ViewResult } from "@metaliq/presentation"
@@ -136,14 +136,14 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) =
 
 /**
  * Test whether the field is disabled.
- * Can accept the meta info $ (recommended)
- * or the associated data value (not a primitive).
  *
  * Returns the first explicitly defined disabled state by searching on the meta
  * and then ascending through its ancestors. If none is found, return false.
  */
-export const isDisabled: MetaFn<any, any, boolean> = (v, $) =>
-  $.fn(getAncestorTerm("disabled")) ?? false
+export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
+  const result = $.my("disabled", true)
+  return result ?? false
+}
 
 /**
  * A standard set of field classes for the meta.

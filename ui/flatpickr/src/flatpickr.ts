@@ -37,7 +37,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
       "mq-populated": !!value
     })}">
       <span class="mq-input-label">
-        ${$.state.label}
+        ${$.my("label")}
       </span>
       ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
