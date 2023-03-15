@@ -10,17 +10,17 @@ export interface PresentationTerms<T, P> {
   /**
    * The primary view associated with this MetaModel.
    */
-  view?: MetaView<T, P>
+  view?: MetaViewTerm<T, P>
 
   /**
    * An auxiliary view, such as for a contextual control zone.
    */
-  controlView?: MetaView<T, P>
+  controlView?: MetaViewTerm<T, P>
 
   /**
    * An auxiliary view, such as for a contextual status zone.
    */
-  statusView?: MetaView<T, P>
+  statusView?: MetaViewTerm<T, P>
 }
 
 export interface PresentationState {
