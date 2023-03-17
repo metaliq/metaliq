@@ -59,7 +59,7 @@ export interface Presentation$<T, P = any> {
   /**
    * Present a view for the given child field
    */
-  field: (key: FieldKey<T>, view?: MetaViewTerm<T, P>, options?: ViewOptions<T, P>) => ViewResult
+  field: <K extends FieldKey<T>> (key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions<T, P>) => ViewResult
 }
 
 declare module "metaliq" {
@@ -103,6 +103,12 @@ export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
 
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>
+
+  if (typeof ($.value ?? false) === "object") {
+    // Establish correct value/meta link prior to viewing
+    Object.assign($.value, { $ })
+  }
+
   const wrapper = typeof options?.wrapper === "boolean"
     ? options?.wrapper ? viewWrapper : undefined
     : options?.wrapper || viewWrapper

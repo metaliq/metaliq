@@ -6,12 +6,12 @@ import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "@metaliq/forms"
 import { MetaView } from "@metaliq/presentation"
 
-export const wizardView: MetaView<object> = (value, $) => [
+export const wizardView: MetaView<any> = (value, $) => [
   wizardTramline(value, $),
   wizardStep(value, $)
 ]
 
-export const wizardTramline: MetaView<object> = (value, $) => {
+export const wizardTramline: MetaView<any> = (value, $) => {
   return html`
     <div class="mq-wizard-nav">
       ${fieldKeys($.model).map((stepName) => html`

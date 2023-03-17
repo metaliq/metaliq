@@ -142,14 +142,38 @@ export class Meta$<T, P = any> {
   model: MetaModel<T, P>
 
   /**
-   * The data value associated with this mode in the meta graph.
-   */
-  value?: T
-
-  /**
    * The runtime Meta state.
    */
   state: Policy.State<T, P>
+
+  /**
+   * The internal version of the data value associated with this node in the meta graph.
+   */
+  _value?: T
+
+  /**
+   * The data value associated with this node in the meta graph.
+   */
+  get value (): T {
+    // Value getter and setter defaults to keyed value within parent object if present,
+    // so that primitive values are assigned properly to their place in the containing object.
+    if (this.parent) {
+      const parentVal = this.parent.value
+      const parentKey = this.key as keyof P
+      const thisVal: any = parentVal[parentKey]
+      if (typeof this.index === "number") {
+        return thisVal?.[this.index]
+      } else {
+        return thisVal
+      }
+    } else {
+      return this._value
+    }
+  }
+
+  set value (val: T) {
+    reset(this, val)
+  }
 
   fn <R>(ref: R | MetaFn<T, P, R>): R {
     return isMetaFn(ref) ? ref(this.value, this) : ref
@@ -165,7 +189,7 @@ export class Meta$<T, P = any> {
     if (ancestor) {
       while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent
     }
-    return t$.model[key]
+    return t$?.model[key]
   }
 
   child <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
@@ -361,6 +385,15 @@ export const fieldKeys = <T>(model: MetaModel<T>) =>
   Object.keys(model?.fields || {}) as Array<FieldKey<T>>
 
 /**
+ * Given either a meta value object or its underlying data value (but not a primitive),
+ * return a reference to the value object for the parent.
+ */
+export const parent = <T extends object, P = any> (v$: Meta$<T, P> | T): P => {
+  const $ = (m$(v$) || v$) as Meta$<T, P>
+  return $?.parent?.value
+}
+
+/**
  * Sanitise the arguments to a MetaFn.
  * Use at the top of any MetaFn like:
  *
@@ -393,6 +426,15 @@ export const $args = <Type, Parent> (value: Type, $?: Meta$<Type, Parent>, event
     }
   }
   return [value, $]
+}
+
+export const v$ = <T, P = any> (valueOrMeta$: T | Meta$<T, P>) => {
+  if (typeof valueOrMeta$ !== "object") {
+    throw new Error(`v$: Cannot reach meta graph from primitive value: ${valueOrMeta$}`)
+  }
+  const anyVal = valueOrMeta$ as any
+  const $: Meta$<T, P> = anyVal.$ || anyVal
+  return { v: $.value, $ }
 }
 
 /**
