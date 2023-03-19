@@ -266,6 +266,7 @@ export function metafy <T, P = any> (
 ): Meta<T, P> {
   const hasProto = !!proto
   const isArray = model.items || Array.isArray(value)
+  const isArrayMember = typeof index === "number"
 
   // Establish the correct form of prototype for this meta
   proto = isArray
@@ -297,7 +298,7 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
-  if (parent && key && !Array.isArray(parent.value[key])) {
+  if (parent && key && !isArrayMember) {
     Object.assign(parent.meta, { [key]: result }) // (Re)attach this meta to its parent
     Object.assign(parent.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
   }
@@ -335,7 +336,7 @@ export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
   const $ = (m$(valueOr$) || valueOr$) as Meta$<T>
   metafy($.model,
     typeof value === "undefined" ? $.value : value,
-    $.parent, $.key, $.meta)
+    $.parent, $.key, $.meta, $.index)
 }
 
 /**
@@ -366,7 +367,12 @@ export const m$ = <T>(value: T): Meta$<T> => {
 /**
  * A type guard to narrow a MetaField to a Meta.
  */
-export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => !Array.isArray(m)
+export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => m && !Array.isArray(m)
+
+/**
+ * A type guard to narrow a MetaField to a MetaArray.
+ */
+export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> => Array.isArray(m)
 
 /**
  * Works better than keyof T where you know that T is not an array.
