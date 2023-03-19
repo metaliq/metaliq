@@ -266,7 +266,7 @@ function setupMeta ($: Meta$<any>) {
  * Optionally an existing Meta can be provided as prototype, in which case it will be reverted to the given value.
  */
 export function metafy <T, P = any> (
-  model: MetaModel<T, P>, value: T, parent?: Meta$<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
+  model: MetaModel<T, P>, value: T, parent$?: Meta$<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
 ): Meta<T, P> {
   const hasProto = !!proto
   const isArray = model.items || Array.isArray(value)
@@ -285,7 +285,7 @@ export function metafy <T, P = any> (
   // Add contextual meta information to Meta$
   Object.assign($, {
     model,
-    parent,
+    parent$,
     key,
     state: proto?.$?.state || {},
     _value: value
@@ -302,9 +302,9 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
-  if (parent && key && !isArrayMember) {
-    Object.assign(parent.meta, { [key]: result }) // (Re)attach this meta to its parent
-    Object.assign(parent.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
+  if (parent$ && key && !isArrayMember) {
+    Object.assign(parent$.meta, { [key]: result }) // (Re)attach this meta to its parent
+    Object.assign(parent$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
   }
 
   // Descend through children creating further meta objects
@@ -314,7 +314,7 @@ export function metafy <T, P = any> (
     metaArr.length = 0 // Remove any items from supplied prototype
     for (const [itemIndex, item] of valueArr.entries()) {
       const itemMeta = item?.$?.meta
-      metaArr.push(metafy(model.items || {}, item, parent, key, itemMeta, itemIndex))
+      metaArr.push(metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex))
     }
   } else {
     for (const fieldKey of fieldKeys(model)) {
