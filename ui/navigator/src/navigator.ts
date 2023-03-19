@@ -29,19 +29,19 @@ export const navigator = (options: NavigationOptions): MetaView<any> => (v, $) =
 const menuItems = ($: Meta$<any>, level: number = 0) => {
   const keys = fieldKeys($?.model)
     .filter(key => {
-      const { my } = $.child(key)
-      return my("route") && !my("hidden") && (my("label") || my("symbol"))
+      const { term } = $.child$(key)
+      return term("route") && !term("hidden") && (term("label") || term("symbol"))
     })
   return keys?.length ? html`
     <ul class=${`mq-level-${level}`}>
-      ${keys.map(key => menuItem($.child(key), getNavSelection($), level))}
+      ${keys.map(key => menuItem($.child$(key), getNavSelection($), level))}
     </ul>
   ` : ""
 }
 
 const menuItem = (navItem$: Meta$<any>, selected$: Meta$<any>, level: number = 1): ViewResult => {
-  const text = navItem$.my("label")
-  const icon = navItem$.my("symbol")
+  const text = navItem$.term("label")
+  const icon = navItem$.term("symbol")
   return html`
     <li @click=${up(goNavRoute, navItem$)} class=${classMap({
       "mq-selected": navItem$ === selected$

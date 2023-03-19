@@ -32,12 +32,12 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
   return html`
     <label class="mq-field mq-date-field ${classMap({
       [options.classes]: !!options.classes,
-      "mq-mandatory": $.my("mandatory"),
+      "mq-mandatory": $.term("mandatory"),
       "mq-active": $.state.active,
       "mq-populated": !!value
     })}">
       <span class="mq-input-label">
-        ${$.my("label")}
+        ${$.term("label")}
       </span>
       ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`

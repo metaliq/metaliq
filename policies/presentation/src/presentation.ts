@@ -124,13 +124,13 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   } else if (wrapper) {
     return wrapper(viewTerm)($.value, $)
   } else {
-    return $.my("hidden") ? "" : viewTerm($.value, $)
+    return $.term("hidden") ? "" : viewTerm($.value, $)
   }
 }
 
 Meta$.prototype.field = function (key, view?, options?) {
   const $ = this as Meta$<any>
-  const field$ = $.child(key)
+  const field$ = $.child$(key)
   return field$.view(view, options)
 }
 
@@ -139,7 +139,7 @@ Meta$.prototype.field = function (key, view?, options?) {
  * to produce a global-state single page app.
  */
 export const renderPage: MetaFn<any> = (v, $) => {
-  document.title = $.my("label")
+  document.title = $.term("label")
   render($.view(), document.body)
 }
 

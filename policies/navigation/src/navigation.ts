@@ -133,7 +133,7 @@ metaSetups.push($ => {
     $.state.nav.selected = fieldKeys($.model)[0]
   }
   // If this is the top-level meta and has routes specified then initialise navigation
-  if (!$.parent) {
+  if (!$.parent$) {
     if (model?.urlPath &&
       typeof history !== "undefined" && typeof window !== "undefined" &&
       (!window.location?.pathname || window.location.pathname === "/")
@@ -184,7 +184,7 @@ export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
  */
 export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
   const key: FieldKey<T> = navMeta$.state.nav?.selected
-  return navMeta$.child(key)
+  return navMeta$.child$(key)
 }
 
 /**
@@ -209,7 +209,7 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
 
   // Set any upper selections
   const setParentSelection: MetaFn<any> = (v, $) => {
-    const parent$ = $.parent
+    const parent$ = $.parent$
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
       parent$.state.nav.selected = $.key
@@ -256,7 +256,7 @@ export const setNavSelectionResponsive = (width: number) =>
 export const goNavRoute = (item$: Meta$<any>) => {
   while (item$ && !item$.model.route) {
     const firstChildKey = fieldKeys(item$.model)[0]
-    item$ = item$.child(firstChildKey)
+    item$ = item$.child$(firstChildKey)
   }
   item$.model.route?.go()
 }
@@ -283,7 +283,7 @@ export const closeMenu = ($: Meta$<any>) => {
  */
 export const isMenuShown = (item$: Meta$<any>) => {
   while (item$) {
-    item$ = item$.parent
+    item$ = item$.parent$
     if (item$?.state?.nav?.showMenu === false) return false
   }
   return true

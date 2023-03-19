@@ -112,7 +112,7 @@ export class Meta$<T, P = any> {
    * Used in navigating the metagraph and for backlinks from object values.
    * Although this may be of interest, most solution-focussed code is concerned
    * with the meta value object {@link HasMeta$.$} along with its associated data value ($.value),
-   * and navigates to other meta values via the `$.parent` property and `$.child`(fieldName).
+   * and navigates to other meta values via the `$.parent$` property and `$.child$`(fieldName).
    */
   meta?: HasMeta$<T, P>
 
@@ -121,7 +121,7 @@ export class Meta$<T, P = any> {
    * This will be null for the meta value created at the base level of the
    * running MetaModel.
    */
-  parent?: Meta$<P>
+  parent$?: Meta$<P>
 
   /**
    * Key within parent node (if applicable).
@@ -157,8 +157,8 @@ export class Meta$<T, P = any> {
   get value (): T {
     // Value getter and setter defaults to keyed value within parent object if present,
     // so that primitive values are assigned properly to their place in the containing object.
-    if (this.parent) {
-      const parentVal = this.parent.value
+    if (this.parent$) {
+      const parentVal = this.parent$.value
       const parentKey = this.key as keyof P
       const thisVal: any = parentVal[parentKey]
       if (typeof this.index === "number") {
@@ -179,7 +179,7 @@ export class Meta$<T, P = any> {
     return isMetaFn(ref) ? ref(this.value, this) : ref
   }
 
-  my <K extends TermKey>(key: K, ancestor?: boolean): DerivedTermValue<K> {
+  term <K extends TermKey>(key: K, ancestor?: boolean): DerivedTermValue<K> {
     const value = this.raw(key, ancestor)
     return this.fn(value) as DerivedTermValue<K>
   }
@@ -187,17 +187,21 @@ export class Meta$<T, P = any> {
   raw <K extends TermKey> (key: K, ancestor?: boolean): TermValue<K> {
     let t$: Meta$<any> = this
     if (ancestor) {
-      while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent
+      while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent$
     }
     return t$?.model[key]
   }
 
-  child <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
+  child$ <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
     const meta = this.meta
     if (isMeta(meta)) {
-      const childMeta = meta[key]
+      const childMeta = <unknown>meta[key] as Meta<T[K], T>
       return childMeta.$ as Meta$<T[K]>
     } else return null
+  }
+
+  childKeys (): Array<FieldKey<T>> {
+    return Object.keys(this.model?.fields || {}) as Array<FieldKey<T>>
   }
 }
 
@@ -336,7 +340,7 @@ export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
   const $ = (meta$(valueOr$) || valueOr$) as Meta$<T>
   metafy($.model,
     typeof value === "undefined" ? $.value : value,
-    $.parent, $.key, $.meta, $.index)
+    $.parent$, $.key, $.meta, $.index)
 }
 
 /**
@@ -396,7 +400,7 @@ export const fieldKeys = <T>(model: MetaModel<T>) =>
  */
 export const parent = <T extends object, P = any> (v$: Meta$<T, P> | T): P => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
-  return $?.parent?.value
+  return $?.parent$?.value
 }
 
 /**
@@ -428,8 +432,8 @@ export const fns = <T, P = any, R = any> (
  */
 export const root$ = (v: any, $?: Meta$<any>) => {
   let result = $
-  while (result.parent) {
-    result = result.parent
+  while (result.parent$) {
+    result = result.parent$
   }
   return $
 }
@@ -443,7 +447,7 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
     if (onBase) fn(v, $)
     const keys = fieldKeys($.model)
     for (const key of keys) {
-      recurse(($.child(key)))
+      recurse(($.child$(key)))
     }
   }
 

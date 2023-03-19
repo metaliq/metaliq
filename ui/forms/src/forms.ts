@@ -141,7 +141,7 @@ export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) =
  * and then ascending through its ancestors. If none is found, return false.
  */
 export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
-  const result = $.my("disabled", true)
+  const result = $.term("disabled", true)
   return result ?? false
 }
 
@@ -153,7 +153,7 @@ export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
 export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
   return {
-    "mq-mandatory": $.my("mandatory"),
+    "mq-mandatory": $.term("mandatory"),
     "mq-active": $.state.active,
     "mq-populated": hasValue($),
     "mq-disabled": $.fn(isDisabled)

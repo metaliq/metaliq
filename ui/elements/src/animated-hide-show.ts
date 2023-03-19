@@ -6,7 +6,7 @@ import { MetaView, setViewWrapper } from "@metaliq/presentation"
 @customElement("mq-animated-hide-show")
 export class AnimatedHideShow extends LitElement {
   @property({ type: Boolean })
-  mqHidden = false // DON'T use `hidden` - it is a built-in HTML property that triggers display: none
+    mqHidden = false // DON'T use `hidden` - it is a built-in HTML property that triggers display: none
 
   @state()
   private changing = false
@@ -66,7 +66,7 @@ export class AnimatedHideShow extends LitElement {
  */
 export const animatedHideShow = <T> (metaView: MetaView<T>): MetaView<T> => (value, $) => {
   if (typeof $.model.hidden === "function") {
-    const hidden = !!$.my("hidden")
+    const hidden = !!$.term("hidden")
     return html`
       <mq-animated-hide-show ?mqHidden=${hidden}>
         ${metaView(value, $)}

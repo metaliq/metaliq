@@ -133,7 +133,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
             const asyncListener = async (e: any) => {
               // TODO: Debounce
               const searchText = e.detail.value
-              $.state.choices = await options.searchFn(searchText, $.parent)
+              $.state.choices = await options.searchFn(searchText, $.parent$)
               resetChoices()
             }
 
@@ -153,7 +153,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
           class="mq-input ${classMap({ "mq-disabled": disabled })}"
         >
           ${options.multiple ? "" : html`
-            <option value="">${$.my("label")}</option>
+            <option value="">${$.term("label")}</option>
           `}
         </select>
       `

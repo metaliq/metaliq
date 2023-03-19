@@ -80,8 +80,8 @@ export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
   $.state.validated = true
   delete $.state.error
-  if ($.my("hidden")) return
-  if ($.my("mandatory") && !hasValue($)) {
+  if ($.term("hidden")) return
+  if ($.term("mandatory") && !hasValue($)) {
     return ($.state.error = requiredLabelFn($.value, $))
   } else {
     const validator = $.model.validator
@@ -122,7 +122,7 @@ export const hasValue = <T, P> (v$: T | Meta$<T, P>) => {
 export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
   const result: Array<Meta$<any>> = []
-  if (!$.my("hidden")) {
+  if (!$.term("hidden")) {
     validate($)
     if ($.state.error) result.push($)
     const { meta } = $

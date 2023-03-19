@@ -17,14 +17,14 @@ export const wizardTramline: MetaView<any> = (value, $) => {
       ${fieldKeys($.model).map((stepName) => html`
         <div class="mq-wizard-nav-item ${classMap({
           current: $.state.step === stepName,
-          visited: $.child(stepName).state.validated,
+          visited: $.child$(stepName).state.validated,
           enabled: false
         })}" @click=${$.up(changeStep({ stepName }))}>
           <div class="mq-wizard-nav-pre"></div>
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${$.child(stepName).my("label")}</span>
+          <span class="mq-wizard-nav-label">${$.child$(stepName).term("label")}</span>
         </div>
       `)}
     </div>
@@ -46,7 +46,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
     })}">
       <div class="mq-wizard-page-title">
         ${currentStep$
-          ? currentStep$.my("helpText")
+          ? currentStep$.term("helpText")
           : notConfiguredWarning
         }
       </div>

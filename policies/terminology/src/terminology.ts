@@ -28,8 +28,8 @@ declare module "metaliq" {
  */
 export function labelPath (from: Meta$<any>, to: Meta$<any>) {
   const labels = [labelOrKey(to)]
-  while (to.parent && to.parent !== from) {
-    to = to.parent
+  while (to.parent$ && to.parent$ !== from) {
+    to = to.parent$
     const toLabel = labelOrKey(to)
     if (toLabel) labels.unshift(toLabel)
   }
@@ -43,5 +43,5 @@ export function labelPath (from: Meta$<any>, to: Meta$<any>) {
  */
 export const labelOrKey = <T, P>(v$: T | Meta$<T, P>) => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
-  return $.my("label") || $.key
+  return $.term("label") || $.key
 }
