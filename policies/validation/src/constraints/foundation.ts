@@ -1,5 +1,5 @@
 import { Constraint, Validator } from "../validation"
-import { $fn, FieldKey, meta$, MetaFn } from "metaliq"
+import { FieldKey, meta$, MetaFn } from "metaliq"
 
 /**
  * Checks equality with the given value.

@@ -1,6 +1,6 @@
 import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
-import { $args, MetaFn } from "metaliq"
+import { meta$, MetaFn } from "metaliq"
 
 export interface RepeatConfig<T, P = any> {
   addLabel?: string | MetaFn<T, P, string>
@@ -13,7 +13,7 @@ export const defaultRepeatConfig: RepeatConfig<any> = {
 }
 
 export const repeatControls = (config: RepeatConfig<any>): MetaView<any[]> => (v, $) => {
-  [v, $] = $args(v, $)
+  $ = $ || meta$(v)
   config = { ...defaultRepeatConfig, ...config }
   return html`
     <div>

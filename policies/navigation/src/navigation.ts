@@ -205,7 +205,7 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
     }
   }
 
-  onDescendants(clearSelection)($.fn(root$))
+  $.fn(root$).fn(onDescendants(clearSelection))
 
   // Set any upper selections
   const setParentSelection: MetaFn<any> = (v, $) => {
@@ -232,11 +232,11 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
 export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $) => {
   $ = $ || meta$(v)
   if (typeof window === "object" && window.outerWidth < width) {
-    onDescendants((v, $) => {
+    $.fn(root$).fn(onDescendants((v, $) => {
       if ($.state.nav?.showMenu) {
         $.state.nav.showMenu = false
       }
-    })($.fn(root$))
+    }))
   }
 }
 
