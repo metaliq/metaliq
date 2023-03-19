@@ -2,7 +2,7 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { FieldKey, fieldKeys, isMeta, m$, Meta$, MetaFn } from "metaliq"
+import { FieldKey, fieldKeys, isMeta, meta$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { MetaView, setViewResolver, ViewResult } from "@metaliq/presentation"
@@ -21,7 +21,7 @@ export type MetaFormOptions<T> = {
 /**
  * A MetaView for an object type that displays all its child fields.
  */
-export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v, $ = m$(v)) => {
+export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v, $ = meta$(v)) => {
   const { meta } = $
   if (isMeta(meta)) {
     return html`
@@ -151,7 +151,7 @@ export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
  * or its associated data value (not a primitive).
  */
 export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
+  const $ = (meta$(v$) || v$) as Meta$<T, P>
   return {
     "mq-mandatory": $.my("mandatory"),
     "mq-active": $.state.active,
@@ -202,7 +202,7 @@ export const checkboxField = <T> (options: InputOptions<T> = {}): MetaView<T> =>
 /**
  * Error message for the given field.
  */
-export const errorMsg = (options: { classes?: string } = {}): MetaView<any> => (v, $ = m$(v)) => {
+export const errorMsg = (options: { classes?: string } = {}): MetaView<any> => (v, $ = meta$(v)) => {
   const error = $.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
   const classes = `mq-error-msg ${options.classes ?? ""}`
@@ -232,7 +232,7 @@ const onInput = <T>({ unvalidated, type }: InputOptions<T>) =>
     if (!unvalidated) validate($)
   }
 
-export const errorsBlock: MetaView<any> = (v, $ = m$(v)) => {
+export const errorsBlock: MetaView<any> = (v, $ = meta$(v)) => {
   return html`
     <div class="mq-error-msg mq-page-error">
       ${$.state.allErrors?.map(error$ => html`

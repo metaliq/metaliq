@@ -1,4 +1,4 @@
-import { m$, Meta$, MetaFn } from "metaliq"
+import { meta$, Meta$, MetaFn } from "metaliq"
 
 export interface TerminologyTerms<T, P = any> {
   /**
@@ -42,6 +42,6 @@ export function labelPath (from: Meta$<any>, to: Meta$<any>) {
  * or its associated data value (not a primitive).
  */
 export const labelOrKey = <T, P>(v$: T | Meta$<T, P>) => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
+  const $ = (meta$(v$) || v$) as Meta$<T, P>
   return $.my("label") || $.key
 }

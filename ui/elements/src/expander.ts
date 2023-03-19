@@ -1,6 +1,6 @@
 import { MetaView } from "@metaliq/presentation"
 import { html, LitElement } from "lit"
-import { m$ } from "metaliq"
+import { meta$ } from "metaliq"
 import { customElement, property, state } from "lit/decorators.js"
 
 @customElement("mq-expander")
@@ -62,6 +62,6 @@ export class Expander extends LitElement {
 
 export const expander = <T> (expandedFn: MetaView<T>) => (content: MetaView<T>) => (data: T) => html`
   <mq-expander>
-    ${expandedFn(data, m$(data)) ? content(data) : ""}
+    ${expandedFn(data, meta$(data)) ? content(data) : ""}
   </mq-expander>
 `

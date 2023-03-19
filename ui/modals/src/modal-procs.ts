@@ -1,6 +1,6 @@
 import { call } from "@metaliq/communication"
 import { ModalButton, ModalInfo } from "./modal-model"
-import { m$, reset } from "metaliq"
+import { meta$, reset } from "metaliq"
 import { ViewResult } from "@metaliq/presentation"
 
 export const modalDefaults = {
@@ -9,11 +9,11 @@ export const modalDefaults = {
 }
 
 export const showModalChannel = (modalInfo: ModalInfo) => (newModalInfo: ModalInfo) => {
-  reset(m$(modalInfo), newModalInfo)
+  reset(meta$(modalInfo), newModalInfo)
 }
 
 export const closeModalChannel = (modalInfo: ModalInfo) => async () => {
-  reset(m$(modalInfo), {
+  reset(meta$(modalInfo), {
     body: "",
     title: ""
   })

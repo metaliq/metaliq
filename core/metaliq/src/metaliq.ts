@@ -333,7 +333,7 @@ export function metafy <T, P = any> (
  * (b) to restore current backlinks to a value object that is referenced more than once in the meta-graph.
  */
 export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
-  const $ = (m$(valueOr$) || valueOr$) as Meta$<T>
+  const $ = (meta$(valueOr$) || valueOr$) as Meta$<T>
   metafy($.model,
     typeof value === "undefined" ? $.value : value,
     $.parent, $.key, $.meta, $.index)
@@ -355,9 +355,9 @@ export function applyModel<T> ($: Meta$<T>, model: MetaModel<T>) {
 }
 
 /**
- * Shortcut from a value object to the $ meta info.
+ * Obtain the meta value ($) object from either its associated data value object or itself.
  */
-export const m$ = <T>(value: T): Meta$<T> => {
+export const meta$ = <T>(value: T): Meta$<T> => {
   if (typeof value !== "object") {
     throw new Error(`Cannot obtain Meta$ from primitive value: ${value}`)
   }
@@ -395,60 +395,8 @@ export const fieldKeys = <T>(model: MetaModel<T>) =>
  * return a reference to the value object for the parent.
  */
 export const parent = <T extends object, P = any> (v$: Meta$<T, P> | T): P => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
+  const $ = (meta$(v$) || v$) as Meta$<T, P>
   return $?.parent?.value
-}
-
-/**
- * Sanitise the arguments to a MetaFn.
- * Use at the top of any MetaFn like:
- *
- * ```
- * const myMetaFn: MetaFn<any> = (v, $) => {
- *   [v, $] = $args(v, $)
- * }
- * ```
- *
- * (There is a convenience method called `$fn` that applies this transform to any MetaFn.)
- *
- * Normally a MetaFn is called with a data value and its associated meta-information,
- * like `myMetaFn(value, $)`.
- *
- * However, if a MetaFn uses $args as shown above, it guards against cases
- * where it has been called with its data value only,
- * (in which case its meta information will be extracted and assigned to local $,
- * does not work for primitive data types)
- * or by passing the meta-information as the only parameter
- * (in which case its value will be extracted and v and $ set accordingly).
- */
-export const $args = <Type, Parent> (value: Type, $?: Meta$<Type, Parent>, event?: Event): [ Type, Meta$<Type, Parent> ] => {
-  const maybeValue = value as any
-  if (!$ && typeof maybeValue === "object") {
-    if (maybeValue.$) {
-      $ = maybeValue.$
-    } else if (["value", "model", "meta"].every(key => !!maybeValue[key])) {
-      $ = maybeValue
-      value = $.value
-    }
-  }
-  return [value, $]
-}
-
-export const v$ = <T, P = any> (valueOrMeta$: T | Meta$<T, P>) => {
-  if (typeof valueOrMeta$ !== "object") {
-    throw new Error(`v$: Cannot reach meta graph from primitive value: ${valueOrMeta$}`)
-  }
-  const anyVal = valueOrMeta$ as any
-  const $: Meta$<T, P> = anyVal.$ || anyVal
-  return { v: $.value, $ }
-}
-
-/**
- * Convenient method of wrapping a MetaFn and adding the behaviour of $args.
- */
-export const $fn = <Type, Parent, Return> (fn: MetaFn<Type, Parent, Return>): MetaFn<Type, Parent, Return> => (v, $, e) => {
-  [v, $] = $args(v, $)
-  return fn(v, $, e)
 }
 
 /**
@@ -471,7 +419,7 @@ export const fns = <T, P = any, R = any> (
 
 /**
  * Return the {@link Meta$} for the root node in the meta graph containing the
- * node with the given Meta$.
+ * given node.
  *
  * In the case where you know what Meta$ type to expect,
  * you can specify with `root$<MyType>(myNode$)`.
@@ -484,14 +432,14 @@ export const root$ = <T> (v: any, $?: Meta$<any>) => {
   while (result.parent) {
     result = result.parent
   }
-  return result as Meta$<T>
+  return $
 }
 
 /**
  * Return a MetaFn that will run a given MetaFn on all descendant nodes
  * of the provided node.
  */
-export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => $fn((v, $) => {
+export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => (v, $) => {
   const recurse = ($: Meta$<any>, onBase: boolean = true) => {
     if (onBase) fn(v, $)
     const keys = fieldKeys($.model)
@@ -501,4 +449,4 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
   }
 
   recurse($, onBase)
-})
+}

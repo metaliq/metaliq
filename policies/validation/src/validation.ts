@@ -1,4 +1,4 @@
-import { fieldKeys, isMeta, m$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { fieldKeys, isMeta, meta$, Meta$, MetaFn, metaSetups } from "metaliq"
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
@@ -61,7 +61,7 @@ metaSetups.push(<T>($: Meta$<T>) => {
 export function setRequiredLabel (fn: MetaFn<any, any, string>) {
   requiredLabelFn = fn
 }
-let requiredLabelFn: MetaFn<any, any, string> = (v, $ = m$(v)) =>
+let requiredLabelFn: MetaFn<any, any, string> = (v, $ = meta$(v)) =>
   `${labelOrKey($) || "This field"} is required`
 
 /**
@@ -77,7 +77,7 @@ let requiredLabelFn: MetaFn<any, any, string> = (v, $ = m$(v)) =>
  * Note: This is not recursive - use `validateAll` for that purpose.
  */
 export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
+  const $ = (meta$(v$) || v$) as Meta$<T, P>
   $.state.validated = true
   delete $.state.error
   if ($.my("hidden")) return
@@ -104,7 +104,7 @@ export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
  * Can accept either a value (including a primitive) or its meta info $ object.
  */
 export const hasValue = <T, P> (v$: T | Meta$<T, P>) => {
-  const value: any = typeof (v$ ?? false) === "object" ? (<Meta$<T, P>>(m$(v$) || v$)).value : v$
+  const value: any = typeof (v$ ?? false) === "object" ? (<Meta$<T, P>>(meta$(v$) || v$)).value : v$
   return !(
     value === "" ||
     (Array.isArray(value) && !value.length) ||
@@ -120,7 +120,7 @@ export const hasValue = <T, P> (v$: T | Meta$<T, P>) => {
  * from which a cumulative error presentation may be constructed.
  */
 export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
+  const $ = (meta$(v$) || v$) as Meta$<T, P>
   const result: Array<Meta$<any>> = []
   if (!$.my("hidden")) {
     validate($)
@@ -143,7 +143,7 @@ export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
 }
 
 export const unvalidate = <T, P>(v$: T | Meta$<T, P>) => {
-  const $ = (m$(v$) || v$) as Meta$<T, P>
+  const $ = (meta$(v$) || v$) as Meta$<T, P>
   delete $.state.error
   const { meta } = $
   if (Array.isArray(meta)) {
