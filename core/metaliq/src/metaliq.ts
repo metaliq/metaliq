@@ -427,7 +427,6 @@ export const fns = <T, P = any, R = any> (
  * Note that a root Meta$ won't have a parent type.
  */
 export const root$ = <T> (v: any, $?: Meta$<any>) => {
-  [v, $] = $args(v, $)
   let result = $
   while (result.parent) {
     result = result.parent

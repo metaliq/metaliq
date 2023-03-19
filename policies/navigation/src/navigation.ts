@@ -1,6 +1,5 @@
 import { Route, RouteHandler, Router } from "./router"
 import {
-  $fn,
   FieldKey,
   fieldKeys,
   fns,
@@ -8,7 +7,7 @@ import {
   MetaFn,
   metaSetups,
   MetaModel,
-  onDescendants, root$
+  onDescendants, root$, meta$
 } from "metaliq"
 import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
@@ -196,7 +195,8 @@ export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
  *
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
-export const setNavSelection: MetaFn<any> = $fn((v, $) => {
+export const setNavSelection: MetaFn<any> = (v, $) => {
+  $ = $ || meta$(v)
   policy.selectedRoute$ = $
 
   const clearSelection: MetaFn<any> = (v, $) => {
@@ -205,7 +205,7 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
     }
   }
 
-  onDescendants(clearSelection)(root$($))
+  onDescendants(clearSelection)($.fn(root$))
 
   // Set any upper selections
   const setParentSelection: MetaFn<any> = (v, $) => {
@@ -221,7 +221,7 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
   }
 
   setParentSelection(v, $)
-})
+}
 
 /**
  * Returns a MetaFn that closes the menu for the given navigation item
@@ -229,15 +229,16 @@ export const setNavSelection: MetaFn<any> = $fn((v, $) => {
  *
  * Usually not used directly, but referenced via {@link setNavSelectionResponsive}.
  */
-export const closeMenuResponsive = (width: number): MetaFn<any> => $fn((v, $) => {
+export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $) => {
+  $ = $ || meta$(v)
   if (typeof window === "object" && window.outerWidth < width) {
     onDescendants((v, $) => {
       if ($.state.nav?.showMenu) {
         $.state.nav.showMenu = false
       }
-    })(root$($))
+    })($.fn(root$))
   }
-})
+}
 
 /**
  * A responsive version of setNavSelection which also closes the menu
