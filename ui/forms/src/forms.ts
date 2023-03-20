@@ -150,7 +150,7 @@ export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
  * Can pass the meta info $ object (recommended)
  * or its associated data value (not a primitive).
  */
-export const fieldClasses = <T, P> (v$: T | Meta$<T, P>) => {
+export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
   return {
     "mq-mandatory": $.term("mandatory"),

@@ -161,7 +161,7 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
   `
 }
 
-export const selector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P> =>
+export const selector = <T, P = any>(options: SelectorOptions<T, P> = {}): MetaView<T, P> =>
   fieldContainer(innerSelector(options), { type: "select" })
 
 export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
