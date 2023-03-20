@@ -130,7 +130,7 @@ export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v
   }
 
   const onComplete = nowStep$.model.wizardStep?.onComplete
-  if (typeof onComplete === "function") {
+  if (typeof onComplete === "function" && nextIndex > nowIndex) {
     const completionResponse = await onComplete(nowStep$.value, nowStep$)
     if (completionResponse === false) return
   }
