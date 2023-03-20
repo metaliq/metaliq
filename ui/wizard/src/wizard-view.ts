@@ -62,13 +62,19 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
           ${labels.backwards === false ? "" : html`
             <button class="mq-button"
               @click=${wizard$.up(changeStep({ direction: "backwards" }))}>
-              ${labels.backwards || "Previous"}
+              ${labels.backwards && typeof labels.backwards === "string"
+                ? labels.backwards
+                : "Previous"
+              }
             </button>
           `}
           ${labels.forwards === false ? "" : html`
             <button class="mq-button mq-primary-button"
               @click=${wizard$.up(changeStep({ direction: "forwards" }))}>
-              ${labels.forwards || "Next"}
+              ${labels.forwards && typeof labels.forwards === "string"
+                ? labels.forwards
+                : "Next"
+              }
             </button>
           `}
         </div>
