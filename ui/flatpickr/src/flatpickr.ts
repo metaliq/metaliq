@@ -28,6 +28,12 @@ export type DatePickerOptions = {
 
 export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
   const disabled = $.fn(isDisabled)
+  let fl: Instance = null
+
+  const clearDate = ($: Meta$<string>) => {
+    $.value = ""
+    fl.clear()
+  }
 
   return html`
     <label class="mq-field mq-date-field ${classMap({
@@ -41,13 +47,6 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
       </span>
       ${guard([$, disabled], () => {
         const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
-
-        let fl: Instance = null
-
-        const clearDate = ($: Meta$<string>) => {
-          $.value = ""
-          fl.clear()
-        }
 
         setTimeout(
           () => {
@@ -75,11 +74,11 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
             @focus=${up(() => { $.state.active = true })}
             @blur=${up(() => { $.state.active = false })}
           />
-          ${hasValue($) ? html`
-            <button class="mq-field-clear" @click=${up(clearDate, $)} tabindex="-1"></button>
-          ` : ""}
         `
       })}
+      ${hasValue($) ? html`
+        <button class="mq-field-clear" @click=${up(clearDate, $)} tabindex="-1"></button>
+      ` : ""}
       ${fieldError(value, $)}
     </label>
   `
