@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, Meta$, MetaFn } from "metaliq"
+import { FieldKey, isMeta, isMetaArray, Meta$, MetaFn } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationTerms } from "@metaliq/application"
@@ -104,10 +104,21 @@ export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>
 
-  if (typeof ($.value ?? false) === "object") {
-    // Establish correct value/meta link prior to viewing
-    Object.assign($.value, { $ })
+  const resetValue$ = <T>($: Meta$<T>) => {
+    if (typeof ($.value ?? false) === "object") {
+      Object.assign($.value, { $ })
+      if (isMeta<T>($.meta)) {
+        for (const key of $.childKeys()) {
+          resetValue$($.meta[key].$ as Meta$<any>)
+        }
+      } else if (isMetaArray($.meta)) {
+        for (const item of $.meta) {
+          resetValue$(item.$)
+        }
+      }
+    }
   }
+  resetValue$(this)
 
   const wrapper = typeof options?.wrapper === "boolean"
     ? options?.wrapper ? viewWrapper : undefined
