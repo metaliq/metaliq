@@ -9,7 +9,6 @@ import {
   MetaModel,
   onDescendants, root$, meta$
 } from "metaliq"
-import { MaybeReturn } from "@metaliq/util"
 import { up } from "@metaliq/up"
 
 export * from "./router"
@@ -28,7 +27,7 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    * Alternative behaviours such as step-by-step wizard navigation
    * can be provided by other policies.
    */
-  onNavigate?: MetaFn<any, any, MaybeReturn<boolean>>
+  onNavigate?: MetaFn<any>
 
   /**
    * Define a route term for each "leaf" node in the navigation structure,
@@ -183,7 +182,7 @@ export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
  * Get the Meta object for the current selection in the given navigation level.
  */
 export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
-  const key: FieldKey<T> = navMeta$.state.nav?.selected
+  const key: FieldKey<T> = navMeta$.state.nav?.selected || navMeta$.childKeys()[0]
   return navMeta$.child$(key)
 }
 
