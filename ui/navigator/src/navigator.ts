@@ -19,7 +19,7 @@ export const navigator = (options: NavigationOptions): MetaView<any> => (v, $) =
     <div class="header-content">
       <img src=${options.logoUrl} alt="Logo" @click=${up(options.logoUpdate, v)}>
       <i class="bi bi-list" @click=${up(toggleMenu, $)}></i>
-      <nav class=${classMap({ "mq-show": $.state.nav.showMenu })}>
+      <nav class=${classMap({ "mq-show": $.state.nav?.showMenu })}>
         ${menuItems($)}
       </nav>
     </div>
@@ -29,8 +29,8 @@ export const navigator = (options: NavigationOptions): MetaView<any> => (v, $) =
 const menuItems = ($: Meta$<any>, level: number = 0) => {
   const keys = fieldKeys($?.model)
     .filter(key => {
-      const { term } = $.child$(key)
-      return term("route") && !term("hidden") && (term("label") || term("symbol"))
+      const item = $.child$(key)
+      return item.term("route") && !item.term("hidden") && (item.term("label") || item.term("symbol"))
     })
   return keys?.length ? html`
     <ul class=${`mq-level-${level}`}>
