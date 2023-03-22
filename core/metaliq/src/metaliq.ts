@@ -435,7 +435,7 @@ export const root$ = (v: any, $?: Meta$<any>) => {
   while (result.parent$) {
     result = result.parent$
   }
-  return $
+  return result
 }
 
 /**
