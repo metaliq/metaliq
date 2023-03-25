@@ -1,0 +1,86 @@
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.mq-modal-mask {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(125, 125, 125, 0.5);
+	display: grid;
+	justify-items: center;
+	align-items: center;
+}
+
+.mq-modal {
+	background: white;
+	min-width: 400px;
+	max-width: 450px;
+	min-height: 200px;
+	border-radius: 4px;
+	border: solid 1px #aaa;
+	box-shadow: rgba(125 125 125 / 0.2) 5px 5px 5px 5px;
+	display: grid;
+	grid-template-rows: 40px 1fr 70px;
+	overflow: hidden;
+}
+
+@media (max-width: 600px) {
+	.mq-modal-box	{
+		min-width: 300px;
+	}
+}
+
+.mq-modal-header {
+	padding: 7px 10px 5px;
+	font-size: 19px;
+	background: blue;
+	width: 100%;
+	color: white;
+	text-align: center;
+}
+
+.mq-modal-header.remove {
+	background: rgb(220 38 38);
+}
+
+.mq-modal-body {
+	display: grid;
+	justify-content: center;
+	align-content: center;
+	padding: 10px;
+	word-break: break-word;
+	text-align: center;
+}
+
+.mq-modal-progress {
+	text-align: center;
+}
+
+.mq-modal-icon {
+	text-align: center;
+}
+
+.mq-modal-icon-container {
+	text-align: center;
+}
+
+.mq-modal-icon {
+	animation: spin 1s linear infinite;
+}
+
+.mq-modal-progress-indicator {
+	font-size: 30px;
+	color: #444;
+}
+
+.mq-modal-buttons {
+	padding: 10px 10px 20px;
+	text-align: center;
+}

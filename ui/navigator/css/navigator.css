@@ -1,0 +1,7 @@
+:root {
+	--mq-theme-color: #b2dde9;
+	--mq-nav-color: #e37a06;
+	--mq-nav-inactive-color: #bfbfbf;
+}
+
+/* TODO: Basic navigator style, with mq- classes */

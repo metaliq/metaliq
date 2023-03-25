@@ -20,7 +20,7 @@ export type ModalInfo = {
   buttons?: ModalButton[]
 
   /**
-   * Modal is a progress indicato rather than an interactive prompt.
+   * Modal is a progress indicator rather than an interactive prompt.
    */
   isProgress?: boolean
 

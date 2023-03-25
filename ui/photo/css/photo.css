@@ -1,0 +1,26 @@
+.mq-field.mq-photo-field {
+	border: var(--mq-input-border);
+	border-radius: 2px;
+	padding: 10px;
+	margin: 10px 0;
+	color: #999;
+}
+
+.mq-field:not(.mq-checkbox-field).mq-photo-field .mq-input-label {
+	top: 10px;
+	left: 30px;
+}
+
+.mq-field.mq-photo-field input {
+	display: none;
+}
+
+.mq-photo-preview {
+	display: grid;
+	justify-content: center;
+	grid-template-rows: auto;
+}
+
+.mq-photo-preview img {
+	max-height: 300px;
+}

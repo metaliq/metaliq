@@ -1,0 +1,5 @@
+@import "../lib/flatpickr.css";
+
+.mq-date-field .mq-field-clear {
+	top: 14px;
+}

@@ -1,0 +1,258 @@
+:root {
+	--mq-error-color: #ef4444;
+	--mq-error-bg-color: #fee2e2;
+	--mq-success-color: #2eb82e;
+	--mq-input-border: solid 1px #707070;
+	--mq-checkbox-size: 20px;
+	--mq-warning-color: #ff9b06;
+}
+
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="button"],
+input[type="submit"],
+input[type="number"],
+input[type="checkbox"]:disabled {
+	-webkit-appearance: none;
+	border-radius: 0;
+	opacity: 1;
+}
+
+.mq-form {
+	padding: 0 20px;
+	margin: 10px auto;
+}
+
+.thin-form {
+	max-width: 668px;
+}
+
+.medium-form {
+	max-width: 850px;
+}
+
+.mq-field {
+	display: block;
+	margin-top: 10px;
+	position: relative;
+}
+
+.mq-field:not(.mq-checkbox-field) .mq-input-label {
+	color: #999;
+	position: absolute;
+	top: 12px;
+	left: 16px;
+	transition: 0.2s ease-out;
+	transition-property: top, left, font-size;
+	z-index: 3;
+}
+
+.mq-field.mq-mandatory:not(.mq-populated) .mq-input-label::after {
+	content: "*";
+	color: #d91e1e;
+	padding-left: 4px;
+	vertical-align: middle;
+}
+
+.mq-field:not(.mq-checkbox-field).mq-populated .mq-input-label,
+.mq-field:not(.mq-checkbox-field).mq-active .mq-input-label {
+	top: 5px;
+	font-size: 12px;
+}
+
+.mq-field:not(.mq-checkbox-field) .mq-input {
+	border: var(--mq-input-border);
+	border-radius: 2px;
+	padding: 15px 15px 0;
+	height: 50px;
+	font-size: 16px;
+	width: 100%;
+}
+
+.mq-field.mq-text-area-field {
+	border: var(--mq-input-border);
+	border-radius: 2px;
+	padding: 20px 5px 5px 15px;
+}
+
+.mq-field.mq-text-area-field .mq-input {
+	border: none;
+	padding: 0;
+	height: auto;
+	outline: none;
+	box-shadow: none;
+}
+
+.mq-field:not(.mq-checkbox-field).mq-no-label .mq-input {
+	padding: 15px;
+}
+
+.mq-field-clear {
+	background-position: center;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjEiIHZpZXdCb3g9IjAgMCAyMSAyMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSIjMDAwIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0yLjU5Mi4wNDRsMTguMzY0IDE4LjM2NC0yLjU0OCAyLjU0OEwuMDQ0IDIuNTkyeiIvPjxwYXRoIGQ9Ik0wIDE4LjM2NEwxOC4zNjQgMGwyLjU0OCAyLjU0OEwyLjU0OCAyMC45MTJ6Ii8+PC9nPjwvc3ZnPg==);
+	width: 20px;
+	height: 20px;
+	background-size: 8px;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	opacity: 0.25;
+}
+
+.mq-input:focus {
+	outline-color: #5b83bf;
+}
+
+.mq-input.mq-error-field:focus {
+	outline-color: #d73f3f;
+}
+
+.mq-field .mq-input:disabled {
+	background: #f5f5f5;
+	border-color: #b3b3b3;
+	color: #474747;
+}
+
+.mq-checkbox-field {
+	display: grid;
+	grid-template:
+        "box label" auto
+        "error error" auto / 40px 1fr;
+	align-items: center;
+}
+
+.mq-checkbox-field .mq-input-label {
+	grid-area: label;
+}
+
+.mq-checkbox-field .mq-field-error {
+	grid-area: error;
+}
+
+.mq-checkbox-field .mq-input {
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+
+	color: currentColor;
+	width: var(--mq-checkbox-size);
+	height: var(--mq-checkbox-size);
+	border: var(--mq-input-border);
+	border-radius: 1px;
+	margin: 20px 10px 20px 5px;
+}
+
+.mq-checkbox-field .mq-input::before {
+	display: grid;
+	content: "";
+	width: 100%;
+	height: 100%;
+	transform: scale(0);
+	transition: 120ms transform ease-in-out;
+	box-shadow: inset 1em 1em #444;
+	clip-path: polygon(20% 44%, 10% 55%, 40% 85%, 90% 20%, 80% 10%, 39% 62%);
+}
+
+.mq-checkbox-field .mq-input:disabled::before {
+	box-shadow: inset 1em 1em #888;
+}
+
+input[type="checkbox"]:checked::before {
+	transform: scale(1);
+}
+
+.mq-error-field {
+	background: var(--mq-error-bg-color);
+	border: solid 1px var(--mq-error-color);
+}
+
+/* ---- ERRORS ---- */
+
+.mq-error-msg {
+	display: block;
+	color: var(--mq-error-color);
+}
+
+.mq-error-msg.mq-field-error {
+	padding: 10px 0 10px 10px;
+	font-size: 14px;
+}
+
+.mq-checkbox-input ~ .mq-error-msg {
+	padding-top: 0;
+}
+
+.mq-error-msg.mq-page-error {
+	background-color: #f8d7da;
+	padding: 15px;
+	margin: 20px 10px 0;
+	border: 1px solid #f5c6cb;
+	border-radius: 4px;
+}
+
+/* ---- BUTTONS ---- */
+
+.mq-button {
+	min-width: 150px;
+	height: 40px;
+	background: none;
+	border-radius: 6px;
+	cursor: pointer;
+	color: var(--mq-nav-color);
+	border: 2px solid var(--mq-nav-color);
+}
+
+@media (max-width: 600px) {
+	.mq-button {
+		min-width: 120px;
+	}
+}
+
+.mq-primary-button {
+	color: white;
+	background: var(--mq-nav-color);
+}
+
+.mq-success-button {
+	color: white;
+	background: var(--mq-success-color);
+	border-color: var(--mq-success-color);
+}
+
+.mq-warning-button {
+	color: white;
+	background: var(--mq-warning-color);
+	border-color: var(--mq-warning-color);
+}
+.mq-warning-button-bg {
+	color: white;
+	background-color: var(--mq-warning-color);
+	border-color: var(--mq-warning-color);
+}
+
+.mq-danger-button {
+	color: white;
+	background-color: var(--mq-error-color);
+	border-color: var(--mq-error-color);
+}
+
+.mq-link {
+	color: blue;
+	cursor: pointer;
+}
+
+.mq-field.stack-close {
+	padding: 0;
+}
+
+.mq-checkbox-field.stack-close .mq-input {
+	margin: 10px 10px 10px 5px;
+}
+
+.mq-field.mq-select-field .mq-input {
+	opacity: 0;
+}
+

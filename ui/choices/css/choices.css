@@ -1,0 +1,31 @@
+.mq-input, .choices {
+	display: block;
+}
+
+.mq-field .choices {
+	margin-bottom: 0;
+}
+
+.mq-field .choices__list--single .choices__placeholder {
+	opacity: 0;
+}
+
+.mq-field .choices[data-type*=select-one] .choices__inner {
+	min-height: 50px;
+	background-color: white;
+	border: var(--mq-input-border);
+	padding: 16px 10px 0 11px;
+}
+
+.mq-field .choices[data-type*=select-multiple] .choices__inner {
+	padding: 10px;
+}
+
+.mq-field .choices__list--multiple {
+	position: relative;
+	top: 10px;
+}
+
+.mq-field .choices__list--dropdown, .choices__list[aria-expanded] {
+	z-index: 6;
+}
