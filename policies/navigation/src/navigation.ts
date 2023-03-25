@@ -194,8 +194,7 @@ export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
  *
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
-export const setNavSelection: MetaFn<any> = (v, $) => {
-  $ = $ || meta$(v)
+export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
   policy.selectedRoute$ = $
 
   const clearSelection: MetaFn<any> = (v, $) => {
@@ -212,9 +211,6 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
       parent$.state.nav.selected = $.key
-      if (parent$.state.nav.showMenu) {
-        // parent$.state.nav.showMenu = false
-      }
       setParentSelection(parent$.value, parent$)
     }
   }
@@ -228,8 +224,7 @@ export const setNavSelection: MetaFn<any> = (v, $) => {
  *
  * Usually not used directly, but referenced via {@link setNavSelectionResponsive}.
  */
-export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $) => {
-  $ = $ || meta$(v)
+export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $ = meta$(v)) => {
   if (typeof window === "object" && window.outerWidth < width) {
     $.fn(root$).fn(onDescendants((v, $) => {
       if ($.state.nav?.showMenu) {
@@ -252,7 +247,7 @@ export const setNavSelectionResponsive = (width: number) =>
  * Go to the given nav node's route if it has one,
  * otherwise find and go to its first child route.
  */
-export const goNavRoute = (item$: Meta$<any>) => {
+export const goNavRoute: MetaFn<any> = (v, item$) => {
   while (item$ && !item$.model.route) {
     const firstChildKey = fieldKeys(item$.model)[0]
     item$ = item$.child$(firstChildKey)

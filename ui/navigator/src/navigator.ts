@@ -1,14 +1,13 @@
-import { fieldKeys, Meta$ } from "metaliq"
+import { fieldKeys, Meta$, MetaFn } from "metaliq"
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
 
 import { getNavSelection, goNavRoute, toggleMenu } from "@metaliq/navigation"
 import { MetaView, ViewResult } from "@metaliq/presentation"
-import { up, Update } from "@metaliq/up"
 
 export type NavigationOptions = {
   logoUrl?: string
-  logoUpdate?: Update<any>
+  logoUpdate?: MetaFn<any>
 }
 
 export const navigator = (options: NavigationOptions): MetaView<any> => (v, $) => html`
@@ -17,8 +16,8 @@ export const navigator = (options: NavigationOptions): MetaView<any> => (v, $) =
   </div>
   <header>
     <div class="header-content">
-      <img src=${options.logoUrl} alt="Logo" @click=${up(options.logoUpdate, v)}>
-      <i class="bi bi-list" @click=${up(toggleMenu, $)}></i>
+      <img src=${options.logoUrl} alt="Logo" @click=${$.up(options.logoUpdate)}>
+      <i class="bi bi-list" @click=${$.up(toggleMenu)}></i>
       <nav class=${classMap({ "mq-show": $.state.nav?.showMenu })}>
         ${menuItems($)}
       </nav>
@@ -43,7 +42,7 @@ const menuItem = (navItem$: Meta$<any>, selected$: Meta$<any>, level: number = 1
   const text = navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
-    <li @click=${up(goNavRoute, navItem$)} class=${classMap({
+    <li @click=${navItem$.up(goNavRoute)} class=${classMap({
       "mq-selected": navItem$ === selected$
     })}>
       ${icon ? html`<i class=${icon}>` : ""}
