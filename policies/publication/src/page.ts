@@ -36,7 +36,7 @@ export const page = (pageInfo: PageInfo) => dedent`
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0">
       <title>${pageInfo.title}</title>
-      ${pageInfo.preloads.map(p => `<link rel="preload" href=${p.href} ${ifDefinedAttr(p.as, "as")}>`).join("\n        ")}
+      ${pageInfo.preloads?.map(p => `<link rel="preload" href=${p.href} ${ifDefinedAttr(p.as, "as")}>`).join("\n        ") || ""}
       ${pageInfo.favIcon ? `<link rel="icon" href="${pageInfo.favIcon}">` : ""}
       ${pageInfo.styles.map(style => `<link href="${style}" rel="stylesheet">`).join("\n        ")}
       ${pageInfo.scripts?.map(pageScript).join("\n        ")}
