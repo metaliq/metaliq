@@ -20,8 +20,8 @@ query fetchPackage {
   }
 }
 
-mutation updatePackage {
-  updatePackage {
+mutation updatePackage ($pkg: PackageIn!) {
+  updatePackage (pkg: $pkg) {
     name
     description
     version

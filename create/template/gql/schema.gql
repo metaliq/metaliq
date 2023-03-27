@@ -35,5 +35,5 @@ type Query {
 }
 
 type Mutation {
-  updatePackage(package: PackageIn): Package
+  updatePackage(pkg: PackageIn!): Package
 }
