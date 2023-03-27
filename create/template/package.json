@@ -8,7 +8,7 @@
   "scripts": {
     "codegen": "graphql-codegen",
     "start-template": "metaliq run",
-    "start-template-api": "metaliq run"
+    "start-template-api": "metaliq run -f api/api-model apiModel"
   },
   "author": "",
   "license": "",

@@ -1,18 +1,11 @@
 import { MetaModel } from "metaliq"
 import { metaForm } from "@metaliq/forms"
+import { Package } from "./gen/graphql-types"
 
 export { labelPath } from "@metaliq/terminology"
 export { validate } from "@metaliq/validation"
 
 export const templateUrl = () => import.meta.url
-
-export type Package = {
-  name: string
-  description: string
-  version: string
-  author: string
-  license: string
-}
 
 export const appModel: MetaModel<Package> = {
   label: "New MetaliQ Solution",
