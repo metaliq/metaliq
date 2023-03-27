@@ -6,7 +6,9 @@
   "types": "bin/models.d.ts",
   "description": "",
   "scripts": {
-    "start": "metaliq run"
+    "codegen": "graphql-codegen",
+    "start-template": "metaliq run",
+    "start-template-api": "metaliq run"
   },
   "author": "",
   "license": "",
@@ -14,13 +16,14 @@
     "@metaliq/application": "workspace:*",
     "@metaliq/communication": "workspace:*",
     "@metaliq/forms": "workspace:*",
+    "@metaliq/graphql-server": "workspace:*",
     "@metaliq/presentation": "workspace:*",
     "@metaliq/publication": "workspace:*",
     "@metaliq/terminology": "workspace:*",
     "@metaliq/up": "workspace:*",
     "@metaliq/validation": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
-    "graphqlex": "0.8.0",
+    "graphqlex": "0.13.0",
     "lit": "2.6.1",
     "metaliq": "workspace:*"
   },

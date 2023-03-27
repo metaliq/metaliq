@@ -2,7 +2,6 @@
 **/.idea/
 **/node_modules/
 **/tsconfig.tsbuildinfo
-**/gen/
+/src/gen/
 /bin/
 /prod/
-pnpm-lock.yaml

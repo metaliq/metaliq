@@ -1,0 +1,43 @@
+query fetchPackage {
+  fetchPackage {
+    name
+    description
+    version
+    author
+    license
+    dependencies {
+      name
+      version
+    }
+    devDependencies{
+      name
+      version
+    }
+    peerDependencies{
+      name
+      version
+    }
+  }
+}
+
+mutation updatePackage {
+  updatePackage {
+    name
+    description
+    version
+    author
+    license
+    dependencies {
+      name
+      version
+    }
+    devDependencies{
+      name
+      version
+    }
+    peerDependencies{
+      name
+      version
+    }
+  }
+}

@@ -1,0 +1,39 @@
+type Package {
+  name: String
+  description: String
+  version: String
+  author: String
+  license: String
+  dependencies: [Dependency]
+  devDependencies: [Dependency]
+  peerDependencies: [Dependency]
+}
+
+input PackageIn {
+  name: String
+  description: String
+  version: String
+  author: String
+  license: String
+  dependencies: [DependencyIn]
+  devDependencies: [DependencyIn]
+  peerDependencies: [DependencyIn]
+}
+
+type Dependency {
+  name: String
+  version: String
+}
+
+input DependencyIn {
+  name: String
+  version: String
+}
+
+type Query {
+  fetchPackage: Package
+}
+
+type Mutation {
+  updatePackage(package: PackageIn): Package
+}
