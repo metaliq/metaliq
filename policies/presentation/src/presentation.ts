@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, isMeta, isMetaArray, Meta$, MetaFn } from "metaliq"
+import { FieldKey, fieldKeys, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationTerms } from "@metaliq/application"
@@ -57,9 +57,17 @@ export interface Presentation$<T, P = any> {
   view: (view?: MetaViewTerm<T, P>, options?: ViewOptions<T, P>) => ViewResult
 
   /**
-   * Present a view for the given child field
+   * Present a view for the given child field, with optionally specified view
+   * (otherwise the field model view is used) and options.
    */
-  field: <K extends FieldKey<T>> (key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions<T, P>) => ViewResult
+  field: <K extends FieldKey<T>> (
+    key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions<T[K], T>
+  ) => ViewResult
+
+  /**
+   * Present views for the child fields, with optional inclusions or exclusions.
+   */
+  fields: <T> (options?: FieldsOptions<T>) => ViewResult
 }
 
 declare module "metaliq" {
@@ -101,6 +109,29 @@ export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
  */
 export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
 
+/**
+ * The options type for the `$.view()` function.
+ */
+export type ViewOptions<T, P = any> = {
+  /**
+   * Override or disable (by passing `false`) any default wrapper provided to {@link setViewWrapper}.
+   */
+  wrapper?: ViewWrapper<T, P> | boolean
+
+  /**
+   * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
+   */
+  resolver?: ViewResolver | boolean
+}
+
+/**
+ * Options for the `$.fields` aspect, specifying which fields should be included or excluded.
+ */
+export type FieldsOptions<T> = ViewOptions<T> & {
+  include?: Array<FieldKey<T>>
+  exclude?: Array<FieldKey<T>>
+}
+
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>
 
@@ -139,11 +170,67 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   }
 }
 
-Meta$.prototype.field = function (key, view?, options?) {
-  const $ = this as Meta$<any>
+Meta$.prototype.field = function <T, K extends FieldKey<T>> (
+  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
+) {
+  return field(key, view, options)(this.value, this)
+}
+
+/**
+ * Obtain a MetaView that renders the given field,
+ * optionally with given field view and options.
+ *
+ * This functionality is wrapped by the Meta$ function {@link Presentation$.field}.
+ */
+export const field = <T, K extends FieldKey<T>> (
+  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
+): MetaView<T> => (v, $)  => {
   const field$ = $.child$(key)
   return field$.view(view, options)
 }
+
+
+Meta$.prototype.fields = function (options?) {
+  return fields(options)(this.value, this)
+}
+
+/**
+ * Obtain a MetaView that renders child fields,
+ * with optional inclusions and exclusions.
+ *
+ * This functionality is wrapped by the Meta$ function {@link Presentation$.fields}.
+ */
+export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = meta$(v)) => {
+  return fieldKeys($.model)
+    .filter(key =>
+      (!options?.include || options.include.includes(key)) &&
+      (!options?.exclude?.includes(key))
+    )
+    .map(key => $.field(key))
+}
+
+/**
+ * Repeat each item for an array data / meta value with either
+ * a specified view or the item's view from the model.
+ */
+export const repeat = <T, MI extends (
+  T extends Array<infer I> ? MetaView<I> : never
+  )> (itemView?: MI): MetaView<T> => (v, $) => {
+  if (isMetaArray($.meta)) {
+    return $.meta.map(({ $ }) => $.view(itemView))
+  } else return ""
+}
+
+/**
+ * Conditional display field.
+ * If the condition is met, the `then` view is shown.
+ * Optionally an `else` view can be specified to show if condition not met.
+ */
+export const ifThen = <T, P = any> (
+  condition: MetaFn<T, P, boolean>,
+  thenView: MetaView<T, P>,
+  elseView?: MetaView<T, P>
+): MetaView<T, P> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
 
 /**
  * The `renderPage` meta function can be provided to the `review` term from the app policy
@@ -179,18 +266,3 @@ export const setViewResolver = (resolver: ViewResolver) => {
   viewResolver = resolver
 }
 let viewResolver: ViewResolver = null
-
-/**
- * The options type for the `$.view()` aspect.
- */
-export type ViewOptions<T, P = any> = {
-  /**
-   * Override or disable (by passing `false`) any default wrapper provided to {@link setViewWrapper}.
-   */
-  wrapper?: ViewWrapper<T, P> | boolean
-
-  /**
-   * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
-   */
-  resolver?: ViewResolver | boolean
-}

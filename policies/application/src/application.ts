@@ -45,7 +45,30 @@ export interface ApplicationState<T> {
 }
 
 export interface Application$<T, P = any> {
+  /**
+   * Create an event handler that calls the given meta function
+   * for this meta value and its associated data.
+   *
+   * The resulting event handling is wrapped in an Update and performed with `up`
+   * so that it is "wrapped" into the application cycle.
+   */
   up?: (metaFn: MetaFn<T, P>, options?: UpOptions) => (message?: any) => any
+
+  /**
+   * Create an event handler that performs the given operation
+   * (typically an integration query or mutation)
+   * directly, without needing to wrap in a MetaFn or Update.
+   *
+   * The operation will be passed either:
+   * (a) any provided parameters object (i.e. query params) or
+   * (b) the associated data value itself (i.e. a mutation)
+   * and in either case will apply the returned value back into
+   * the associated data value.
+   *
+   * The resulting event handling is wrapped in an Update and performed with `up`
+   * so that it is "wrapped" into the application cycle.
+   */
+  op?: (operation: (params?: any) => T, options?: UpOptions) => (message?: any) => any
 }
 
 declare module "metaliq" {
@@ -65,6 +88,16 @@ export type Init<T> = T | InitFunction<T>
 
 Meta$.prototype.up = function (metaFn, options) {
   return up(($, event) => metaFn($.value, $, event), this, options)
+}
+
+Meta$.prototype.op = function (operation, parameters) {
+  return up(async ($, event) => {
+    parameters = typeof parameters === "undefined"
+      ? $.value
+      : parameters
+    const response = await operation(parameters)
+    $.value = response
+  }, this)
 }
 
 /**

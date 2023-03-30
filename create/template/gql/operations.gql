@@ -1,43 +1,41 @@
+fragment packageContent on Package {
+  name
+  description
+  version
+  author
+  license
+  dependencies {
+    name
+    version
+  }
+  devDependencies{
+    name
+    version
+  }
+  peerDependencies{
+    name
+    version
+  }
+}
+
+fragment unusedFragment on Package {
+  name
+}
+
 query fetchPackage {
   fetchPackage {
+    ...packageContent
+  }
+}
+
+query fetchPackageName {
+  fetchPackage {
     name
-    description
-    version
-    author
-    license
-    dependencies {
-      name
-      version
-    }
-    devDependencies{
-      name
-      version
-    }
-    peerDependencies{
-      name
-      version
-    }
   }
 }
 
 mutation updatePackage ($pkg: PackageIn!) {
   updatePackage (pkg: $pkg) {
-    name
-    description
-    version
-    author
-    license
-    dependencies {
-      name
-      version
-    }
-    devDependencies{
-      name
-      version
-    }
-    peerDependencies{
-      name
-      version
-    }
+    ...packageContent
   }
 }

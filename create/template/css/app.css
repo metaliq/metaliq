@@ -1,0 +1,9 @@
+* {
+	box-sizing: border-box;
+	font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 14px;
+}
+
+.deps-grid {
+	grid-template-columns: 50% 50%;
+}

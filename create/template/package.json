@@ -1,14 +1,19 @@
 {
   "name": "@metaliq/template",
   "version": "1.0.0-beta.60",
+  "description": "Update these values to suit your new solution",
   "type": "module",
   "main": "bin/models.js",
   "types": "bin/models.d.ts",
-  "description": "",
   "scripts": {
+    "build": "codegen && npm run build-api && npm run build-app",
+    "build-api": "metaliq build -f api/api-model apiModel",
+    "build-app": "metaliq build",
     "codegen": "graphql-codegen",
-    "start-template": "metaliq run",
-    "start-template-api": "metaliq run -f api/api-model apiModel"
+    "codegen-watch": "graphql-codegen --watch",
+    "start": "npm run codegen-watch & npm run start-api & npm run start-app",
+    "start-api": "metaliq run -f api/api-model apiModel",
+    "start-app": "metaliq run"
   },
   "author": "",
   "license": "",
@@ -28,12 +33,12 @@
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "@metaliq/cli": "workspace:*",
     "@graphql-codegen/add": "3.2.1",
     "@graphql-codegen/cli": "2.13.7",
     "@graphql-codegen/typescript": "2.8.0",
     "@graphql-codegen/typescript-operations": "2.5.5",
     "@graphql-codegen/typescript-resolvers": "2.7.5",
+    "@metaliq/cli": "workspace:*",
     "@types/node": "18.14.1",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
@@ -42,7 +47,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
-    "graphql": "15.8.0",
+    "graphql": "^16.6.0",
     "graphqlex-codegen": "0.8.0",
     "typescript": "4.7.3"
   }

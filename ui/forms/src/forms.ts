@@ -2,20 +2,18 @@ import { html } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { FieldKey, fieldKeys, isMeta, meta$, Meta$, MetaFn } from "metaliq"
+import { isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { MetaView, setViewResolver, ViewResult } from "@metaliq/presentation"
+import { fields, FieldsOptions, MetaView, repeat, setViewResolver, ViewResult } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 
 export { expander } from "@metaliq/elements"
 export { AnimatedHideShow } from "@metaliq/elements"
 
-export type MetaFormOptions<T> = {
+export type MetaFormOptions<T> = FieldsOptions<T> & {
   baseClass?: string // Base class defaults to mq-form
   classes?: string
-  include?: Array<FieldKey<T>>
-  exclude?: Array<FieldKey<T>>
 }
 
 /**
@@ -26,21 +24,10 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
   if (isMeta(meta)) {
     return html`
       <div class="${options.baseClass ?? "mq-form"} ${options.classes || ""}" >
-        ${fieldKeys($.model)
-          .filter(key =>
-            (!options.include || options.include.includes(key)) &&
-            (!options.exclude?.includes(key))
-          )
-          .map(key => $.field(key))}
+        ${fields(options)(v, $)}
       </div>
     `
   }
-}
-
-export const repeatView: MetaView<any> = (v, $) => {
-  if (Array.isArray($.meta)) {
-    return $.meta.map(({ $ }) => $.view())
-  } else return ""
 }
 
 /**
@@ -49,9 +36,9 @@ export const repeatView: MetaView<any> = (v, $) => {
 const defaultView = <T>(v: T, $: Meta$<T>): MetaView<T> => {
   if (!$) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
-  } else if (Array.isArray($.meta)) {
+  } else if (isMetaArray($.meta)) {
     // T is an array type
-    return repeatView
+    return repeat()
   } else if ($.value && typeof $.value === "object") {
     return metaForm()
   } else if (typeof v === "boolean") {
@@ -67,17 +54,6 @@ setViewResolver(defaultView)
  * Return a view that consists of the given text or HTML template.
  */
 export const content = (textOrHtml: ViewResult): MetaView<any> => meta => textOrHtml
-
-/**
- * Conditional display field.
- * If the condition is met, the `then` view is shown.
- * Optionally an `else` view can be specified to show if condition not met.
- */
-export const ifThen = <T, P = any> (
-  condition: MetaFn<T, P, boolean>,
-  thenView: MetaView<T, P>,
-  elseView?: MetaView<T, P>
-): MetaView<T, P> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
 
 /**
  * General options for all MetaliQ form fields.
