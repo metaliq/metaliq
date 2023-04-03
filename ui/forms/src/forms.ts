@@ -5,7 +5,7 @@ import { up } from "@metaliq/up"
 import { isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { fields, FieldsOptions, MetaView, repeat, setViewResolver, ViewResult } from "@metaliq/presentation"
+import { fields, FieldsOptions, MetaView, repeat, setViewResolver } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 
 export { expander } from "@metaliq/elements"
@@ -49,11 +49,6 @@ const defaultView = <T>(v: T, $: Meta$<T>): MetaView<T> => {
 }
 
 setViewResolver(defaultView)
-
-/**
- * Return a view that consists of the given text or HTML template.
- */
-export const content = (textOrHtml: ViewResult): MetaView<any> => meta => textOrHtml
 
 /**
  * General options for all MetaliQ form fields.

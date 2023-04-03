@@ -63,9 +63,5 @@ export const modalModel: MetaModel<ModalInfo> = {
   channels: [
     showModalChannel,
     closeModalChannel
-  ],
-  init: {
-    title: "",
-    body: ""
-  }
+  ]
 }

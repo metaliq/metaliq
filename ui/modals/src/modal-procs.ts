@@ -1,6 +1,6 @@
 import { call } from "@metaliq/communication"
 import { ModalButton, ModalInfo } from "./modal-model"
-import { meta$, reset } from "metaliq"
+import { MetaFn, reset } from "metaliq"
 import { ViewResult } from "@metaliq/presentation"
 
 export const modalDefaults = {
@@ -8,12 +8,12 @@ export const modalDefaults = {
   progressIndicator: "bi-arrow-repeat mq-modal-progress-indicator"
 }
 
-export const showModalChannel = (modalInfo: ModalInfo) => (newModalInfo: ModalInfo) => {
-  reset(meta$(modalInfo), newModalInfo)
+export const showModalChannel: MetaFn<ModalInfo> = (modalInfo, modalInfo$) => (newModalInfo: ModalInfo) => {
+  reset(modalInfo$, newModalInfo)
 }
 
-export const closeModalChannel = (modalInfo: ModalInfo) => async () => {
-  reset(meta$(modalInfo), {
+export const closeModalChannel: MetaFn<ModalInfo> = (modalInfo, modalInfo$) => async () => {
+  reset(modalInfo$, {
     body: "",
     title: ""
   })

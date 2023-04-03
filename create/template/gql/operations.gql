@@ -39,3 +39,8 @@ mutation updatePackage ($pkg: PackageIn!) {
     ...packageContent
   }
 }
+
+mutation updatePackageNoResult ($pkg: PackageIn!) {
+  updatePackageNoReturn (pkg: $pkg)
+}
+

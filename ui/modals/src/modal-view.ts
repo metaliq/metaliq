@@ -2,8 +2,7 @@ import { html } from "lit"
 import { up } from "@metaliq/up"
 import { ModalInfo } from "./modal-model"
 
-export const modal = (info: ModalInfo
-) => info.body ? html`
+export const modal = (info: ModalInfo) => info?.body ? html`
   <div class="mq-modal-mask">
     <div class="mq-modal ${info.classes}">
       <div class="mq-modal-header">

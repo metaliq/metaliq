@@ -184,11 +184,10 @@ Meta$.prototype.field = function <T, K extends FieldKey<T>> (
  */
 export const field = <T, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
-): MetaView<T> => (v, $)  => {
-  const field$ = $.child$(key)
-  return field$.view(view, options)
-}
-
+): MetaView<T> => (v, $) => {
+    const field$ = $.child$(key)
+    return field$.view(view, options)
+  }
 
 Meta$.prototype.fields = function (options?) {
   return fields(options)(this.value, this)
@@ -201,12 +200,14 @@ Meta$.prototype.fields = function (options?) {
  * This functionality is wrapped by the Meta$ function {@link Presentation$.fields}.
  */
 export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = meta$(v)) => {
-  return fieldKeys($.model)
-    .filter(key =>
-      (!options?.include || options.include.includes(key)) &&
-      (!options?.exclude?.includes(key))
-    )
-    .map(key => $.field(key))
+  return typeof v === "object"
+    ? fieldKeys($.model)
+      .filter(key =>
+        (!options?.include || options.include.includes(key)) &&
+        (!options?.exclude?.includes(key))
+      )
+      .map(key => $.field(key))
+    : ""
 }
 
 /**
@@ -215,11 +216,12 @@ export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = m
  */
 export const repeat = <T, MI extends (
   T extends Array<infer I> ? MetaView<I> : never
-  )> (itemView?: MI): MetaView<T> => (v, $) => {
-  if (isMetaArray($.meta)) {
-    return $.meta.map(({ $ }) => $.view(itemView))
-  } else return ""
-}
+)> (itemView?: MI): MetaView<T> =>
+    (v, $) => {
+      if (isMetaArray($.meta)) {
+        return $.meta.map(({ $ }) => $.view(itemView))
+      } else return ""
+    }
 
 /**
  * Conditional display field.
@@ -231,6 +233,12 @@ export const ifThen = <T, P = any> (
   thenView: MetaView<T, P>,
   elseView?: MetaView<T, P>
 ): MetaView<T, P> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
+
+/**
+ * Return a view that consists of the given text or HTML template,
+ * that does not need access to the data.
+ */
+export const content = (textOrHtml: ViewResult): MetaView<any> => () => textOrHtml
 
 /**
  * The `renderPage` meta function can be provided to the `review` term from the app policy

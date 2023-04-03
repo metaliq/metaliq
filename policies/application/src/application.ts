@@ -1,4 +1,4 @@
-import { Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
+import { FieldKey, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
 import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -53,22 +53,6 @@ export interface Application$<T, P = any> {
    * so that it is "wrapped" into the application cycle.
    */
   up?: (metaFn: MetaFn<T, P>, options?: UpOptions) => (message?: any) => any
-
-  /**
-   * Create an event handler that performs the given operation
-   * (typically an integration query or mutation)
-   * directly, without needing to wrap in a MetaFn or Update.
-   *
-   * The operation will be passed either:
-   * (a) any provided parameters object (i.e. query params) or
-   * (b) the associated data value itself (i.e. a mutation)
-   * and in either case will apply the returned value back into
-   * the associated data value.
-   *
-   * The resulting event handling is wrapped in an Update and performed with `up`
-   * so that it is "wrapped" into the application cycle.
-   */
-  op?: (operation: (params?: any) => T, options?: UpOptions) => (message?: any) => any
 }
 
 declare module "metaliq" {
@@ -88,16 +72,6 @@ export type Init<T> = T | InitFunction<T>
 
 Meta$.prototype.up = function (metaFn, options) {
   return up(($, event) => metaFn($.value, $, event), this, options)
-}
-
-Meta$.prototype.op = function (operation, parameters) {
-  return up(async ($, event) => {
-    parameters = typeof parameters === "undefined"
-      ? $.value
-      : parameters
-    const response = await operation(parameters)
-    $.value = response
-  }, this)
 }
 
 /**
@@ -139,6 +113,8 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
 
 /**
  * Get the initial value from the MetaModel's `init` provider.
+ *
+ * Typically used in a parent model to aggregate initiation from its children.
  */
 export async function initModelValue<T> (model: MetaModel<T>): Promise<T> {
   const data: T = typeof model.init === "function"
@@ -146,4 +122,18 @@ export async function initModelValue<T> (model: MetaModel<T>): Promise<T> {
     : model.init ?? {} as T
 
   return data
+}
+
+/**
+ * Run the bootstrap function of a child.
+ *
+ * Typically used from within a parent model to cascade bootstrapping to selected children.
+ */
+export const bootstrapChild = <T>(key: FieldKey<T>): MetaFn<T> => async (v, $) => {
+  const child$ = $.child$(key)
+  const childBootstrap = child$.model.bootstrap
+  if (typeof childBootstrap === "function") {
+    const result = await child$.fn(childBootstrap)
+    return result
+  }
 }

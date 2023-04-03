@@ -1,3 +1,5 @@
+scalar Void
+
 type Package {
   name: String
   description: String
@@ -35,5 +37,6 @@ type Query {
 }
 
 type Mutation {
-  updatePackage(pkg: PackageIn!): Package
+  updatePackage (pkg: PackageIn!): Package
+  updatePackageNoReturn (pkg: PackageIn!): Void
 }

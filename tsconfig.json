@@ -28,6 +28,7 @@
     { "path": "policies/serialization" },
     { "path": "policies/validation" },
     { "path": "policies/presentation" },
+    { "path": "policies/integration" },
 
     { "path": "ui/elements" },
     { "path": "ui/forms" },
