@@ -225,7 +225,13 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
       // Review and log after initial stage, then await the promised result
       await context.review?.()
       await log({ ...entry, time: new Date(), isPromised: true })
-      result = await result
+      try {
+        result = await result
+      } catch (e) {
+        // Catch any update error, review (for example to display error state) and rethrow to halt the chain
+        await context.review?.()
+        throw e
+      }
     }
     // Review after update
     await context.review?.(data)
