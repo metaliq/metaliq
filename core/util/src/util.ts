@@ -15,6 +15,11 @@ export type EndoFunction = <T> (o: T) => T
 export type MaybeReturn <T> = T | void
 
 /**
+ * Shorthand assertive type-cast. Use with care.
+ */
+export const as = <T> (value: any): T => value as T
+
+/**
  * Method to get the defined keys for an enum - excludes the auto-generated reverse mapping keys.
  * Provides a useful pattern for iterating over known keys of a given object with a common type,
  * by creating an enum of those keys and obtaining a list of them with this function, enabling code like:
