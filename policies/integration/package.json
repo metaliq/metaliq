@@ -8,7 +8,7 @@
     "@metaliq/up": "workspace:*",
     "@metaliq/util": "workspace:*",
     "@metaliq/validation": "workspace:*",
-    "graphqlex": "../../../graphqlex",
+    "graphqlex": "0.15.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
