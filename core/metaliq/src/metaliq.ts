@@ -160,7 +160,7 @@ export class Meta$<T, P = any> {
     if (this.parent$) {
       const parentVal = this.parent$.value
       const parentKey = this.key as keyof P
-      const thisVal: any = parentVal[parentKey]
+      const thisVal: any = parentVal?.[parentKey]
       if (typeof this.index === "number") {
         return thisVal?.[this.index]
       } else {
