@@ -10,6 +10,7 @@ export const apiModel: MetaModel<Resolvers> = {
       async fetchPackage() {
         const json = await readFile("./package.json", "utf8")
         const pkg = JSON.parse(json) as Package
+        // Extract known keys
         const { author, name, license, version, description, devDependencies, dependencies, peerDependencies } = pkg
         return { author, name, license, version, description, devDependencies, dependencies, peerDependencies }
       }
@@ -18,7 +19,7 @@ export const apiModel: MetaModel<Resolvers> = {
       async updatePackage(parent, { pkg }) {
         const oldJson = await readFile("./package.json", "utf8")
         const oldPkg = JSON.parse(oldJson) as Package
-        const { author, name, license, version, description, devDependencies, dependencies, peerDependencies } = pkg
+        removeNulls(pkg)
         const newPkg: Package = {
           ...oldPkg,
           ...pkg
@@ -28,5 +29,11 @@ export const apiModel: MetaModel<Resolvers> = {
         return newPkg
       }
     }
+  }
+}
+
+const removeNulls = (object: any) => {
+  for (const key in object) {
+    if (object[key] === null) delete object[key]
   }
 }
