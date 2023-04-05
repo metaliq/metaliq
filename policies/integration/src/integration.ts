@@ -80,31 +80,28 @@ let showProgress: (msg: string, title?: string) => any = () => {}
 export const op = <I, O> (
   operation: Operation<I, O>, input?: I, options: OperationOptions<O> = {}
 ): MetaFn<O> => async (v, $) => {
-    try {
-      if (options.message) showProgress?.(options.message)
-      input = input ?? as<I>($.value)
-      options = { ...defaultOperationOptions, ...options }
-      const response = await operation(input)
-      // Operation-level response handling option
-      if (options.onResponse) {
-        await $.fn(options.onResponse)(response)
-      }
-      // Assign response data back into local graph
-      $.value = response.data
-      // Handle any reported field-level errors
-      if (options.linkFieldErrors) {
-        for (const err of response.graphQLErrors || []) {
-          const path = err.path
-          let err$: Meta$<any> = $
-          while (path.length && err$) {
-            err$ = err$.child$(path.shift() as FieldKey<O>)
-          }
-          if (err$) err$.state.error = err.message
-        }
-      }
-    } finally {
-      showProgress?.("", "")
+    if (options.message) showProgress?.(options.message)
+    input = input ?? as<I>($.value)
+    options = { ...defaultOperationOptions, ...options }
+    const response = await operation(input)
+    // Operation-level response handling option
+    if (options.onResponse) {
+      await $.fn(options.onResponse)(response)
     }
+    // Assign response data back into local graph
+    $.value = response.data
+    // Handle any reported field-level errors
+    if (options.linkFieldErrors) {
+      for (const err of response.graphQLErrors || []) {
+        const path = err.path
+        let err$: Meta$<any> = $
+        while (path.length && err$) {
+          err$ = err$.child$(path.shift() as FieldKey<O>)
+        }
+        if (err$) err$.state.error = err.message
+      }
+    }
+    showProgress?.("", "")
   }
 
 /**
