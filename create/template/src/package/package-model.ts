@@ -4,8 +4,8 @@ import { html } from "lit"
 import { fetchPackageQuery, initApi, updatePackageMutation } from "../gen/graphql-operations"
 import { GraphQLResponseCondition } from "graphqlex"
 import { content, field, fields, repeat } from "@metaliq/presentation"
-import { button, metaForm } from "@metaliq/forms"
-import { showMessage } from "@metaliq/modals"
+import { button, inputField, metaForm } from "@metaliq/forms"
+import { showMessage, showProgress } from "@metaliq/modals"
 import { handleResponseErrors, op } from "@metaliq/integration"
 
 /**
@@ -56,7 +56,7 @@ export const packageModel: MetaModel<Package> = {
       label: "Dependencies",
       view: [
         content(html`<h3>Dependencies</h3>`),
-        repeat()
+        inputField()
       ],
       items: {
         fields: {
@@ -76,20 +76,14 @@ export const packageModel: MetaModel<Package> = {
     }
   },
   view: [
-    fields({ exclude: ["dependencies", "devDependencies", "peerDependencies"]}),
-    field("dependencies"),
-    button({ onClick: op(updatePackageMutation), label: "Save" })
+    fields({ exclude: ["devDependencies", "peerDependencies"]}),
+    button({ onClick: op(updatePackageMutation, null, { message: "Updating package" }), label: "Save" })
   ],
-  bootstrap: async (v, $) => {
+  bootstrap: (v, $) => {
     initApi(
       "http://localhost:8940/graphql",
-      { onResponse: handleResponseErrors(showMessage) }
+      { onResponse: handleResponseErrors(showMessage, showProgress) }
     )
-    $.op(fetchPackageQuery)()
-    // const response = await fetchPackageQuery({})
-    // for (const gqlError of response.graphQLErrors) {
-    //   $.child$(gqlError.path[1] as any).state.error = gqlError.message
-    // }
-    // $.value = response.data
+    $.op(fetchPackageQuery, null, { message: "Fetching project information" })()
   }
 }

@@ -8,6 +8,8 @@ export const apiModel: MetaModel<Resolvers> = {
   resolvers: {
     Query: {
       async fetchPackage() {
+        // A small delay to simulate real network latency and allow progress message delay
+        await wait()
         const json = await readFile("./package.json", "utf8")
         const pkg = JSON.parse(json) as Package
         // Extract known keys
@@ -17,6 +19,8 @@ export const apiModel: MetaModel<Resolvers> = {
     },
     Mutation: {
       async updatePackage(parent, { pkg }) {
+        // A small delay to simulate real network latency and allow progress message delay
+        await wait()
         const oldJson = await readFile("./package.json", "utf8")
         const oldPkg = JSON.parse(oldJson) as Package
         removeNulls(pkg)
@@ -37,3 +41,5 @@ const removeNulls = (object: any) => {
     if (object[key] === null) delete object[key]
   }
 }
+
+const wait = (delay: number = 1000) => new Promise(resolve => setTimeout(resolve, delay))
