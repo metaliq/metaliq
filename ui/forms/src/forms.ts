@@ -220,8 +220,8 @@ export type ButtonOptions<T> = {
   onClick?: MetaFn<T>
 }
 
-export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => (value) => html`
-  <button class="mq-button ${options.classes ?? ""}" @click=${up(options.onClick, value)}>
+export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => (v, $ = meta$(v)) => html`
+  <button class="mq-button ${options.classes ?? ""}" @click=${$.up(options.onClick)}>
     ${options.label ?? "Button"}
   </button> 
 `

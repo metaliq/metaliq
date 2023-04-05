@@ -1,12 +1,12 @@
 import { fns, MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { html } from "lit"
-import { fetchPackageQuery, initApi } from "../gen/graphql-operations"
+import { fetchPackageQuery, initApi, updatePackageMutation } from "../gen/graphql-operations"
 import { GraphQLResponseCondition } from "graphqlex"
-import { content, repeat } from "@metaliq/presentation"
-import { metaForm } from "@metaliq/forms"
+import { content, field, fields, repeat } from "@metaliq/presentation"
+import { button, metaForm } from "@metaliq/forms"
 import { showMessage } from "@metaliq/modals"
-import { handleResponseErrors } from "@metaliq/integration"
+import { handleResponseErrors, op } from "@metaliq/integration"
 
 /**
  * This is a validator for semantic versions, showing how a validator function is made.
@@ -75,7 +75,11 @@ export const packageModel: MetaModel<Package> = {
 
     }
   },
-  view: metaForm(),
+  view: [
+    fields({ exclude: ["dependencies", "devDependencies", "peerDependencies"]}),
+    field("dependencies"),
+    button({ onClick: op(updatePackageMutation), label: "Save" })
+  ],
   bootstrap: async (v, $) => {
     initApi(
       "http://localhost:8940/graphql",
