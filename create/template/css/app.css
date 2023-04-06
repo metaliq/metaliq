@@ -1,9 +1,13 @@
 * {
 	box-sizing: border-box;
+}
+
+body, input, textarea {
 	font-family: 'Source Sans Pro', sans-serif;
 	font-size: 16px;
 }
 
 .deps-grid {
+	display: grid;
 	grid-template-columns: 50% 50%;
 }
