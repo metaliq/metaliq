@@ -1,5 +1,5 @@
 import { MetaModel } from "metaliq"
-import { Package, Resolvers } from "../gen/graphql-types"
+import { Dependency, Package, Resolvers } from "../gen/graphql-types"
 import { graphQLServer } from "@metaliq/graphql-server"
 import { readFile, writeFile } from "fs/promises"
 
@@ -11,10 +11,15 @@ export const apiModel: MetaModel<Resolvers> = {
         // A small delay to simulate real network latency and allow progress message delay
         await wait()
         const json = await readFile("./package.json", "utf8")
-        const pkg = JSON.parse(json) as Package
+        const pkg = JSON.parse(json)
         // Extract known keys
-        const { author, name, license, version, description, devDependencies, dependencies, peerDependencies } = pkg
-        return { author, name, license, version, description, devDependencies, dependencies, peerDependencies }
+        const { author, name, license, version, description } = pkg
+        const getDeps = (key: keyof Package) =>
+          Object.entries(pkg[key] || {}).map(([k, v]) => ({ name: k, version: v })) as Dependency[]
+        const dependencies = getDeps("dependencies")
+        const devDependencies = getDeps("devDependencies")
+        const peerDependencies = getDeps("peerDependencies")
+        return { author, name, license, version, description, devDependencies, dependencies, peerDependencies } as Package
       }
     },
     Mutation: {
@@ -24,9 +29,13 @@ export const apiModel: MetaModel<Resolvers> = {
         const oldJson = await readFile("./package.json", "utf8")
         const oldPkg = JSON.parse(oldJson) as Package
         removeNulls(pkg)
-        const newPkg: Package = {
+        const setDeps = (deps: Dependency[]) => deps.reduce((acc, dep) => acc[dep.name] = acc.version, {} as any)
+        const newPkg = {
           ...oldPkg,
-          ...pkg
+          ...pkg,
+          dependencies: setDeps(pkg.dependencies),
+          peerDependencies: setDeps(pkg.dependencies),
+          devDependencies: setDeps(pkg.dependencies)
         }
         const newJson = JSON.stringify(newPkg, null, "  ")
         await writeFile("./package.json", newJson)
