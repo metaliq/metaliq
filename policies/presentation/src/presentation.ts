@@ -1,4 +1,4 @@
-import { render, TemplateResult } from "lit"
+import { render, TemplateResult, html, nothing } from "lit"
 import { FieldKey, fieldKeys, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
 
 export { PublicationTarget } from "@metaliq/publication"
@@ -239,6 +239,12 @@ export const ifThen = <T, P = any> (
  * that does not need access to the data.
  */
 export const content = (textOrHtml: ViewResult): MetaView<any> => () => textOrHtml
+
+export const div = (selectors?: string, view?: MetaViewTerm<any>): MetaView<any> => (v, $) => {
+  const id = selectors.match(/#([_a-zA-Z0-9-]*)/)?.[1]
+  const classes = selectors.match(/\.([_a-zA-Z0-9-]*)/g)?.map(c => c.slice(1))
+  return html`<div class=${classes || nothing} id=${id || nothing}>${$.view(view)}</div>`
+}
 
 /**
  * The `renderPage` meta function can be provided to the `review` term from the app policy
