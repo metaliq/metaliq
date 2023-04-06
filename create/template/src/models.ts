@@ -1,11 +1,6 @@
 import { MetaModel } from "metaliq"
-import { repeat } from "@metaliq/presentation"
-import { metaForm } from "@metaliq/forms"
-import { Dependency, Package } from "./gen/graphql-types"
-import { fetchPackageQuery, initApi } from "./gen/graphql-operations"
-import { html } from "lit"
-import { GraphQLResponseCondition } from "graphqlex"
-import { ModalInfo, modalModel, showMessage } from "@metaliq/modals"
+import { Package } from "./gen/graphql-types"
+import { ModalInfo, modalModel } from "@metaliq/modals"
 import { packageModel } from "./package/package-model"
 import { bootstrapChild } from "@metaliq/application"
 

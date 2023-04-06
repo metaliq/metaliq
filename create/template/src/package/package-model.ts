@@ -1,10 +1,9 @@
-import { fns, MetaModel } from "metaliq"
+import { MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { html } from "lit"
 import { fetchPackageQuery, initApi, updatePackageMutation } from "../gen/graphql-operations"
-import { GraphQLResponseCondition } from "graphqlex"
-import { content, div, field, fields, repeat } from "@metaliq/presentation"
-import { button, inputField, metaForm } from "@metaliq/forms"
+import { content, div, fields, repeat } from "@metaliq/presentation"
+import { button } from "@metaliq/forms"
 import { showMessage, showProgress } from "@metaliq/modals"
 import { handleResponseErrors, op } from "@metaliq/integration"
 
@@ -34,7 +33,7 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
   view: [
     content(html`<h3>Dependencies</h3>`),
     repeat(div(".deps-grid", fields()))
-  ],
+  ]
 }
 
 /**
@@ -73,7 +72,7 @@ export const packageModel: MetaModel<Package> = {
   },
   view: [
     content(html`<h1>Project Configuration</h1>`),
-    fields({ exclude: ["devDependencies", "peerDependencies"]}),
+    fields({ exclude: ["devDependencies", "peerDependencies"] }),
     button({ onClick: op(updatePackageMutation, null, { message: "Updating package" }), label: "Save" })
   ],
   bootstrap: (v, $) => {
