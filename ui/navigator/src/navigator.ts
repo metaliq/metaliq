@@ -10,7 +10,7 @@ export type NavigationOptions = {
   logoUpdate?: MetaFn<any>
 }
 
-export const navigator = (options: NavigationOptions): MetaView<any> => (v, $) => html`
+export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v, $) => html`
   <div class="mq-article">
     ${getNavSelection($).view()}
   </div>

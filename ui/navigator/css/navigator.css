@@ -1,7 +1,206 @@
+/* Styles for the default navigation view */
 :root {
-	--mq-theme-color: #b2dde9;
-	--mq-nav-color: #e37a06;
-	--mq-nav-inactive-color: #bfbfbf;
+	--mq-page-width: 900px;
+	--mq-nav-mobile-header-height: 60px;
+	--mq-nav-desktop-header-height: 80px;
+	--mq-nav-background: #000022;
+	--mq-nav-color: #ccc;
+	--mq-nav-selected-color: #fff;
+	--mq-nav-color-hover: white;
+	--mq-nav-selected-background: #333;
+	--mq-nav-border: solid 1px #666;
+	--mq-nav-font-size: 20px;
+	--mq-nav-indent-size: 20px;
+	--mq-nav-width: 280px;
+	--mq-nav-transition: all ease-in-out 0.5s;
+
+	--mq-article-padding: 80px;
 }
 
-/* TODO: Basic navigator style, with mq- classes */
+/* DEFAULT MOBILE STYLES */
+
+/* Page-top header bar with logo and menu button */
+header {
+	background: var(--mq-nav-background);
+	height: var(--mq-nav-mobile-header-height);
+	position: fixed;
+	top: 0;
+	width: 100%;
+	text-align: center;
+}
+
+.header-content {
+	display: grid;
+	grid-template-columns: 1fr 50px;
+	color: var(--mq-nav-color);
+	align-items: center;
+	justify-items: center;
+	height: var(--mq-nav-mobile-header-height);
+}
+
+/* Menu button */
+header i {
+	font-size: 30px;
+	cursor: pointer;
+}
+
+/* Logo image */
+header img {
+	max-height: 50px;
+	padding-right: 20px;
+	cursor: pointer;
+}
+
+/* Navigation menu container when not shown */
+nav {
+	background: var(--mq-nav-background);
+	color: var(--mq-nav-color);
+	display: inline-block;
+	position: fixed;
+	width: var(--mq-nav-width);
+	right: calc(-1 * var(--mq-nav-width));
+	top: var(--mq-nav-mobile-header-height);
+	bottom: 0;
+	border-top: var(--mq-nav-border);
+	padding-top: var(--mq-nav-indent-size);
+	opacity: 0;
+	transition: var(--mq-nav-transition);
+}
+
+/* Menu container when shown */
+nav.mq-show {
+	right: 0;
+	opacity: 1;
+}
+
+/* Menu item level container */
+nav ul li {
+	list-style: none;
+	margin: 0;
+}
+
+/* Menu items */
+nav li > span {
+	display: block;
+	cursor: pointer;
+	white-space: nowrap;
+	text-align: left;
+}
+/* Hovered */
+nav li > span:hover {
+	color: var(--mq-nav-color-hover);
+}
+/* Selected */
+nav ul.mq-level-0 > li.mq-selected > span {
+	background: var(--mq-nav-selected-background);
+	color: var(--mq-nav-selected-color);
+}
+
+/* Level-based individual menu item styling */
+nav ul.mq-level-0 > li > span, nav ul.mq-level-0 > li > i  {
+	padding: calc(var(--mq-nav-indent-size) / 2) var(--mq-nav-indent-size);
+	font-size: var(--mq-nav-font-size);
+}
+
+nav ul.mq-level-1 > li > span {
+	padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 2);
+	font-size: calc(var(--mq-nav-font-size) - 4);
+}
+nav ul.mq-level-2 > li > span {
+	padding-left: calc(var(--mq-nav-indent-size) * 3);
+}
+
+/*!* Page view content area *!*/
+/*.mq-article {*/
+/*	padding: var(--mq-article-padding) 20px;*/
+/*	margin: 0 auto 50px;*/
+/*	max-width: var(--mq-page-width);*/
+/*}*/
+
+/* PROGRESSIVE MODS FOR DEKSTOP */
+@media (min-width: 940px) {
+	header {
+		height: var(--mq-nav-desktop-header-height);
+	}
+
+	/** Header bar with logo */
+	.header-content {
+		height: var(--mq-nav-desktop-header-height);
+		max-width: var(--mq-page-width);
+		margin: 0 auto;
+		grid-template-columns: auto 1fr;
+		justify-items: left;
+	}
+
+	/* Hide mobile menu trigger */
+	header i {
+		display: none;
+	}
+
+	/* Logo */
+	header img {
+		padding: 0 0 0 10px;
+	}
+
+	/* Main nav */
+	nav {
+		position: relative;
+		right: 0;
+		top: -10px;
+		width: auto;
+		justify-self: right;
+		opacity: 1;
+		transition: none;
+		padding: 0;
+		border: none;
+	}
+
+	/* Nav items */
+	nav ul li {
+		display: inline-block;
+	}
+
+	/* Top level nav item */
+	nav ul.mq-level-0 > li > span {
+		border: 0 solid rgba(1, 1, 1, 0);
+		border-bottom-width: 2px;
+		padding: 5px 10px 2px;
+	}
+
+	/* Top level selected item */
+	nav ul.mq-level-0 > li.mq-selected > span {
+		background: none;
+		border-color: #6489de;
+	}
+
+	/* Second level nav (hidden by default) */
+	nav ul.mq-level-1 {
+		position: absolute;
+		top: 38px;
+		right: 0;
+		opacity: 0;
+		background: none;
+		width: 100%;
+		display: grid;
+		grid-auto-flow: column;
+		justify-content: right;
+		grid-gap: 10px;
+	}
+
+	/* Displayed second level nav */
+	li.mq-selected > ul.mq-level-1 {
+		opacity: 1;
+		z-index: 10;
+	}
+
+	/* Second level nav item */
+	nav ul.mq-level-1 > li > span {
+		padding: 5px 10px;
+	}
+
+	/*!* Content area *!*/
+	/*.mq-article {*/
+	/*	padding: 100px 40px;*/
+	/*}*/
+}
+
