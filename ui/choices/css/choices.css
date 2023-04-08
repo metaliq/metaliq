@@ -1,3 +1,5 @@
+@import "../lib/choices.css";
+
 .mq-input, .choices {
 	display: block;
 }
