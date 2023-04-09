@@ -40,6 +40,7 @@
     { "path": "ui/repeat" },
     { "path": "ui/signature_pad" },
     { "path": "ui/wizard" },
+    { "path": "ui/barcode-scanner" },
 
     { "path": "targets/web-page-app"},
     { "path": "targets/web-component"},
