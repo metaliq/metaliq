@@ -1,0 +1,136 @@
+:root {
+	--wizard-page-width: 844px;
+}
+
+.mq-wizard-nav {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	padding-top: 10px;
+	max-width: 1222px;
+	margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+	.mq-wizard-nav {
+		padding-top: 0;
+	}
+}
+
+.mq-wizard-nav-item {
+	position: relative;
+	color: var(--mq-nav-color);
+	display: grid;
+	grid-template-rows: 16px 1fr;
+	justify-items: center;
+	grid-row-gap: 16px;
+	cursor: pointer;
+}
+
+.mq-wizard-nav-anchor {
+	background: var(--mq-nav-inactive-color);
+	width: 16px;
+	height: 16px;
+	border-radius: 8px;
+	z-index: 10;
+}
+
+.mq-wizard-nav-item.current .mq-wizard-nav-anchor,
+.mq-wizard-nav-item.visited .mq-wizard-nav-anchor,
+.mq-wizard-nav-item.current .mq-wizard-nav-pre,
+.mq-wizard-nav-item.visited .mq-wizard-nav-pre {
+	background: var(--mq-nav-color);
+}
+
+.mq-wizard-nav-highlight {
+	position: absolute;
+	left: 50%;
+	top: -4px;
+	margin-left: -12px;
+	border-radius: 12px;
+	z-index: 5;
+	background: white;
+}
+
+.mq-wizard-nav-item.current .mq-wizard-nav-highlight {
+	width: 24px;
+	height: 24px;
+	border: solid 1px var(--mq-nav-color);
+}
+
+.mq-wizard-nav-pre {
+	position: absolute;
+	top: 7px;
+	height: 2px;
+	background: var(--mq-nav-inactive-color);
+	left: -50%;
+	right: 50%;
+	z-index: 1;
+}
+
+.mq-wizard-nav-post {
+	position: absolute;
+}
+
+.mq-wizard-nav-item:first-child .mq-wizard-nav-pre {
+	display: none
+}
+
+.mq-wizard-nav-label {
+	text-align: center;
+	align-self: self-start;
+	font-size: 16px;
+}
+
+.mq-wizard-step {
+	max-width: var(--wizard-page-width);
+	margin: 0 auto;
+	padding: 0 10px;
+	transition: transform 0.5s ease-in-out;
+	transform: translateX(0px);
+}
+
+.mq-wizard-step.step-forward {
+	transform: translateX(2000px);
+	transition: none;
+}
+
+.mq-wizard-step.step-backward {
+	transform: translateX(-2000px);
+	transition: none;
+}
+
+.mq-wizard-page {
+	max-width: var(--wizard-page-width);
+	margin: 0 auto;
+	padding: 0 10px;
+}
+
+.mq-wizard-page-title {
+	font-size: 26px;
+	font-weight: 900;
+	text-align: center;
+	margin: 50px 0 10px;
+}
+
+.mq-wizard-buttons {
+	display: grid;
+	grid-auto-flow: column;
+	justify-content: space-between;
+	padding-top: 20px;
+}
+
+
+@media (max-width: 800px) {
+	.mq-wizard-nav-label {
+		display: none;
+	}
+
+	.mq-wizard-page-title {
+		margin-top: 20px;
+	}
+
+	.mq-wizard-buttons {
+		padding: 20px 10px 0;
+	}
+}
