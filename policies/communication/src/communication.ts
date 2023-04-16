@@ -1,5 +1,10 @@
 import { Meta$, MetaFn, metaSetups } from "metaliq"
 
+/**
+ * Policy registration.
+ */
+export const COMMUNICATION = () => {}
+
 export interface CommunicationTerms<T, P> {
   /**
    * An array of channels that will be registered for communicating with the produced meta.

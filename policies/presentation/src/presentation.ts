@@ -1,12 +1,20 @@
 import { render, TemplateResult } from "lit"
 import { FieldKey, fieldKeys, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
+import { PUBLICATION } from "@metaliq/publication"
+import { APPLICATION } from "@metaliq/application"
+import { TERMINOLOGY } from "@metaliq/terminology"
+import { VALIDATION } from "@metaliq/validation"
 
 export * from "./tag"
 
-export { PublicationTarget } from "@metaliq/publication"
-export { ApplicationTerms } from "@metaliq/application"
-export { TerminologyTerms } from "@metaliq/terminology"
-export { ValidationTerms } from "@metaliq/validation"
+/**
+ * Policy registration.
+ */
+export const PRESENTATION = () => {}
+PUBLICATION()
+APPLICATION()
+TERMINOLOGY()
+VALIDATION()
 
 export interface PresentationTerms<T, P> {
   /**

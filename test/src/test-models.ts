@@ -1,5 +1,8 @@
 import { MetaModel } from "metaliq"
 import { Address, Contact, Organisation } from "./test-types"
+import { TERMINOLOGY } from "@metaliq/terminology"
+
+TERMINOLOGY()
 
 export const emptyContact = (): Contact => ({
   age: null,

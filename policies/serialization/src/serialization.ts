@@ -3,6 +3,11 @@ import { applyModel, Meta, MetaModel } from "metaliq"
 import { filterObject } from "@metaliq/util"
 
 /**
+ * Policy registration.
+ */
+export const SERIALIZATION = () => {}
+
+/**
  * This module supports serialising Meta objects along with their meta-state.
  *
  * Note that for standard persistence purposes it is usually simpler and sufficient

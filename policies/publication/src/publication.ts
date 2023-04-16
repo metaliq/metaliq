@@ -1,5 +1,10 @@
 import { MetaModel } from "metaliq"
 
+/**
+ * Policy registration.
+ */
+export const PUBLICATION = () => {}
+
 interface PublicationTerms {
   publicationTarget?: PublicationTarget
 }

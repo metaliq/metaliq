@@ -1,9 +1,20 @@
+import { MetaFn } from "metaliq"
 import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
 import { guard } from "lit/directives/guard.js"
-import type { Html5QrcodeScanner } from "html5-qrcode"
-import { Html5QrcodeScannerConfig } from "html5-qrcode/src/html5-qrcode-scanner"
-import { MetaFn } from "metaliq"
+import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode"
+import { Html5QrcodeConfigs, Html5QrcodeCameraScanConfig } from "html5-qrcode/html5-qrcode"
+import { APPLICATION } from "@metaliq/application"
+
+APPLICATION()
+
+interface Html5QrcodeScannerConfig extends Html5QrcodeCameraScanConfig, Html5QrcodeConfigs {
+  rememberLastUsedCamera?: boolean | undefined
+  supportedScanTypes?: Html5QrcodeScanType[] | []
+  showTorchButtonIfSupported?: boolean | undefined
+  showZoomSliderIfSupported?: boolean | undefined
+  defaultZoomValueIfSupported?: number | undefined
+}
 
 /**
  * Re-export the enum used to specify supported formats for scanning.

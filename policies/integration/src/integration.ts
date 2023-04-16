@@ -2,6 +2,13 @@ import { up, UpOptions } from "@metaliq/up"
 import { FieldKey, Meta$, MetaFn } from "metaliq"
 import { as } from "@metaliq/util"
 import { GraphQLResponse, GraphQLResponseCondition } from "graphqlex"
+import { VALIDATION } from "@metaliq/validation"
+
+/**
+ * Policy registration.
+ */
+export const INTEGRATION = () => {}
+VALIDATION()
 
 export { validate } from "@metaliq/validation"
 

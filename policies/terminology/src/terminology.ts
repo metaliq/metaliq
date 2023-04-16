@@ -1,5 +1,10 @@
 import { meta$, Meta$, MetaFn } from "metaliq"
 
+/**
+ * Policy registration.
+ */
+export const TERMINOLOGY = () => {}
+
 export interface TerminologyTerms<T, P = any> {
   /**
    * Primary identifying label.

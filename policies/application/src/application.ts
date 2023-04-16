@@ -2,6 +2,11 @@ import { FieldKey, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq
 import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
 
 /**
+ * Policy registration.
+ */
+export const APPLICATION = () => {}
+
+/**
  * Policy module to define general model and operation of a Metaliq application.
  * This establishes an update and review mechanism.
  */

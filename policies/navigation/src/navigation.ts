@@ -10,10 +10,15 @@ import {
   onDescendants, root$, meta$
 } from "metaliq"
 import { up } from "@metaliq/up"
+import { APPLICATION } from "@metaliq/application"
 
 export * from "./router"
 
-export { ApplicationTerms } from "@metaliq/application"
+/**
+ * Policy registration.
+ */
+export const NAVGATION = () => {}
+APPLICATION()
 
 export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> {
   /**
