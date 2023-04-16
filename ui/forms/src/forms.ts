@@ -40,7 +40,7 @@ const defaultView = <T>(v: T, $: Meta$<T>): MetaView<T> => {
     // T is an array type
     return repeat()
   } else if ($.value && typeof $.value === "object") {
-    return metaForm()
+    return fields()
   } else if (typeof v === "boolean") {
     return checkboxField()
   } else if (typeof $.value === "number") {
@@ -214,13 +214,13 @@ export const errorsBlock: MetaView<any> = (v, $ = meta$(v)) => {
   `
 }
 
-export type ButtonOptions<T> = {
+export type ButtonOptions<T, P = any> = {
   label?: string
   classes?: string
-  onClick?: MetaFn<T>
+  onClick?: MetaFn<T, P>
 }
 
-export const button = <T>(options: ButtonOptions<T> = {}): MetaView<T> => (v, $ = meta$(v)) => html`
+export const button = <T, P = any>(options: ButtonOptions<T, P> = {}): MetaView<T, P> => (v, $ = meta$(v)) => html`
   <button class="mq-button ${options.classes ?? ""}" @click=${$.up(options.onClick)}>
     ${options.label ?? "Button"}
   </button> 
