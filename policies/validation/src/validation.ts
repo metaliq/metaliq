@@ -2,8 +2,6 @@ import { fieldKeys, isMeta, meta$, Meta$, MetaFn, metaSetups } from "metaliq"
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
-export { TerminologyTerms } from "@metaliq/terminology"
-
 export interface ValidationTerms<T, P = any> {
   validator?: Validator<T, P>
   mandatory?: boolean | MetaFn<T, P, boolean>

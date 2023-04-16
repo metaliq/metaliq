@@ -20,7 +20,7 @@ const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and
 export const webPageAppRunner = (
   config: WebPageAppConfig = {}
 ): Runner => async ({ modelName, simplePath, model }) => {
-  const port = config.run?.port || 8400
+  const port = config.run?.port || 8400 // TODO: Scan for free port
   console.log(`Starting MetaliQ SPA server on port ${port}`)
 
   const devServerConfig: DevServerConfig = {
@@ -73,6 +73,8 @@ export const webPageAppRunner = (
       }
     ]
   }
+
+  if (config?.run?.hostname) devServerConfig.hostname = config?.run?.hostname
 
   if (server) server.stop()
   server = await startDevServer({
@@ -170,7 +172,7 @@ const indexHtml = (spaConfig: WebPageAppConfig, jsPath: string, cssPath?: string
   ].filter(Boolean)
 
   return page({
-    title: title,
+    title,
     ...(spaConfig?.pageInfo || {}),
     scripts,
     styles

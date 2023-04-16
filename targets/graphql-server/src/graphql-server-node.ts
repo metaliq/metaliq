@@ -40,7 +40,7 @@ export const graphQLServerRunner = (
   config: GraphQLServerConfig = {}
 ): Runner => async ({ modelName, simplePath, model }) => {
   const port = config.run?.port || 8940
-  const hostname = "localhost" // TODO: Make configurable
+  const hostname = config?.run?.hostname || "localhost"
 
   // Stop any previous running servers
   if (apolloServer) await apolloServer.stop()

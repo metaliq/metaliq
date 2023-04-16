@@ -11,7 +11,18 @@ export type WebPageAppConfig = {
    * Details for the development runtime.
    */
   run?: {
-    port?: number // Defaults to 8900
+    /**
+     * Dev server hostname.
+     * Generally this doesn't need to be set, the server can be accessed at
+     * `localhost`, the IP address or the machine's local network host name.
+     */
+    hostname?: string
+
+    /**
+     * Dev server port, defaults to 8400 and scans upwards from there for a free port.
+     */
+    port?: number
+    // TODO: Scan for free port
   }
 
   /**

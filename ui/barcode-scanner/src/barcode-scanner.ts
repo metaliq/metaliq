@@ -2,28 +2,67 @@ import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
 import { guard } from "lit/directives/guard.js"
 import type { Html5QrcodeScanner } from "html5-qrcode"
+import { Html5QrcodeScannerConfig } from "html5-qrcode/src/html5-qrcode-scanner"
+import { MetaFn } from "metaliq"
+
+/**
+ * Re-export the enum used to specify supported formats for scanning.
+ */
+export { Html5QrcodeSupportedFormats } from "html5-qrcode"
+
+export type BarcodeScannerOptions<T, P = any> = {
+  /**
+   * Pass scanner config to html5-qrcode component.
+   */
+  config?: Partial<Html5QrcodeScannerConfig>
+
+  /**
+   * A MetaFn that returns a handler method for scan results.
+   */
+  onScan?: MetaFn<T, P, (code: string) => any>
+
+  /**
+   * Do not assign the latest scanned code into the associated $.value.
+   */
+  noBind?: boolean
+}
 
 /**
  * `html5-qrcode` does not support loading as ES module in development.
  * The workaround is to include the script:
  * `node_modules/@metaliq/barcode-scanner/node_modules/html5-qrcode/html5-qrcode.min.js`
- * in the pageInfo.scripts term.
+ * in the `pageInfo.scripts` term.
  */
 const Scanner: typeof Html5QrcodeScanner = (window as any).Html5QrcodeScanner
 
-export const barcodeScanner = (): MetaView<string> => (v, $) => {
+let scanner: Html5QrcodeScanner
+
+export const barcodeScanner = <T, P = any>(options: BarcodeScannerOptions<T, P> = {}): MetaView<T> => (v, $) => {
   return html`
     ${guard([$], () => {
-      const id = `mq-barcode-scanner-${Math.ceil(Math.random() * 1000000)}`
+      // const id = `mq-barcode-scanner-${Math.ceil(Math.random() * 1000000)}`
+      const id = "mq-barcode-scanner"
 
       setTimeout(() => {
-        const scanner = new Scanner(id, {
+        const resultHandler = typeof options.onScan === "function"
+          ? options.onScan(v, $)
+          : () => {}
+        scanner = scanner || new Scanner(id, {
           fps: 10,
-          qrbox: { width: 250, height: 250 }
+          ...options.config
         }, false)
         scanner.render(
-          (text, result) => {
-            console.log(`Result!!! ${text}`)
+          (text) => {
+            $.up(() => {
+              if (!options.noBind) {
+                $.value = text as any
+              }
+              resultHandler(text)
+              scanner.pause()
+              setTimeout(() => {
+                scanner.clear().catch(e => console.log)
+              }, 1000)
+            })()
           }, () => {}
         )
       }, 250)

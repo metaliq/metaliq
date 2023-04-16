@@ -1,5 +1,7 @@
-import { render, TemplateResult, html, nothing } from "lit"
+import { render, TemplateResult } from "lit"
 import { FieldKey, fieldKeys, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
+
+export * from "./tag"
 
 export { PublicationTarget } from "@metaliq/publication"
 export { ApplicationTerms } from "@metaliq/application"
@@ -186,7 +188,7 @@ export const field = <T, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
 ): MetaView<T> => (v, $) => {
     const field$ = $.child$(key)
-    return field$.view(view, options)
+    return field$?.view(view, options)
   }
 
 Meta$.prototype.fields = function (options?) {
@@ -215,7 +217,7 @@ export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = m
  * a specified view or the item's view from the model.
  */
 export const repeat = <T, MI extends (
-  T extends Array<infer I> ? MetaView<I> : never
+  T extends Array<infer I> ? MetaViewTerm<I> : never
 )> (itemView?: MI): MetaView<T> =>
     (v, $) => {
       if (isMetaArray($.meta)) {
@@ -239,12 +241,6 @@ export const ifThen = <T, P = any> (
  * that does not need access to the data.
  */
 export const content = (textOrHtml: ViewResult): MetaView<any> => () => textOrHtml
-
-export const div = (selectors?: string, view?: MetaViewTerm<any>): MetaView<any> => (v, $) => {
-  const id = selectors.match(/#([_a-zA-Z0-9-]*)/)?.[1]
-  const classes = selectors.match(/\.([_a-zA-Z0-9-]*)/g)?.map(c => c.slice(1))
-  return html`<div class=${classes || nothing} id=${id || nothing}>${$.view(view)}</div>`
-}
 
 /**
  * The `renderPage` meta function can be provided to the `review` term from the app policy

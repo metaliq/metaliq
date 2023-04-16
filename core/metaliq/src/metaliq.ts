@@ -196,7 +196,7 @@ export class Meta$<T, P = any> {
     const meta = this.meta
     if (isMeta(meta)) {
       const childMeta = <unknown>meta[key] as Meta<T[K], T>
-      return childMeta.$ as Meta$<T[K]>
+      return childMeta?.$ as Meta$<T[K]>
     } else return null
   }
 
