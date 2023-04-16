@@ -6,6 +6,7 @@
   "dependencies": {
     "@metaliq/communication": "workspace:*",
     "@metaliq/presentation": "workspace:*",
+    "@metaliq/terminology": "workspace:*",
     "@metaliq/up": "workspace:*",
     "lit": "2.6.1",
     "metaliq": "workspace:*"

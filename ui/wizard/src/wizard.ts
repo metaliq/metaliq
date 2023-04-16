@@ -3,6 +3,11 @@ import { validateAll } from "@metaliq/validation"
 import { metaForm } from "@metaliq/forms"
 import { wait } from "@metaliq/util"
 import { MetaView } from "@metaliq/presentation"
+import { APPLICATION } from "@metaliq/application"
+import { TERMINOLOGY } from "@metaliq/terminology"
+
+APPLICATION()
+TERMINOLOGY()
 
 export type StepLabel = string | boolean
 

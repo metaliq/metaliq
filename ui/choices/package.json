@@ -8,6 +8,7 @@
     "@metaliq/presentation": "workspace:*",
     "@metaliq/up": "workspace:*",
     "@metaliq/util": "workspace:*",
+    "@metaliq/terminology": "workspace:*",
     "@metaliq/validation": "workspace:*",
     "choices.js": "10.1.0",
     "lit": "2.6.1",

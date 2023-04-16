@@ -2,6 +2,9 @@ import { html, LitElement, PropertyValues } from "lit"
 import { styleMap } from "lit/directives/style-map.js"
 import { customElement, property, state } from "lit/decorators.js"
 import { MetaView, setViewWrapper } from "@metaliq/presentation"
+import { VALIDATION } from "@metaliq/validation"
+
+VALIDATION()
 
 @customElement("mq-animated-hide-show")
 export class AnimatedHideShow extends LitElement {
@@ -18,6 +21,8 @@ export class AnimatedHideShow extends LitElement {
   private showing = false
 
   setHeight () {
+    // TODO: Why is this needed, both operands are of type number.
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     this.height = `${(Array.from(this.children)).reduce((t, e) => t + e.clientHeight, 0)}px`
   }
 

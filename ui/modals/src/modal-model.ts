@@ -2,6 +2,9 @@ import { MetaModel } from "metaliq"
 import { closeModalChannel, showModalChannel } from "./modal-procs"
 import { ViewResult } from "@metaliq/presentation"
 import { modal } from "./modal-view"
+import { TERMINOLOGY } from "@metaliq/terminology"
+
+TERMINOLOGY()
 
 export type ModalInfo = {
   /**

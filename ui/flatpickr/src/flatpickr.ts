@@ -9,6 +9,9 @@ import { hasValue, validate } from "@metaliq/validation"
 import { fieldError, isDisabled } from "@metaliq/forms"
 import { Meta$ } from "metaliq"
 import Instance = flatpickr.Instance
+import { TERMINOLOGY } from "@metaliq/terminology"
+
+TERMINOLOGY()
 
 export type DatePickerOptions = {
   classes?: string

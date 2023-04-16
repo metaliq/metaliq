@@ -1,9 +1,15 @@
 import { fieldKeys, Meta$, MetaFn } from "metaliq"
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-
 import { getNavSelection, goNavRoute, toggleMenu } from "@metaliq/navigation"
 import { MetaView, ViewResult } from "@metaliq/presentation"
+import { VALIDATION } from "@metaliq/validation"
+import { TERMINOLOGY } from "@metaliq/terminology"
+import { APPLICATION } from "@metaliq/application"
+
+VALIDATION()
+TERMINOLOGY()
+APPLICATION()
 
 export type NavigationOptions = {
   logoUrl?: string

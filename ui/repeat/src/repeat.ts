@@ -1,6 +1,13 @@
+/**
+ * Legacy module - remove after client dependencies updated.
+ */
+
 import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
 import { meta$, MetaFn } from "metaliq"
+import { APPLICATION } from "@metaliq/application"
+
+APPLICATION()
 
 export interface RepeatConfig<T, P = any> {
   addLabel?: string | MetaFn<T, P, string>

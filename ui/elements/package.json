@@ -5,6 +5,7 @@
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/presentation": "workspace:*",
+    "@metaliq/validation": "workspace:*",
     "lit": "2.6.1",
     "metaliq": "workspace:*"
   },

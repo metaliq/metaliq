@@ -7,9 +7,12 @@ import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { fields, FieldsOptions, MetaView, repeat, setViewResolver } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
+import { APPLICATION } from "@metaliq/application"
 
 export { expander } from "@metaliq/elements"
 export { AnimatedHideShow } from "@metaliq/elements"
+
+APPLICATION()
 
 export type MetaFormOptions<T> = FieldsOptions<T> & {
   baseClass?: string // Base class defaults to mq-form
@@ -215,17 +218,13 @@ export const errorsBlock: MetaView<any> = (v, $ = meta$(v)) => {
 }
 
 export type ButtonOptions<T, P = any> = {
-  label?: string
+  label?: string | MetaFn<T, P>
   classes?: string
   onClick?: MetaFn<T, P>
 }
 
 export const button = <T, P = any>(options: ButtonOptions<T, P> = {}): MetaView<T, P> => (v, $ = meta$(v)) => html`
   <button class="mq-button ${options.classes ?? ""}" @click=${$.up(options.onClick)}>
-    ${options.label ?? "Button"}
+    ${$.fn(options.label) ?? $.term("label")}
   </button> 
-`
-
-export const formPage = <T>(content: MetaView<T>): MetaView<T> => (value, $) => html`
-  <div class="mq-form-page">${content(value, $)}</div>
 `

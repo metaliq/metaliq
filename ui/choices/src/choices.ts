@@ -9,6 +9,9 @@ import { fieldContainer, isDisabled } from "@metaliq/forms"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
+import { TERMINOLOGY } from "@metaliq/terminology"
+
+TERMINOLOGY()
 
 export { Choice } from "choices.js"
 
