@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/barcode-scanner",
   "description": "Barcode scanner field for MetaliQ",
-  "version": "1.0.0-beta.64",
+  "version": "1.0.0-beta.65",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
@@ -20,7 +20,10 @@
   "license": "MIT",
   "main": "lib/barcode-scanner.js",
   "repository": "https://github.com/metaliq/metaliq",
-  "scripts": {},
+  "scripts": {
+    "pkg-prepare": "mkdir -p lib && cp ./node_modules/html5-qrcode/html5-qrcode.min.js ./lib/",
+    "prepare": "pnpm run pkg-prepare"
+  },
   "type": "module",
   "types": "lib/barcode-scanner.d.ts"
 }
