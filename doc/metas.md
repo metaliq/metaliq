@@ -19,7 +19,7 @@ export const contactModel: MetaModel<Contact> = {
 
 ### Value Initialisation
 
-A MetaModel's `init` term can provide an initial value of the MetaModel's related type - either as a hard-coded value as shown above, or a synchronous or asynchronous function to obtain such a value. When a MetaModel is run, an initial value is created using its `init` term. We call the object that is produced the *underlying data value*. (Note that this `init` process is not recursive for nested MetaModels - you can get values for nested models using the function `initModelValue` from within the higher-level `init` if required.)
+A MetaModel's `init` term can provide an initial value of the MetaModel's related type - either as a hard-coded value as shown above, or a synchronous or asynchronous function to obtain such a value. When a MetaModel is run, an initial value is created using its `init` term. We call the object that is produced the *underlying data value*. The `init` process is recursive, drilling down into child fields until a level where a value is returned by that field's MetaModel.
 
 In many cases, our application code (processes, views and functional terms such as validators) can work with this value object - and any further nested value objects - directly, by inspecting and assigning values within it. But in addition to this basic value graph MetaliQ builds a parallel "Meta-Graph", which can sometimes be very useful.  
 

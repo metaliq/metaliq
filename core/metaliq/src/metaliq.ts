@@ -398,9 +398,15 @@ export type IncludeExclude<T> = {
 
 /**
  * Return the field keys of a given MetaModel.
+ *
+ * Takes an options object with keys to include / exclude from results.
  */
-export const fieldKeys = <T>(model: MetaModel<T>) =>
-  Object.keys(model?.fields || {}) as Array<FieldKey<T>>
+export const fieldKeys = <T>(model: MetaModel<T>, options: IncludeExclude<T> = {}) => {
+  const allKeys = Object.keys(model?.fields || {}) as Array<FieldKey<T>>
+  if (options?.include) return allKeys.filter(k => options.include.includes(k))
+  else if (options?.exclude) return allKeys.filter(k => !options.exclude.includes(k))
+  else return allKeys
+}
 
 /**
  * Given either a meta value object or its underlying data value (but not a primitive),

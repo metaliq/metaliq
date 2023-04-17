@@ -208,12 +208,7 @@ Meta$.prototype.fields = function (options?) {
  */
 export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = meta$(v)) => {
   return typeof v === "object"
-    ? fieldKeys($.model)
-      .filter(key =>
-        (!options?.include || options.include.includes(key)) &&
-        (!options?.exclude?.includes(key))
-      )
-      .map(key => $.field(key))
+    ? fieldKeys($.model, options).map(key => $.field(key))
     : ""
 }
 

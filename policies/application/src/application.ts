@@ -1,4 +1,4 @@
-import { FieldKey, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
+import { FieldKey, fieldKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
 import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -15,14 +15,20 @@ export interface ApplicationTerms<T, P = any> {
   /**
    * Data initialisation term, containing
    * initial value or a function (sync/async) to return the initial value.
-   * Not recursive unless internally implemented.
+   *
+   * If no init term is present, the value is composed by
+   * recursing through inner models' init terms until a value is returned,
+   * at which point recursion on that branch halts.
    */
   init?: Init<T>
 
   /**
    * Application setup process hook for top-level meta.
    * Runs after data initialisation and metafication.
-   * Not recursive unless internally implemented.
+   *
+   * If no bootstrap function is provided, the process continues by
+   * recursing through the inner model's bootstrap terms until a function is found and run,
+   * at which point recursion on that branch halts.
    */
   bootstrap?: MetaFn<T, P>
 
@@ -92,13 +98,13 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     model = meta.$.model
   } else {
     model = modelOrMeta as MetaModel<T>
-    const value = await initModelValue(model)
+    const value = await init(model)
     meta = metafy(model, value)
   }
 
   const log = model.log || false
   const local = model.local || false
-  const up = await startUp({
+  await startUp({
     review: async () => {
       reset(meta.$)
       if (typeof model.review === "function") {
@@ -108,25 +114,55 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     log,
     local
   })
-  if (typeof model.bootstrap === "function") {
-    await model.bootstrap(meta.$.value, meta.$)
-  }
-  await up()()
+  bootstrap(meta.$.value, meta.$)
 
   return meta
 }
 
 /**
  * Get the initial value from the MetaModel's `init` provider.
- *
- * Typically used in a parent model to aggregate initiation from its children.
  */
-export async function initModelValue<T> (model: MetaModel<T>): Promise<T> {
-  const data: T = typeof model.init === "function"
-    ? await (model.init as InitFunction<T>)(model)
-    : model.init ?? {} as T
+export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): Promise<T> {
+  if (typeof model.init === "function") {
+    const data = await (model.init as InitFunction<T>)(model)
+    return data
+  } else if (typeof model.init !== "undefined") {
+    return model.init
+  } else {
+    const keys = fieldKeys(model, options)
+    if (keys?.length) {
+      const data = {} as any
+      for (const key of keys) {
+        const fieldData = await init(model.fields[key])
+        if (typeof fieldData !== "undefined") {
+          data[key] = fieldData
+        }
+      }
+      return data as T
+    } else {
+      return undefined
+    }
 
-  return data
+  }
+}
+
+/**
+ * Bootstrap a Meta$.
+ *
+ * If no boostrap specified, the process will recurse along each child branch
+ * to the point where one is found and bootstrap at that level.
+ *
+ * Each separate child bootstrap is run with `up`,
+ * in order to support intermediate review points.
+ */
+export const bootstrap: MetaFn<any> = async (v, $) => {
+  if (typeof $.model.bootstrap === "function") {
+    $.up($.model.bootstrap)
+  } else {
+    for (const key of fieldKeys($.model)) {
+      bootstrap($.child$(key))
+    }
+  }
 }
 
 /**
