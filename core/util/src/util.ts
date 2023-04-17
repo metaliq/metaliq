@@ -220,21 +220,6 @@ export const textSearch = (term: string, ...targets: string[]) => {
   return target.toLowerCase().search(term.toLowerCase()) >= 0
 }
 
-// GRAPHQL UTILITIES
-
-/**
- * Helper method for making GraphQL inputs from value objects.
- * Excludes keys $, __typename and any additional keys provided.
- * TODO: Remove once high-level GraphQL wrapper added to MetaliQ.
- */
-export function inputObject <V extends object, I> (object: V, excludeKeys: string[] = []): I {
-  excludeKeys = excludeKeys.concat(["$", "__typename"])
-  const flatted = stringify(object, (k: string, v: any) =>
-    excludeKeys.includes(k) ? undefined : hasSomeVal(v, excludeKeys)
-  )
-  return parse(flatted) as I
-}
-
 // MISCELLANEOUS UTILITIES
 
 /**
