@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, fieldKeys, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
+import { FieldKey, fieldKeys, IncludeExclude, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
 import { PUBLICATION } from "@metaliq/publication"
 import { APPLICATION } from "@metaliq/application"
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -137,10 +137,7 @@ export type ViewOptions<T, P = any> = {
 /**
  * Options for the `$.fields` aspect, specifying which fields should be included or excluded.
  */
-export type FieldsOptions<T> = ViewOptions<T> & {
-  include?: Array<FieldKey<T>>
-  exclude?: Array<FieldKey<T>>
-}
+export type FieldsOptions<T> = ViewOptions<T> & IncludeExclude<T>
 
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>

@@ -389,6 +389,14 @@ export type FieldKey<T> = Exclude<Extract<keyof T, string>, "__typename">
 export type FieldType<Parent, Key extends FieldKey<Parent>> = Parent[Key]
 
 /**
+ * A type for including in options for functions that can include or exclude certain keys.
+ */
+export type IncludeExclude<T> = {
+  include?: Array<FieldKey<T>>
+  exclude?: Array<FieldKey<T>>
+}
+
+/**
  * Return the field keys of a given MetaModel.
  */
 export const fieldKeys = <T>(model: MetaModel<T>) =>
