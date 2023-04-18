@@ -2,7 +2,6 @@ import { MetaModel } from "metaliq"
 import { Package } from "./gen/graphql-types"
 import { ModalInfo, modalModel } from "@metaliq/modals"
 import { packageModel } from "./package/package-model"
-import { bootstrapChild } from "@metaliq/application"
 
 export { labelPath } from "@metaliq/terminology"
 export { validate } from "@metaliq/validation"
@@ -24,6 +23,5 @@ export const appModel: MetaModel<App> = {
   fields: {
     pkg: packageModel,
     modal: modalModel
-  },
-  bootstrap: bootstrapChild("pkg")
+  }
 }

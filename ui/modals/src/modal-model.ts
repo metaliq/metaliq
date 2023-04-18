@@ -3,8 +3,10 @@ import { closeModalChannel, showModalChannel } from "./modal-procs"
 import { ViewResult } from "@metaliq/presentation"
 import { modal } from "./modal-view"
 import { TERMINOLOGY } from "@metaliq/terminology"
+import { APPLICATION } from "@metaliq/application"
 
 TERMINOLOGY()
+APPLICATION()
 
 export type ModalInfo = {
   /**
@@ -66,5 +68,11 @@ export const modalModel: MetaModel<ModalInfo> = {
   channels: [
     showModalChannel,
     closeModalChannel
-  ]
+  ],
+  init: {
+    title: null,
+    body: null,
+    buttons: [],
+    isProgress: false
+  }
 }

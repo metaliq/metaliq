@@ -423,19 +423,6 @@ export const parent = <T extends object, P = any> (v$: Meta$<T, P> | T): P => {
 export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "function"
 
 /**
- * Combine any number of meta functions into a single meta function
- * which filters out any null entries provided and
- * returns an array of the individual results.
- *
- * Useful for combining functionality into a single MetaFn term.
- */
-export const fns = <T, P = any, R = any> (
-  ...metaFns: Array<MetaFn<T, P, R>>
-): MetaFn<T, P, R[]> => (v, $) => metaFns
-    .filter(f => typeof f === "function")
-    .map(f => f(v, $))
-
-/**
  * Return the {@link Meta$} for the root node in the meta graph containing the
  * given node.
  *

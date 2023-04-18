@@ -2,7 +2,6 @@ import { Route, RouteHandler, Router } from "./router"
 import {
   FieldKey,
   fieldKeys,
-  fns,
   Meta$,
   MetaFn,
   metaSetups,
@@ -146,17 +145,16 @@ metaSetups.push($ => {
       history.pushState(null, null, model.urlPath)
     }
     if (policy.route$s.size) {
-      $.model.bootstrap = fns(
-        $.model.bootstrap,
-        () => {
-          // Extend any existing bootstrap to initialise the Router
-          const router = new Router(
-            Array.from(policy.route$s.keys()),
-            () => up()()
-          ).start()
-          router.catch(console.error)
-        }
-      )
+      // Extend any existing bootstrap to initialise the Router
+      const origBootstrap = $.model.bootstrap
+      $.model.bootstrap = async (v, $) => {
+        const origResult = await $.fn(origBootstrap)
+        new Router(
+          Array.from(policy.route$s.keys()),
+          () => up()()
+        ).start().catch(console.error)
+        return origResult
+      }
     }
   }
 })
@@ -245,8 +243,10 @@ export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $ = meta$
  *
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
-export const setNavSelectionResponsive = (width: number) =>
-  fns(setNavSelection, closeMenuResponsive(width))
+export const setNavSelectionResponsive = (width: number): MetaFn<any> => (v, $) => {
+  $.fn(setNavSelection)
+  $.fn(closeMenuResponsive(width))
+}
 
 /**
  * Go to the given nav node's route if it has one,

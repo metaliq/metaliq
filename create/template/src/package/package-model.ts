@@ -7,6 +7,8 @@ import { button } from "@metaliq/forms"
 import { showMessage, showProgress } from "@metaliq/modals"
 import { handleResponseErrors, op } from "@metaliq/integration"
 
+export { APPLICATION } from "@metaliq/application"
+
 /**
  * This is a validator for semantic versions, showing how a validator function is made.
  * It takes a proposed value, checks it (in this case against a regex)

@@ -21,17 +21,17 @@
  * * Prior to first asynchronous stage of an update
  * * Upon final promise resolution of an asynchronous update
  * * For all similar points of any subsequent (chained) updates
- *     that are returned as either:
- *   * A single update
- *   * An array of updates
  *
- * Subsequent update(s) may be specified as a single function reference
- * in which case the same data is passed along the chain,
- * or as an object of the form ({ update, data }),
- * or as a tuple of the form [update, data].
- * Any other update result type will be ignored, hence the return type `any`.
+ * An update function can return a chain of further updates to perform as an array of:
+ *
+ * * update function references, in which case the same data is passed along the chain, or
+ * * objects of the form ({ update, data }), or
+ * * tuples of the form [update, data].
+ *
+ * In any case, the result of the final update (or only update if no chain is returned)
+ * is returned as the overall result of the call to `up`, for use in any further processing.
  */
-export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => any
+export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => Promise<any>
 
 /**
  * A function that updates data, optionally accepting a message such as the event that triggered it.
@@ -159,7 +159,7 @@ export type LogEntry<T> = {
  * up(bootstrap, model)()
  * ```
  */
-export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => any
+export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => Promise<any>
 // Note: `up` effectively redefines `Up` type here.
 // Typing it as Up<any> means losing type information on T, and thus type checking between update and data types.
 
@@ -175,13 +175,13 @@ export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (messa
  * This enables components and frameworks to create multiple,
  * separate reactive update containers.
  *
- * Example: to bootstrap a typical Lit app with console logging:
+ * Example: to bootstrap a typical lit app with console logging:
  * ```
  * import { start } from "@metaliq/up"
  * import { render } from "lit"
  * import { view, model } from "./my-app-content"
  *
- * start({
+ * startUp({
  *   review () { render(view(model), document.body) },
  *   log: true
  * })
@@ -237,23 +237,24 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
     await context.review?.(data)
 
     // Handle update chaining
-    if (!Array.isArray(result) || typeof result[0] === "function") {
-      // Normalize any chained results to an array
-      result = [result].filter(Boolean)
-    }
-    const opts: UpOptions = { isChained: true }
-    for (const chained of result) {
-      if (typeof chained === "function") {
-        // Simple function reference
-        await started(chained, data, opts)(message)
-      } else if (Array.isArray(chained) && typeof chained[0] === "function") {
-        // Tuple of the form [update, data?]
-        await started(chained[0], chained[1], opts)(message)
-      } else if (typeof chained?.update === "function") {
-        // Object of the form { update, data? }
-        await started(chained.update, chained.data, opts)(message)
+    if (Array.isArray(result)) {
+      const opts: UpOptions = { isChained: true }
+      for (const chained of result) {
+        if (typeof chained === "function") {
+          // Simple function reference
+          result = await started(chained, data, opts)(message)
+        } else if (Array.isArray(chained) && typeof chained[0] === "function") {
+          // Tuple of the form [update, data?]
+          result = await started(chained[0], chained[1], opts)(message)
+        } else if (typeof chained?.update === "function") {
+          // Object of the form { update, data? }
+          result = await started(chained.update, chained.data, opts)(message)
+        }
       }
     }
+
+    // Pass the final result of the update to the caller of `up` for possible further use
+    return result
   }
 
   // Assign the global `up` reference

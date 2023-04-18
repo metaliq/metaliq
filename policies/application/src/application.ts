@@ -1,4 +1,4 @@
-import { FieldKey, fieldKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
+import { fieldKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
 import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -23,12 +23,18 @@ export interface ApplicationTerms<T, P = any> {
   init?: Init<T>
 
   /**
-   * Application setup process hook for top-level meta.
+   * A place to define any necessary setup processing.
    * Runs after data initialisation and metafication.
+   * Typically used for loading further initial data via
+   * asynchronous service interactions, and is different from `init` in that
+   * bootstrap functions are run in the context of `up` and its review mechanism,
+   * supporting things like message / progress display etc.
    *
-   * If no bootstrap function is provided, the process continues by
-   * recursing through the inner model's bootstrap terms until a function is found and run,
-   * at which point recursion on that branch halts.
+   * If a bootstrap function returns the value `false` then there is no recursive
+   * bootstrapping of its descendent models.
+   *
+   * Otherwise the process continues by
+   * recursing through the inner model's bootstrap terms.
    */
   bootstrap?: MetaFn<T, P>
 
@@ -63,7 +69,7 @@ export interface Application$<T, P = any> {
    * The resulting event handling is wrapped in an Update and performed with `up`
    * so that it is "wrapped" into the application cycle.
    */
-  up?: (metaFn: MetaFn<T, P>, options?: UpOptions) => (message?: any) => any
+  up?: (metaFn?: MetaFn<T, P>, options?: UpOptions) => (message?: any) => Promise<any>
 }
 
 declare module "metaliq" {
@@ -142,39 +148,35 @@ export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> =
     } else {
       return undefined
     }
-
   }
 }
 
 /**
  * Bootstrap a Meta$.
  *
- * If no boostrap specified, the process will recurse along each child branch
- * to the point where one is found and bootstrap at that level.
+ * Bootstrapping is parent-first recursive unless a parent bootstrap function returns `false`,
+ * in which case nested bootstrapping is not performed for that branch of the meta graph.
  *
  * Each separate child bootstrap is run with `up`,
  * in order to support intermediate review points.
+ *
+ * Returns true if a bootstrap was performed.
  */
 export const bootstrap: MetaFn<any> = async (v, $) => {
+  let bootstrapped = false
+  let recurse = true
   if (typeof $.model.bootstrap === "function") {
-    $.up($.model.bootstrap)
-  } else {
+    recurse = await $.up($.model.bootstrap)()
+    bootstrapped = true
+  }
+  if (recurse !== false) {
     for (const key of fieldKeys($.model)) {
-      bootstrap($.child$(key))
+      const nestedBootstrap = await $.child$(key).fn(bootstrap)
+      if (nestedBootstrap) bootstrapped = true
+    }
+    if (!bootstrapped) {
+      await up()()
     }
   }
-}
-
-/**
- * Run the bootstrap function of a child.
- *
- * Typically used from within a parent model to cascade bootstrapping to selected children.
- */
-export const bootstrapChild = <T>(key: FieldKey<T>): MetaFn<T> => async (v, $) => {
-  const child$ = $.child$(key)
-  const childBootstrap = child$.model.bootstrap
-  if (typeof childBootstrap === "function") {
-    const result = await child$.fn(childBootstrap)
-    return result
-  }
+  return bootstrapped
 }
