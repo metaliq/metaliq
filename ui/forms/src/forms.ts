@@ -57,11 +57,11 @@ setViewResolver(defaultView)
  * General options for all MetaliQ form fields.
  * Individual fields can define their own options types, which would normally extend this type.
  */
-export type FieldOptions<T> = {
+export type FieldOptions<T, P = any> = {
   /**
    * Custom label content function
    */
-  labelView?: MetaView<T>
+  labelView?: MetaView<T, P>
 
   /**
    * Additional class(es) for field container
@@ -80,16 +80,17 @@ export type FieldOptions<T> = {
 /**
  * Options for input and similar fields.
  */
-export type InputOptions<T> = FieldOptions<T> & {
+export type InputOptions<T, P = any> = FieldOptions<T> & {
   unvalidated?: boolean // don't perform validation
   autocomplete?: string
+  onChange?: MetaFn<T, P>
 }
 
 /**
  * Basic input element that uses some InputOptions.
  * To get full use of all options use `inputField`.
  */
-export const input = <T>(options: InputOptions<T> = {}): MetaView<T> => (v, $) => {
+export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> => (v, $) => {
   const disabled = $.fn(isDisabled)
   return html`
     <input type=${options.type || "text"}
@@ -138,7 +139,7 @@ export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
-export const inputField = <T>(options: InputOptions<T> = {}): MetaView<T> =>
+export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> =>
   fieldContainer(input({ type: "text", ...options }), options)
 
 /**
@@ -195,7 +196,7 @@ const onBlur = <T>(options: InputOptions<T>) => ($: Meta$<T>, event: Event) => {
   if (options.type !== "checkbox") onInput(options)($, event)
 }
 
-const onInput = <T>({ unvalidated, type }: InputOptions<T>) =>
+const onInput = <T>({ unvalidated, type, onChange }: InputOptions<T>) =>
   ($: Meta$<T>, event: Event) => {
     const target = <HTMLInputElement>event.target
     $.value = <unknown>(target.type === "checkbox"
@@ -203,6 +204,9 @@ const onInput = <T>({ unvalidated, type }: InputOptions<T>) =>
       : type === "number"
         ? parseFloat(target.value)
         : target.value) as T
+    if (typeof onChange === "function") {
+      $.fn(onChange)
+    }
     if (!unvalidated) validate($)
   }
 
