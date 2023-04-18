@@ -3,7 +3,7 @@ import { DevServerConfig, startDevServer } from "@web/dev-server"
 import mime from "mime-types"
 import { copy, pathExists, remove } from "fs-extra"
 import CleanCSS from "clean-css"
-
+import findFreePorts from "find-free-ports"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
 import { WebPageAppConfig } from "./web-page-app"
 import { page } from "@metaliq/publication/lib/page"
@@ -20,7 +20,12 @@ const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and
 export const webPageAppRunner = (
   config: WebPageAppConfig = {}
 ): Runner => async ({ modelName, simplePath, model }) => {
-  const port = config.run?.port || 8400 // TODO: Scan for free port
+
+  let port = config.run?.port
+  if (!port) {
+    const ports = await findFreePorts(1, { startPort: 8400, jobCount: 1 })
+    port = ports[0]
+  }
   console.log(`Starting MetaliQ SPA server on port ${port}`)
 
   const devServerConfig: DevServerConfig = {

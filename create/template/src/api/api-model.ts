@@ -4,7 +4,7 @@ import { graphQLServer } from "@metaliq/graphql-server"
 import { readFile, writeFile } from "fs/promises"
 
 export const apiModel: MetaModel<Resolvers> = {
-  publicationTarget: graphQLServer(),
+  publicationTarget: graphQLServer({ run: { port: 8940 } }),
   resolvers: {
     Query: {
       async fetchPackage () {

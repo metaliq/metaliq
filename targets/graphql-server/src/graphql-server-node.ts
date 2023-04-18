@@ -21,6 +21,7 @@ import { join } from "path"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
 import "dotenv/config"
+import findFreePorts from "find-free-ports"
 
 const { readFile, remove } = fsExtra
 
@@ -39,7 +40,11 @@ interface DevContext {
 export const graphQLServerRunner = (
   config: GraphQLServerConfig = {}
 ): Runner => async ({ modelName, simplePath, model }) => {
-  const port = config.run?.port || 8940
+  let port = config.run?.port
+  if (!port) {
+    const ports = await findFreePorts(1, { startPort: 9400, jobCount: 1 })
+    port = ports[0]
+  }
   const hostname = config?.run?.hostname || "localhost"
 
   // Stop any previous running servers

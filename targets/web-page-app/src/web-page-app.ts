@@ -22,7 +22,6 @@ export type WebPageAppConfig = {
      * Dev server port, defaults to 8400 and scans upwards from there for a free port.
      */
     port?: number
-    // TODO: Scan for free port
   }
 
   /**
