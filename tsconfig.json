@@ -37,7 +37,6 @@
     { "path": "ui/modals" },
     { "path": "ui/navigator" },
     { "path": "ui/photo" },
-    { "path": "ui/repeat" },
     { "path": "ui/signature_pad" },
     { "path": "ui/wizard" },
     { "path": "ui/barcode-scanner" },
