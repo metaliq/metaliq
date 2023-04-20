@@ -175,15 +175,29 @@ export class Meta$<T, P = any> {
     reset(this, val)
   }
 
+  /**
+   * Run the given MetaFn for this node in the meta graph.
+   * If a non-function value is provided, then that value is returned.
+   */
   fn <R>(ref: R | MetaFn<T, P, R>): R {
     return isMetaFn(ref) ? ref(this.value, this) : ref
   }
 
+  /**
+   * Find the value for the given term. If the term is a meta function
+   * its result will be returned - allows for easy configuration of dynamic terms.
+   *
+   * However, if you need to actually access a meta function term itself, you will
+   * need to use the method `raw` instead.
+   */
   term <K extends TermKey>(key: K, ancestor?: boolean): DerivedTermValue<K> {
     const value = this.raw(key, ancestor)
     return this.fn(value) as DerivedTermValue<K>
   }
 
+  /**
+   * Return the raw value of a meta model term, without running it if it is a function.
+   */
   raw <K extends TermKey> (key: K, ancestor?: boolean): TermValue<K> {
     let t$: Meta$<any> = this
     if (ancestor) {
@@ -192,6 +206,9 @@ export class Meta$<T, P = any> {
     return t$?.model[key]
   }
 
+  /**
+   * Return the child meta value for the given key.
+   */
   child$ <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
     const meta = this.meta
     if (isMeta(meta)) {
@@ -200,6 +217,9 @@ export class Meta$<T, P = any> {
     } else return null
   }
 
+  /**
+   * Get an array of keys of all child fields.
+   */
   childKeys (): Array<FieldKey<T>> {
     return Object.keys(this.model?.fields || {}) as Array<FieldKey<T>>
   }
