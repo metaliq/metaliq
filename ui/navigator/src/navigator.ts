@@ -16,9 +16,11 @@ export type NavigationOptions = {
   logoUpdate?: MetaFn<any>
 }
 
+const hasOwnView: MetaFn<any> = (v, $) => !!$.raw("view")
+
 export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v, $) => html`
   <div class="mq-article">
-    ${getNavSelection($).view()}
+    ${getNavSelection($, { mustHave: hasOwnView }).view()}
   </div>
   <header>
     <div class="header-content">
