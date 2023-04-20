@@ -133,7 +133,6 @@ metaSetups.push($ => {
   // If this is a nav container, set initial selection
   if ($.model.onNavigate) {
     $.state.nav = $.state.nav || { selected: null }
-    $.state.nav.selected = fieldKeys($.model)[0]
   }
   // If this is the top-level meta and has routes specified then initialise navigation
   if (!$.parent$) {
@@ -182,11 +181,39 @@ export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
 }
 
 /**
- * Get the Meta object for the current selection in the given navigation level.
+ * Get the meta$ for the current selection in the given ancestor navigation meta$.
+ *
+ * By default this
+ * Pass option `{ recurse: false }` to find the nav selection at the level of the
+ * provided meta value and no deeper.
  */
-export const getNavSelection = <T>(navMeta$: Meta$<T>) => {
-  const key: FieldKey<T> = navMeta$.state.nav?.selected || navMeta$.childKeys()[0]
-  return navMeta$.child$(key)
+export const getNavSelection = ($: Meta$<any>, {
+  recurse = true,
+  mustHave = null
+}: {
+  /**
+   * By default navigation selections are followed recursively through the graph.
+   * Specify `recurse: false` to find the selection at the current level and no deeper.
+   */
+  recurse?: boolean
+  /**
+   * Specify a synchronous condition to `mustHave` in order to return
+   * the last ancestor of a potentially deeper selection that meets this condition.
+   */
+  mustHave?: MetaFn<any>
+} = {}) => {
+  $ = $.child$($.state.nav?.selected)
+  const isMustHave = typeof mustHave === "function"
+  let have$: Meta$<any>
+  if (recurse) {
+    while ($?.state.nav?.selected) {
+      $ = $.child$($.state.nav?.selected)
+      if (isMustHave && $.fn(mustHave)) {
+        have$ = $
+      }
+    }
+  }
+  return isMustHave ? have$ : $
 }
 
 /**
@@ -257,7 +284,7 @@ export const goNavRoute: MetaFn<any> = (v, item$) => {
     const firstChildKey = fieldKeys(item$.model)[0]
     item$ = item$.child$(firstChildKey)
   }
-  item$.model.route?.go()
+  item$?.model.route?.go()
 }
 
 export const toggleMenu = ($: Meta$<any>) => {
