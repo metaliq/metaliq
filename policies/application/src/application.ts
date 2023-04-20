@@ -174,9 +174,10 @@ export const bootstrap: MetaFn<any> = async (v, $) => {
       const nestedBootstrap = await $.child$(key).fn(bootstrap)
       if (nestedBootstrap) bootstrapped = true
     }
-    if (!bootstrapped) {
-      await up()()
-    }
+  }
+  if (!bootstrapped && !$.parent$) {
+    // No bootstrap function was called, do a direct `up` call to start first review
+    await up()()
   }
   return bootstrapped
 }
