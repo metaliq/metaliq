@@ -5,7 +5,7 @@ import { EndoFunction, objectTransformer } from "@metaliq/util"
  * Signature of a route's `go` method.
  * Can specify the path parameters <P> and query parameters <Q>.
  */
-export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => void
+export type RouteGoer<P, Q = any> = (pathParams?: Partial<P>, queryParams?: Partial<Q>) => any
 
 /**
  * A route parameters object supplied to any route handlers.
