@@ -18,7 +18,7 @@ export type TagConfig = string // Leave scope for extended object tag config in 
  */
 export type TagBody<T, P = any> = MetaViewTerm<T, P> | SingularViewResult
 
-export const tag = <T, P>(config: TagConfig, body: TagBody<T, P>): MetaView<T, P> => (v, $) => {
+export const tag = <T, P = any>(config: TagConfig, body: TagBody<T, P>): MetaView<T, P> => (v, $) => {
   const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1] || "div"
   const tagLiteral = tagLiterals[tagName as keyof typeof tagLiterals]
   if (!tagLiteral) {
@@ -26,7 +26,7 @@ export const tag = <T, P>(config: TagConfig, body: TagBody<T, P>): MetaView<T, P
     return
   }
   const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1] || nothing
-  const classes = config?.match(/\.[_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ") || nothing
+  const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ") || nothing
   const isViewResult = (body: TagBody<T, P>): body is SingularViewResult =>
     typeof body === "string" || (typeof body === "object" && "strings" in body)
   let content: ViewResult
