@@ -253,6 +253,11 @@ export type ConfigurableMetaFn<Config, Type = any, Parent = any, Result = any> =
   (c: Config) => MetaFn<Type, Parent, Result>
 
 /**
+ * A value that is either a given type or a MetaFn for that type.
+ */
+export type MaybeFn<Type, Parent = any, Value = any> = Value | MetaFn<Type, Parent, Value>
+
+/**
  * A valid key for an implemented and imported Policy term.
  */
 export type TermKey = keyof Policy.Terms<any>
