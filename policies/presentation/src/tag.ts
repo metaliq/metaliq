@@ -1,6 +1,7 @@
 import { html, literal } from "lit/static-html.js"
 import { MetaView, MetaViewTerm, SingularViewResult, ViewResult } from "./presentation"
 import { nothing } from "lit"
+import { isMetaFn, MetaFn } from "metaliq"
 
 /**
  * Tags can be configured with a string which has the following parts:
@@ -18,27 +19,37 @@ export type TagConfig = string // Leave scope for extended object tag config in 
  */
 export type TagBody<T, P = any> = MetaViewTerm<T, P> | SingularViewResult
 
-export const tag = <T, P = any>(config: TagConfig, body: TagBody<T, P>): MetaView<T, P> => (v, $) => {
-  const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1] || "div"
-  const tagLiteral = tagLiterals[tagName as keyof typeof tagLiterals]
-  if (!tagLiteral) {
-    console.warn(`Unregistered tag literal: ${tagName}`)
-    return
-  }
-  const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1] || nothing
-  const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ") || nothing
-  const isViewResult = (body: TagBody<T, P>): body is SingularViewResult =>
-    typeof body === "string" || (typeof body === "object" && "strings" in body)
-  let content: ViewResult
-  if (isViewResult(body)) {
-    content = body
-  } else {
-    content = $.view(body)
-  }
-  return html`
-    <${tagLiteral} id=${id} class=${classes}>${content}</${tagLiteral}>
-  `
+/**
+ * Options to support additional functionality, e.g. click handling.
+ */
+export type TagOptions<T, P = any> = {
+  onClick?: MetaFn<T, P>
 }
+
+export const tag = <T, P = any>(
+  config: TagConfig, body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
+): MetaView<T, P> => (v, $) => {
+    const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1] || "div"
+    const tagLiteral = tagLiterals[tagName as keyof typeof tagLiterals]
+    if (!tagLiteral) {
+      console.warn(`Unregistered tag literal: ${tagName}`)
+      return
+    }
+    const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1] || nothing
+    const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ") || nothing
+    const isViewResult = (body: TagBody<T, P>): body is SingularViewResult =>
+      typeof body === "string" || (typeof body === "object" && "strings" in body)
+    let content: ViewResult
+    if (isViewResult(body)) {
+      content = body
+    } else {
+      content = $.view(body)
+    }
+    const onClick = isMetaFn(options.onClick) ? $.up(options.onClick) : nothing
+    return html`
+      <${tagLiteral} id=${id} class=${classes} @click=${onClick}>${content}</${tagLiteral}>
+    `
+  }
 
 /**
  * A non-exhaustive map of standard HTML tag names to tag literals.
