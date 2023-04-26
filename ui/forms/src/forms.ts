@@ -229,7 +229,7 @@ export type ButtonOptions<T, P = any> = {
 }
 
 export const button = <T, P = any>(options: ButtonOptions<T, P> = {}): MetaView<T, P> => (v, $ = meta$(v)) => html`
-  <button class="mq-button ${options.classes ?? ""}" @click=${$.up(options.onClick)}>
-    ${$.fn(options.label) ?? $.term("label")}
+  <button class="mq-button ${options.classes ?? ""}" @click=${($?.up || up)(options.onClick)}>
+    ${$?.fn(options.label) ?? $?.term("label") ?? options.label}
   </button> 
 `

@@ -16,7 +16,7 @@ export * from "./router"
 /**
  * Policy registration.
  */
-export const NAVGATION = () => {}
+export const NAVIGATION = () => {}
 APPLICATION()
 
 export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> {
@@ -289,17 +289,17 @@ export const goNavRoute: MetaFn<any> = (v, item$) => {
   item$?.model.route?.go()
 }
 
-export const toggleMenu = ($: Meta$<any>) => {
+export const toggleMenu: MetaFn<any> = (v, $) => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = !$.state.nav.showMenu
 }
 
-export const openMenu = ($: Meta$<any>) => {
+export const openMenu: MetaFn<any> = (v, $) => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = true
 }
 
-export const closeMenu = ($: Meta$<any>) => {
+export const closeMenu: MetaFn<any> = (v, $) => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = false
 }
@@ -309,7 +309,7 @@ export const closeMenu = ($: Meta$<any>) => {
  * Otherwise return true.
  * Useful for controlling menu items in a "partially" closable (e.g. minimisable) menu.
  */
-export const isMenuShown = (item$: Meta$<any>) => {
+export const isMenuShown: MetaFn<any> = (_, item$: Meta$<any>) => {
   while (item$) {
     item$ = item$.parent$
     if (item$?.state?.nav?.showMenu === false) return false

@@ -36,8 +36,12 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
 const menuItems = ($: Meta$<any>, level: number = 0) => {
   const keys = fieldKeys($?.model)
     .filter(key => {
-      const item = $.child$(key)
-      return !item.term("hidden") && (item.term("label") || item.term("symbol"))
+      const item$ = $.child$(key)
+      return !item$.term("hidden") &&
+        (item$.term("label") || item$.term("symbol")) &&
+        (item$.term("route") ||
+          // Navigator currently allows for a single-level of route-less parent
+          (item$.childKeys().some(k => item$.child$(k).term("route"))))
     })
   if (keys.length) {
     const selected$ = getNavSelection($)
