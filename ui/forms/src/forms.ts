@@ -11,6 +11,7 @@ import { APPLICATION } from "@metaliq/application"
 
 export { expander } from "@metaliq/elements"
 export { AnimatedHideShow } from "@metaliq/elements"
+export { textArea } from "./text-area"
 
 APPLICATION()
 

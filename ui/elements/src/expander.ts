@@ -1,6 +1,6 @@
 import { MetaView } from "@metaliq/presentation"
 import { html, LitElement } from "lit"
-import { meta$ } from "metaliq"
+import { meta$, MetaFn } from "metaliq"
 import { customElement, property, state } from "lit/decorators.js"
 
 @customElement("mq-expander")
@@ -12,7 +12,7 @@ export class Expander extends LitElement {
   private overflow = "hidden"
 
   @property({ reflect: true })
-  lastUpdated = new Date().getTime().toString()
+    lastUpdated = new Date().getTime().toString()
 
   private observer: MutationObserver
 
@@ -60,8 +60,8 @@ export class Expander extends LitElement {
   }
 }
 
-export const expander = <T> (expandedFn: MetaView<T>) => (content: MetaView<T>) => (data: T) => html`
+export const expander = <T> (expandedFn: MetaFn<T>) => (content: MetaView<T>) => (data: T) => html`
   <mq-expander>
-    ${expandedFn(data, meta$(data)) ? content(data) : ""}
+    ${expandedFn(data, meta$(data)) ? content(data, meta$(data)) : ""}
   </mq-expander>
 `

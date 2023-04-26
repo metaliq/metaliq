@@ -44,14 +44,14 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    * in order to perform any pre-processing, such as remote data loading.
    * If the function returns the boolean value `false` navigation will be cancelled.
    */
-  onEnter?: MetaFn<T, P, RouteHandler<RP, RQ>>
+  onEnter?: MetaRouteHandler<T, P, RP, RQ>
 
   /**
    * Set this term on a leaf node within the navigation structure
    * in order to perform any post-processing, such as remote data persistence.
    * If the function returns the boolean value `false` navigation will be cancelled.
    */
-  onLeave?: MetaFn<T, P, RouteHandler<RP, RQ>>
+  onLeave?: MetaRouteHandler<T, P, RP, RQ>
 
   /**
    * Initial path for a top level MetaModel,
@@ -82,6 +82,8 @@ declare module "metaliq" {
     }
   }
 }
+
+export type MetaRouteHandler<T, P = any, RP = any, RQ = any> = MetaFn<T, P, RouteHandler<RP, RQ>>
 
 /**
  * Policy-level state store.
