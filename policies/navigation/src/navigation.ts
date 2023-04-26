@@ -206,7 +206,7 @@ export const getNavSelection = ($: Meta$<any>, {
 } = {}) => {
   $ = $.child$($.state.nav?.selected)
   const isMustHave = typeof mustHave === "function"
-  let have$: Meta$<any>
+  let have$ = $
   if (recurse) {
     while ($?.state.nav?.selected) {
       $ = $.child$($.state.nav?.selected)
