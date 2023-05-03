@@ -135,6 +135,7 @@ export const handleResponseErrors = (
         "See console for more details."
       ].join("\n"), "GraphQL Error")
       console.log(response.condition, "\n\nGraphQLResponse:", response)
+      up()().catch(console.error)
       if (response.error) throw response.error
       if (response.condition === GraphQLResponseCondition.RequestError) throw new Error("GraphQL Request Error")
     }

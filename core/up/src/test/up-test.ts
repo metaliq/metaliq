@@ -9,7 +9,7 @@ should()
  *
  * It works very well with MetaliQ, and particularly with the `lit` based
  * rendering provided by the `@metaliq/presentation` package - but it has no
- * dependencies on either (or indeed on anything else) - it is self contained,
+ * dependencies on either (or indeed on anything else) - it is self-contained,
  * with a pluggable "review" mechanism that allows for the default processing / rendering
  * activity to occur within any typical reactive application cycle.
  *
@@ -28,9 +28,10 @@ describe("@metaliq/up", () => {
    * update mechanism, and every other module can access it using:
    *
    * ```
-   * import { up } from `@metaliq/up`
+   * import { up } from @metaliq/up
+   * ```
    */
-  it("Accessing the `up` function", async () => {
+  it("Accessing the up function", async () => {
     expect(up).to.equal(undefined)
 
     const startedUp = await startUp({})
