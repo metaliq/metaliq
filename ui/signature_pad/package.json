@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/signature_pad",
   "description": "MetaliQ wrapper for the signature_pad library",
-  "version": "1.0.0-beta.68",
+  "version": "1.0.0-beta.69",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/forms": "workspace:*",
