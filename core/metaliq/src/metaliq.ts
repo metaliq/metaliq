@@ -336,9 +336,9 @@ export function metafy <T, P = any> (
   if (isArray) {
     const valueArr = <unknown>value as any[] || []
     const metaArr = <unknown>result as MetaArray<any, P>
-    metaArr.length = 0 // Remove any items from supplied prototype
+    const oldMetas = metaArr.splice(0, metaArr.length)
     for (const [itemIndex, item] of valueArr.entries()) {
-      const itemMeta = item?.$?.meta
+      const itemMeta = oldMetas.find(m => m.$.value === item)
       metaArr.push(metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex))
     }
   } else {

@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/validation",
-  "description": "Framework-agnostic state management",
+  "description": "MetaliQ validation policy",
   "version": "1.0.0-beta.68",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
