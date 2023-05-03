@@ -177,10 +177,16 @@ export class Meta$<T, P = any> {
 
   /**
    * Run the given MetaFn for this node in the meta graph.
-   * If a non-function value is provided, then that value is returned.
    */
-  fn <R>(ref: R | MetaFn<T, P, R>): R {
-    return isMetaFn(ref) ? ref(this.value, this) : ref
+  fn <R = any>(metaFn: MetaFn<T, P, R>): R {
+    return metaFn(this.value, this)
+  }
+
+  /**
+   * Return the result of the given metafunction or the parameter value if not a function.
+   */
+  maybeFn <R = any>(param: MetaFn<T, P, R> | R) {
+    return isMetaFn(param) ? this.fn(param) : param
   }
 
   /**
@@ -192,7 +198,7 @@ export class Meta$<T, P = any> {
    */
   term <K extends TermKey>(key: K, ancestor?: boolean): DerivedTermValue<K> {
     const value = this.raw(key, ancestor)
-    return this.fn(value) as DerivedTermValue<K>
+    return (isMetaFn(value) ? this.fn(value) : value) as DerivedTermValue<K>
   }
 
   /**
