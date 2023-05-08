@@ -257,7 +257,7 @@ export const renderPage: MetaFn<any> = (v, $) => {
 export type ViewWrapper<T = any, P = any> = (metaView: MetaView<T, P>) => MetaView<T, P>
 
 /**
- * Assign a default view wrapper, for example to do animation for dynamic hide-show fields.
+ * Assign a default view wrapper, for example to always do animation for dynamic hide-show fields.
  */
 export const setViewWrapper = (wrapper: ViewWrapper) => {
   viewWrapper = wrapper
