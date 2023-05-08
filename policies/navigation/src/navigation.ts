@@ -283,7 +283,7 @@ export const setNavSelectionResponsive = (width: number): MetaFn<any> => (v, $) 
  */
 export const goNavRoute: MetaFn<any> = (v, item$) => {
   while (item$ && !item$.model.route) {
-    const firstChildKey = fieldKeys(item$.model)[0]
+    const firstChildKey = item$.childKeys()[0]
     item$ = item$.child$(firstChildKey)
   }
   item$?.model.route?.go()

@@ -1,4 +1,4 @@
-import { fieldKeys, Meta$, MetaFn } from "metaliq"
+import { Meta$, MetaFn } from "metaliq"
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
 import { getNavSelection, goNavRoute, toggleMenu } from "@metaliq/navigation"
@@ -34,7 +34,7 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
 `
 
 const menuItems = ($: Meta$<any>, level: number = 0) => {
-  const keys = fieldKeys($?.model)
+  const keys = ($.childKeys() || [])
     .filter(key => {
       const item$ = $.child$(key)
       return !item$.term("hidden") &&

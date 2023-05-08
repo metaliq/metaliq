@@ -170,7 +170,7 @@ export const bootstrap: MetaFn<any> = async (v, $) => {
     bootstrapped = true
   }
   if (recurse !== false) {
-    for (const key of fieldKeys($.model)) {
+    for (const key of $.childKeys()) {
       const nestedBootstrap = await $.child$(key).fn(bootstrap)
       if (nestedBootstrap) bootstrapped = true
     }

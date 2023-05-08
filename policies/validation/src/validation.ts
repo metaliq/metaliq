@@ -1,4 +1,4 @@
-import { fieldKeys, isMeta, meta$, Meta$, MetaFn, metaSetups } from "metaliq"
+import { isMeta, meta$, Meta$, MetaFn, metaSetups } from "metaliq"
 import { labelOrKey } from "@metaliq/terminology"
 import { appendTo } from "@metaliq/util"
 
@@ -134,8 +134,7 @@ export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
         appendTo(result, validateAll(sub.$))
       }
     } else if (isMeta(meta)) {
-      const keys = fieldKeys($.model)
-      for (const key of keys) {
+      for (const key of $.childKeys()) {
         const sub = meta[key]
         appendTo(result, validateAll(sub.$ as Meta$<any>))
       }
@@ -154,8 +153,7 @@ export const unvalidate = <T, P>(v$: T | Meta$<T, P>) => {
       unvalidate(sub.$)
     }
   } else if (isMeta(meta)) {
-    const keys = fieldKeys($.model)
-    for (const key of keys) {
+    for (const key of $.childKeys()) {
       const sub = meta[key]
       unvalidate(sub)
     }

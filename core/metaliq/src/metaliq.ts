@@ -477,8 +477,7 @@ export const root$ = (v: any, $?: Meta$<any>) => {
 export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => (v, $) => {
   const recurse = ($: Meta$<any>, onBase: boolean = true) => {
     if (onBase) fn(v, $)
-    const keys = fieldKeys($.model)
-    for (const key of keys) {
+    for (const key of $.childKeys()) {
       recurse(($.child$(key)))
     }
   }

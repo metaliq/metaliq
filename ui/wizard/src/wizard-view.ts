@@ -1,6 +1,6 @@
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
-import { fieldKeys, Meta, Meta$ } from "metaliq"
+import { Meta, Meta$ } from "metaliq"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "@metaliq/forms"
@@ -14,7 +14,7 @@ export const wizardView: MetaView<any> = (value, $) => [
 export const wizardTramline: MetaView<any> = (value, $) => {
   return html`
     <div class="mq-wizard-nav">
-      ${fieldKeys($.model).map((stepName) => html`
+      ${$.childKeys().map((stepName) => html`
         <div class="mq-wizard-nav-item ${classMap({
           current: $.state.step === stepName,
           visited: $.child$(stepName).state.validated,
