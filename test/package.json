@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/test",
   "description": "MetaliQ Tests - deprecated, tests now live in individual modules",
-  "version": "1.0.0-beta.70",
+  "version": "1.0.0-beta.71",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
