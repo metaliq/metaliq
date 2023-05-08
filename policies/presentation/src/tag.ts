@@ -26,9 +26,10 @@ export type TagOptions<T, P = any> = {
   onClick?: MetaFn<T, P>
 }
 
-export const tag = <T, P = any>(
-  config: TagConfig, body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
-): MetaView<T, P> => (v, $) => {
+export const tag = (config: TagConfig = "") =>
+  <T, P = any>(
+    body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
+  ): MetaView<T, P> => (v, $) => {
     const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1] || "div"
     const tagLiteral = tagLiterals[tagName as keyof typeof tagLiterals]
     if (!tagLiteral) {
