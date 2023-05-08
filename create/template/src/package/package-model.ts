@@ -34,7 +34,7 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
   },
   view: [
     content(html`<h3>Dependencies</h3>`),
-    repeat(tag(".deps-grid", fields()))
+    repeat(tag(".deps-grid")(fields()))
   ]
 }
 
