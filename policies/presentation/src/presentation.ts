@@ -77,7 +77,7 @@ export interface Presentation$<T, P = any> {
   /**
    * Present views for the child fields, with optional inclusions or exclusions.
    */
-  fields: <T> (options?: FieldsOptions<T>) => ViewResult
+  fields: (options?: FieldsOptions<T>) => ViewResult
 }
 
 declare module "metaliq" {
