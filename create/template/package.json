@@ -1,6 +1,6 @@
 {
   "name": "@metaliq/template",
-  "version": "1.0.0-beta.71",
+  "version": "1.0.0-beta.72",
   "description": "Update these values to suit your new solution",
   "type": "module",
   "main": "bin/models.js",
@@ -31,7 +31,7 @@
     "@metaliq/validation": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
     "graphqlex": "0.15.0",
-    "lit": "2.6.1",
+    "lit": "^2.7.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {

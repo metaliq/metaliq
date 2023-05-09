@@ -1,12 +1,12 @@
 {
   "name": "@metaliq/elements",
   "description": "MetaliQ custom elements",
-  "version": "1.0.0-beta.71",
+  "version": "1.0.0-beta.72",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/presentation": "workspace:*",
     "@metaliq/validation": "workspace:*",
-    "lit": "2.6.1",
+    "lit": "^2.7.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
