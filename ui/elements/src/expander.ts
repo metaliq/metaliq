@@ -1,7 +1,10 @@
-import { MetaView } from "@metaliq/presentation"
+import { MetaView, setViewState, ViewResult, ViewWrapper } from "@metaliq/presentation"
 import { html, LitElement } from "lit"
 import { MetaFn } from "metaliq"
 import { customElement, property, state } from "lit/decorators.js"
+import { APPLICATION } from "@metaliq/application"
+
+APPLICATION()
 
 @customElement("mq-expander")
 export class Expander extends LitElement {
@@ -77,3 +80,28 @@ export const expander = <T, P = any> ({ expanded }: ExpanderOptions<T, P>) => (v
     ${expanded(v, $) ? view(v, $) : ""}
   </mq-expander>
 `
+
+export type TriggeredExpanderOptions<T, P = any> = ExpanderOptions<T, P> & {
+  key?: string
+  container?: ViewWrapper<T, P>
+  trigger?: MetaView<T, P>
+  expanded?: MetaView<T, P>
+  specifyEvent?: boolean
+}
+
+export const triggeredExpander = <T, P = any>(
+  options: TriggeredExpanderOptions<any>
+): MetaView<T, P> => {
+  const container = options.container || (view => (v, $) => html`<div>${$.view(view)}</div>`)
+  return container((v, $) => {
+    // const result: ViewResult = [
+    //   html`<div class="mq-expander-mask" @click=${$.up(setViewState(options.key, false))}`
+    // ]
+    // return result
+    return []
+  })
+}
+
+export const triggerExpand = (key: string): MetaFn<any> => (v, $) => {
+
+}
