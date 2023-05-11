@@ -34,7 +34,18 @@ export interface PresentationTerms<T, P> {
 }
 
 export interface PresentationState {
+  /**
+   * Used to indicate that the field currently has focus.
+   */
   active?: boolean
+
+  /**
+   * A container for keyed transient view state.
+   * An alternative to using module-level maps, web component properties etc.
+   * Good for things like whether a dropdown is currently open,
+   * but should not be employed for business-related information.
+   */
+  view?: any
 }
 
 export interface Presentation$<T, P = any> {
@@ -276,3 +287,24 @@ export const setViewResolver = (resolver: ViewResolver) => {
   viewResolver = resolver
 }
 let viewResolver: ViewResolver = null
+
+/**
+ * Obtain an item of transient view state.
+ */
+export const getViewState = (key: string): MetaFn<any> => (v, $) => $.state.view?.[key]
+
+/**
+ * Assign an item of transient view state.
+ */
+export const setViewState = (key: string, value: any): MetaFn<any> => (v, $) => {
+  $.state.view = $.state.view || {}
+  $.state.view[key] = value
+}
+
+/**
+ * Perform boolean inversion on an item of transient view state.
+ */
+export const toggleViewState = (key: string): MetaFn<any> => (v, $) => {
+  $.state.view = $.state.view || {}
+  $.state.view[key] = !$.state.view[key]
+}
