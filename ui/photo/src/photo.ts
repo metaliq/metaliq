@@ -1,12 +1,14 @@
 import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
-import { up } from "@metaliq/up"
-import { Meta$ } from "metaliq"
+import { MetaFn } from "metaliq"
 import { errorMsg, fieldClasses, fieldLabel, isDisabled } from "@metaliq/forms"
 import { classMap } from "lit/directives/class-map.js"
 import * as CompressorModule from "compressorjs"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { blobToBase64 } from "./file-input"
+import { APPLICATION } from "@metaliq/application"
+
+APPLICATION()
 
 const Compressor = <unknown>getModuleDefault(CompressorModule, "Compressor") as typeof CompressorModule.default
 
@@ -38,25 +40,7 @@ const defaultPhotoFieldOptions: PhotoFieldOptions = {
 export const photoField = (options: PhotoFieldOptions = {}): MetaView<string> => (value, $) => {
   options = { ...defaultPhotoFieldOptions, ...options }
 
-  const disabled = $.fn(isDisabled)
-  return html`
-    <label class="mq-field mq-photo-field ${classMap(fieldClasses($))}">
-      ${fieldLabel<string>({})(value, $)}
-      <i class="bi bi-camera-fill"></i>
-      <input ?disabled=${disabled} type="file" accept="image/*" @change=${up(imageSelected, $)}>
-      <div class="mq-photo-preview">
-        ${$.value ? html`
-          <img src=${$.value} alt="Preview">
-        ` : ""}
-      </div>
-      ${$.value ? html`
-        <button class="mq-field-clear" @click=${up(clearImage, $)}></button>
-      ` : ""}
-    </label>
-    ${errorMsg({ classes: "mq-field-error" })(value, $)}
-  `
-
-  async function imageSelected ($: Meta$<string>, event: Event) {
+  const imageSelected: MetaFn<string> = async (v, $, event) => {
     const input = event.target as HTMLInputElement
     const file = input.files[0]
     const compressed = await compress(file, ({ maxWidth: options.maxSize, maxHeight: options.maxSize }))
@@ -66,9 +50,27 @@ export const photoField = (options: PhotoFieldOptions = {}): MetaView<string> =>
       $.value = URL.createObjectURL(compressed)
     }
   }
+
+  const disabled = $.fn(isDisabled)
+  return html`
+    <label class="mq-field mq-photo-field ${classMap(fieldClasses($))}">
+      ${fieldLabel<string>({})(value, $)}
+      <i class="bi bi-camera-fill"></i>
+      <input ?disabled=${disabled} type="file" accept="image/*" @change=${$.up(imageSelected)}>
+      <div class="mq-photo-preview">
+        ${$.value ? html`
+          <img src=${$.value} alt="Preview">
+        ` : ""}
+      </div>
+      ${$.value ? html`
+        <button class="mq-field-clear" @click=${$.up(clearImage)}></button>
+      ` : ""}
+    </label>
+    ${errorMsg({ classes: "mq-field-error" })(value, $)}
+  `
 }
 
-const clearImage = ($: Meta$<string>) => { $.value = "" }
+const clearImage: MetaFn<string> = (v, $) => { $.value = "" }
 
 const compress = (file: File, options: Compressor.Options = {}): Promise<Blob> =>
   new Promise((resolve, reject) => {
