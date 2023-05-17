@@ -178,8 +178,8 @@ export class Meta$<T, P = any> {
   /**
    * Run the given MetaFn for this node in the meta graph.
    */
-  fn <R = any>(metaFn: MetaFn<T, P, R>): R {
-    return metaFn(this.value, this)
+  fn <R = any>(metaFn: MetaFn<T, P, R>, event?: Event): R {
+    return metaFn(this.value, this, event)
   }
 
   /**
