@@ -6,6 +6,7 @@ import { errorMsg, fieldClasses, fieldLabel, isDisabled } from "@metaliq/forms"
 import { classMap } from "lit/directives/class-map.js"
 import * as CompressorModule from "compressorjs"
 import { getModuleDefault } from "@metaliq/util/lib/import"
+import { blobToBase64 } from "./file-input"
 
 const Compressor = <unknown>getModuleDefault(CompressorModule, "Compressor") as typeof CompressorModule.default
 
@@ -66,13 +67,6 @@ export const photoField = (options: PhotoFieldOptions = {}): MetaView<string> =>
     }
   }
 }
-
-export const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
-  const reader = new FileReader()
-  reader.readAsDataURL(blob)
-  reader.onload = () => resolve(reader.result as string)
-  reader.onerror = error => reject(error)
-})
 
 const clearImage = ($: Meta$<string>) => { $.value = "" }
 
