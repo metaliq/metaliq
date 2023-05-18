@@ -18,8 +18,9 @@ export const textArea = (options: FieldOptions<string> = {}): MetaView<string> =
         "mq-disabled": $.fn(isDisabled)
       })}"
       @focus=${up(onFocus, $)}
-      @blur=${up(onBlur, $)}
-    />${$.value ?? ""}</textarea>
+      @blur=${up(onBlur, $)}>
+      ${$.value ?? ""}
+    </textarea>
     ${errorMsg({ classes: "mq-field-error" })(v, $)}
   </label>
 `

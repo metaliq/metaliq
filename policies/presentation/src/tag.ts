@@ -27,7 +27,7 @@ export type TagOptions<T, P = any> = {
 }
 
 export const tag = (config: TagConfig = "") =>
-  <T, P = any>(
+  <T = any, P = any>(
     body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
   ): MetaView<T, P> => (v, $) => {
     const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1] || "div"
