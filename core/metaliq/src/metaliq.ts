@@ -197,8 +197,12 @@ export class Meta$<T, P = any> {
    * need to use the method `raw` instead.
    */
   term <K extends TermKey>(key: K, ancestor?: boolean): DerivedTermValue<K> {
-    const value = this.raw(key, ancestor)
-    return (isMetaFn(value) ? this.fn(value) : value) as DerivedTermValue<K>
+    let t$: Meta$<any> = this
+    if (ancestor) {
+      while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent$
+    }
+    const value = t$?.model[key]
+    return (isMetaFn(value) ? t$.fn(value) : value) as DerivedTermValue<K>
   }
 
   /**
