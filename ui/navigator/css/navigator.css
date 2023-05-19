@@ -27,6 +27,7 @@ header {
 	top: 0;
 	width: 100%;
 	text-align: center;
+	z-index: 10;
 }
 
 .header-content {
@@ -190,7 +191,7 @@ nav ul.mq-level-2 > li > span {
 	/* Displayed second level nav */
 	li.mq-selected > ul.mq-level-1 {
 		opacity: 1;
-		z-index: 10;
+		z-index: 8;
 	}
 
 	/* Second level nav item */
