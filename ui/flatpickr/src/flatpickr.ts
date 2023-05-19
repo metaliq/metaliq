@@ -59,7 +59,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
                 if (selectedDates[0]) {
                   value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
                   $.value = value
-                  up(validate, $)()
+                  up(validate, $)().catch(e => { throw e })
                 }
               },
               defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
@@ -79,7 +79,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
           />
         `
       })}
-      ${hasValue($) ? html`
+      ${hasValue($) && !disabled ? html`
         <button class="mq-field-clear" @click=${up(clearDate, $)} tabindex="-1"></button>
       ` : ""}
       ${fieldError(value, $)}

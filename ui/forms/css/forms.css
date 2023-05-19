@@ -2,9 +2,9 @@
 	--mq-error-color: #ef4444;
 	--mq-error-bg-color: #fee2e2;
 	--mq-success-color: #2eb82e;
+	--mq-warning-color: #ff9b06;
 	--mq-input-border: solid 1px #707070;
 	--mq-checkbox-size: 20px;
-	--mq-warning-color: #ff9b06;
 }
 
 textarea,
@@ -45,7 +45,7 @@ input[type="checkbox"]:disabled {
 	left: 16px;
 	transition: 0.2s ease-out;
 	transition-property: top, left, font-size;
-	z-index: 3;
+	z-index: 3; /* Enable label to "float" above content */
 }
 
 .mq-field.mq-mandatory:not(.mq-populated) .mq-input-label::after {
@@ -100,6 +100,7 @@ input[type="checkbox"]:disabled {
 	background-color: transparent;
 	background-repeat: no-repeat;
 	opacity: 0.25;
+	border: none;
 }
 
 .mq-input:focus {
@@ -110,7 +111,7 @@ input[type="checkbox"]:disabled {
 	outline-color: #d73f3f;
 }
 
-.mq-field .mq-input:disabled {
+.mq-field.mq-disabled, .mq-field .mq-input:disabled {
 	background: #f5f5f5;
 	border-color: #b3b3b3;
 	color: #474747;
@@ -201,8 +202,7 @@ input[type="checkbox"]:checked::before {
 	background: none;
 	border-radius: 6px;
 	cursor: pointer;
-	color: var(--mq-nav-color);
-	border: 2px solid var(--mq-nav-color);
+	border: var(--mq-input-border);
 }
 
 @media (max-width: 600px) {
