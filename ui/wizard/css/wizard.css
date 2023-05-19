@@ -28,7 +28,7 @@
 }
 
 .mq-wizard-nav-anchor {
-	background: var(--mq-nav-inactive-color);
+	background: var(--mq-nav-background);
 	width: 16px;
 	height: 16px;
 	border-radius: 8px;
@@ -62,7 +62,7 @@
 	position: absolute;
 	top: 7px;
 	height: 2px;
-	background: var(--mq-nav-inactive-color);
+	background: var(--mq-nav-background);
 	left: -50%;
 	right: 50%;
 	z-index: 1;
