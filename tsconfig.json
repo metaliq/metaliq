@@ -36,7 +36,7 @@
     { "path": "ui/flatpickr" },
     { "path": "ui/modals" },
     { "path": "ui/navigator" },
-    { "path": "ui/photo" },
+    { "path": "ui/media"},
     { "path": "ui/signature_pad" },
     { "path": "ui/wizard" },
     { "path": "ui/barcode-scanner" },

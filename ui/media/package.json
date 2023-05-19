@@ -1,6 +1,6 @@
 {
-  "name": "@metaliq/photo",
-  "description": "Photo and image field for MetaliQ",
+  "name": "@metaliq/media",
+  "description": "Media components for MetaliQ",
   "version": "1.0.0-beta.73",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
@@ -16,9 +16,9 @@
     "typescript": "4.7.3"
   },
   "license": "MIT",
-  "main": "lib/photo.js",
+  "main": "lib/media.js",
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/photo.d.ts"
+  "types": "lib/media.d.ts"
 }
