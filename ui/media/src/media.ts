@@ -10,6 +10,16 @@ APPLICATION()
 
 const Compressor = <unknown>getModuleDefault(CompressorModule, "Compressor") as typeof CompressorModule.default
 
+export const object: MetaView<string> = (v, $) => html`
+  <object data=${$.value}>
+    <a href="#" target="_blank" @click=${() => window.open($.value, "_blank")}>View</a>
+  </object>
+`
+
+export const iframe: MetaView<string> = (v, $) => html`
+  <iframe src=${$.value}></iframe>
+`
+
 export type MediaFieldOptions = FieldOptions<any> & {
   /**
    * What type of media does this field accept?
@@ -63,7 +73,7 @@ const defaultMediaFieldOptions: MediaFieldOptions = {
   icon: "bi bi-camera-fill"
 }
 
-export const mediaField = (options: MediaFieldOptions = {}): MetaView<string> => fieldContainer((value, $) => {
+export const mediaField = (options: MediaFieldOptions = {}): MetaView<string> => fieldContainer((v, $) => {
   options = { ...defaultMediaFieldOptions, ...options }
 
   const mediaSelected: MetaFn<string> = async (v, $, event) => {
@@ -86,9 +96,7 @@ export const mediaField = (options: MediaFieldOptions = {}): MetaView<string> =>
       <input ?disabled=${disabled} type="file" accept=${options.accept} @change=${$.up(mediaSelected)}>
       ${$.value && options.preview ? html`
         <div class="mq-media-preview">
-          <object data=${$.value}>
-            <a href="#" target="_blank" @click=${() => window.open($.value, "_blank")}>View</a>
-          </object>
+          ${iframe(v, $)}
         </div>
       ` : ""}
       ${$.value && !disabled ? html`

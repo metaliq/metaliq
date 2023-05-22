@@ -15,7 +15,7 @@ export { ApplicationTerms } from "@metaliq/application"
 
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
-Object.assign(window, { navigator: { userAgent: "" } })
+Object.assign(window, { navigator: { userAgent: "", platform: [] } })
 Object.assign(document, { documentElement: { style: {} } })
 
 const tscPath = join(".", "node_modules", ".bin", "tsc")
