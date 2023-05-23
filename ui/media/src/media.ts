@@ -1,10 +1,13 @@
 import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
+import { ifDefined } from "lit/directives/if-defined.js"
 import { MetaFn } from "metaliq"
 import { fieldContainer, FieldOptions, isDisabled } from "@metaliq/forms"
 import * as CompressorModule from "compressorjs"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { APPLICATION } from "@metaliq/application"
+
+export * from "./pdf-viewer"
 
 APPLICATION()
 
@@ -12,7 +15,7 @@ const Compressor = <unknown>getModuleDefault(CompressorModule, "Compressor") as 
 
 export const object: MetaView<string> = (v, $) => html`
   <object data=${$.value}>
-    <a href="#" target="_blank" @click=${() => window.open($.value, "_blank")}>View</a>
+    <a href="#" target="_blank" @click=${() => window.open($.value, "_blank")}>Open in New Tab</a>
   </object>
 `
 
@@ -20,7 +23,7 @@ export const iframe: MetaView<string> = (v, $) => html`
   <iframe src=${$.value}></iframe>
 `
 
-export type MediaFieldOptions = FieldOptions<any> & {
+export type FileInputOptions = FieldOptions<any> & {
   /**
    * What type of media does this field accept?
    * This should be set to a valid value for the HTML accept attribute.
@@ -49,38 +52,33 @@ export type MediaFieldOptions = FieldOptions<any> & {
   format?: "base64" | "blob"
 
   /**
-   * Indicate whether to display a preview of the selected media.
-   * This defaults to `true` and works well for images, PDFs etc.
-   * but may not be applicable to other file types,
-   * in which case it should be set to `false`.
-   */
-  preview?: boolean
-
-  /**
    * A class string for the icon element within the field.
    * This defaults to the bootstrap-icons camera icon,
    * which requires the relevant library CSS file to be loaded.
+   * // TODO: Make this a general FieldOption.
    */
   icon?: string
 }
 
-const defaultMediaFieldOptions: MediaFieldOptions = {
-  type: "media",
-  accept: "image/*",
-  compressImageTo: 4096,
-  format: "base64",
-  preview: true,
-  icon: "bi bi-camera-fill"
+export const defaultFileInputOptions: FileInputOptions = {
+  type: "file-input",
+  icon: "bi cloud-arrow-up",
+  format: "base64"
 }
 
-export const mediaField = (options: MediaFieldOptions = {}): MetaView<string> => fieldContainer((v, $) => {
-  options = { ...defaultMediaFieldOptions, ...options }
+export const fileInput = (options: FileInputOptions): MetaView<string> => (v, $) => {
+  options = { ...defaultFileInputOptions, ...options }
 
-  const mediaSelected: MetaFn<string> = async (v, $, event) => {
+  const disabled = $.fn(isDisabled)
+
+  const fileSelected: MetaFn<string> = async (v, $, event) => {
     const input = event.target as HTMLInputElement
     let blob: Blob = input.files[0]
     if (blob.type === "image" && options.compressImageTo) {
-      blob = await compress(blob as File, ({ maxWidth: options.compressImageTo, maxHeight: options.compressImageTo }))
+      blob = await compress(blob as File, ({
+        maxWidth: options.compressImageTo,
+        maxHeight: options.compressImageTo
+      }))
     }
     if (options.format === "base64") {
       $.value = await blobToBase64(blob)
@@ -90,20 +88,40 @@ export const mediaField = (options: MediaFieldOptions = {}): MetaView<string> =>
     input.value = ""
   }
 
-  const disabled = $.fn(isDisabled)
   return html`
-    <i class=${options.icon}></i>
-      <input ?disabled=${disabled} type="file" accept=${options.accept} @change=${$.up(mediaSelected)}>
-      ${$.value && options.preview ? html`
-        <div class="mq-media-preview">
-          ${iframe(v, $)}
-        </div>
-      ` : ""}
-      ${$.value && !disabled ? html`
-        <button class="mq-field-clear" @click=${$.up(clearValue)}></button>
-      ` : ""}
-  `
-}, { ...defaultMediaFieldOptions, ...options })
+  <i class=${options.icon}></i>
+  <input type="file" 
+    accept=${ifDefined(options.accept)}
+    ?disabled=${disabled} 
+    @change=${$.up(fileSelected)} 
+  />
+  ${$.value && !disabled ? html`
+    <button class="mq-field-clear" @click=${$.up(clearValue)}></button>
+  ` : ""}
+`
+}
+
+export const fileInputField = (options: FileInputOptions) => {
+  options = { ...defaultFileInputOptions, ...options }
+  return fieldContainer(options)(fileInput(options))
+}
+
+export const imageInputField = (options: FileInputOptions) => {
+  options = {
+    ...defaultFileInputOptions,
+    accept: "image/*",
+    compressImageTo: 4096,
+    format: "base64",
+    icon: "bi bi-camera-fill",
+    ...options
+  }
+  return fieldContainer(options)((v, $) => [
+    fileInput(options)(v, $),
+    v ? html`<div class="mq-media-preview">
+      <img src=${$.value} alt="Image Preview">
+    </div>` : ""
+  ])
+}
 
 export const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
   const reader = new FileReader()

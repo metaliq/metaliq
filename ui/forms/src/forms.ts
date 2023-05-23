@@ -1,11 +1,11 @@
-import { html } from "lit"
+import { html, TemplateResult } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
+import { isMeta, isMetaArray, MaybeFn, meta$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { fields, FieldsOptions, MetaView, repeat, setViewResolver } from "@metaliq/presentation"
+import { fields, FieldsOptions, MetaView, repeat, setViewResolver, ViewResult, ViewWrapper } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 import { APPLICATION } from "@metaliq/application"
 
@@ -60,9 +60,16 @@ setViewResolver(defaultView)
  */
 export type FieldOptions<T, P = any> = {
   /**
-   * Custom label content function
+   * Custom label for this field.
+   * Normally you'd use the `label` term on the MetaModel itself,
+   * and allow the field to represent that text value in its own way.
+   * This field option is available for cases such as:
+   * * You need alternate text where you have multiple views for the same field.
+   * * You want to customise the HTML template for a particular field label.
+   * The value can be either a ViewResult (some static HTML or a string)
+   * or a MetaView function.
    */
-  labelView?: MetaView<T, P>
+  label?: MaybeFn<T, P, ViewResult>
 
   /**
    * Additional class(es) for field container
@@ -72,7 +79,8 @@ export type FieldOptions<T, P = any> = {
   /**
    * Field type.
    * If present, used to assign class mq-<type>-field to fieldContainer.
-   * If used on an input, additionally specifies input type, e.g.
+   * Some types of field may make additional use, for example
+   * if used on an `inputField`, additionally specifies input type, e.g.
    * "text" | "checkbox" | "number" | "tel".
    */
   type?: string
@@ -141,30 +149,33 @@ export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
  * Leave options blank for a default text input field with validation.
  */
 export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> =>
-  fieldContainer(input({ type: "text", ...options }), options)
+  fieldContainer(options)(input({ type: "text", ...options }))
 
 /**
  * Label element for input field.
  */
 export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value, $) =>
-  typeof options?.labelView === "function"
-    ? options.labelView(value, $)
-    : html`<span class="mq-input-label">${labelOrKey($)}</span>`
+  typeof options?.label === "function"
+    ? options.label(value, $)
+    : typeof options?.label === "object"
+      ? options?.label as TemplateResult
+      : html`<span class="mq-input-label">${options?.label || labelOrKey($)}</span>`
 
 /**
  *
  */
-export const fieldContainer = <T>(fieldContent: MetaView<T>, options?: FieldOptions<any>): MetaView<T> => (v, $) => html`
-  <label class="mq-field ${classMap({
-    [options?.classes]: !!options?.classes,
-    [`mq-${options?.type || "text"}-field`]: options?.type,
-    ...fieldClasses($)
-  })}" >
-    ${fieldLabel(options)(v, $)}
-    ${fieldContent(v, $)}
-    ${errorMsg({ classes: "mq-field-error" })(v, $)}
-  </label>
-`
+export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): ViewWrapper<T, P> =>
+  fieldContent => (v, $) => html`
+    <label class="mq-field ${classMap({
+      [options?.classes]: !!options?.classes,
+      [`mq-${options?.type || "text"}-field`]: options?.type,
+      ...fieldClasses($)
+    })}" >
+      ${fieldLabel(options)(v, $)}
+      ${fieldContent(v, $)}
+      ${errorMsg({ classes: "mq-field-error" })(v, $)}
+    </label>
+  `
 
 /**
  * Input field with default options for a validated checkbox

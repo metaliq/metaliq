@@ -5,7 +5,7 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta$, MetaFn } from "metaliq"
-import { fieldContainer, isDisabled } from "@metaliq/forms"
+import { fieldContainer, isDisabled, FieldOptions } from "@metaliq/forms"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
@@ -26,10 +26,7 @@ type ChoicesJs = {
   clearStore: () => void
 }
 
-export type SelectorOptions<T, P = any> = {
-  classes?: string
-  type?: "text" | "select-one" | "select-multiple"
-
+export type SelectorOptions<T, P = any> = FieldOptions<T, P> & {
   /**
    * Either a static array of choices or a function that returns choices.
    * This allows dynamic choices based on values elsewhere in the data graph.
@@ -44,9 +41,20 @@ export type SelectorOptions<T, P = any> = {
    */
   searchFn?: SelectorSearchFn<P>
 
+  /**
+   * Text to display as a prompt in the search area.
+   */
   searchText?: string
+
+  /**
+   * Allow selection of multiple items.
+   */
   multiple?: boolean
-  sort?: boolean // Defaults to true, assign false to prevent alpha-sorting
+
+  /**
+   * Defaults to true, assign false to prevent alpha-sorting.
+   */
+  sort?: boolean
 }
 
 export type SelectorSearchFn<P> = (
@@ -164,8 +172,10 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
   `
 }
 
-export const selector = <T, P = any>(options: SelectorOptions<T, P> = {}): MetaView<T, P> =>
-  fieldContainer(innerSelector(options), { type: "select" })
+export const selector = <T, P = any>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => {
+  options = { type: "select", ...options }
+  return fieldContainer(options)(innerSelector(options))
+}
 
 export const objectChoices = (object: object, keyAsLabel: boolean = false) => [
   ...Object.entries(object).map(([k, v]) => ({

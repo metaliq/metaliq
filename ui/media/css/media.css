@@ -1,4 +1,4 @@
-.mq-field.mq-media-field {
+.mq-field.mq-file-input-field {
 	border: var(--mq-input-border);
 	border-radius: 2px;
 	padding: 10px;
@@ -7,12 +7,12 @@
 	min-height: 50px;
 }
 
-.mq-field:not(.mq-checkbox-field).mq-media-field .mq-input-label {
+.mq-field:not(.mq-checkbox-field).mq-file-input-field .mq-input-label {
 	top: 10px;
 	left: 30px;
 }
 
-.mq-field.mq-media-field input {
+.mq-field.mq-file-input-field input {
 	display: none;
 }
 
@@ -22,17 +22,6 @@
 	grid-template-rows: auto;
 }
 
-.mq-media-preview object {
-	max-height: 300px;
+.mq-pdf-viewer {
+	height: 1110px;
 }
-
-input[accept=".pdf"] + .mq-media-preview {
-	grid-template-columns: 1fr;
-}
-
-input[accept=".pdf"] + .mq-media-preview object {
-	height: 300px;
-	width: 100%;
-}
-
-
