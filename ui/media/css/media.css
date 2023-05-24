@@ -25,3 +25,8 @@
 .mq-pdf-viewer {
 	height: 1110px;
 }
+
+iframe {
+	width: 100%;
+	border: none;
+}
