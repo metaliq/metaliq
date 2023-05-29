@@ -1,4 +1,4 @@
-import { MetaView } from "@metaliq/presentation"
+import { getViewState, MetaView, setViewState } from "@metaliq/presentation"
 import { html } from "lit"
 import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
@@ -29,12 +29,14 @@ export type DatePickerOptions = {
   valueFormat?: string
 }
 
+const flatpickrInstance = "flatpickr-instance"
+
 export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
   const disabled = $.fn(isDisabled)
-  let fl: Instance = null
 
   const clearDate = ($: Meta$<string>) => {
     $.value = ""
+    const fl = $.fn(getViewState(flatpickrInstance))
     fl.clear()
   }
 
@@ -53,7 +55,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
 
         setTimeout(
           () => {
-            fl = flatpickr(`#${id}`, {
+            const fl = flatpickr(`#${id}`, {
               allowInput: true,
               onClose (selectedDates, dateStr) {
                 if (selectedDates[0]) {
@@ -67,6 +69,7 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
               dateFormat: options.displayFormat || "Y-m-d",
               disableMobile: true
             }) as Instance
+            $.fn(setViewState(flatpickrInstance, fl))
           },
           250
         )
