@@ -1,5 +1,5 @@
 import { parse as flat_parse, stringify as flat_stringify } from "flatted"
-import { applyModel, Meta, MetaModel } from "metaliq"
+import { applyModel, Meta, Meta$, MetaModel } from "metaliq"
 import { filterObject } from "@metaliq/util"
 
 /**
@@ -27,9 +27,9 @@ export const SERIALIZATION = () => {}
 export function stringify (meta: Meta<any>, statePredicate = defaultStatePredicate) {
   return flat_stringify(meta, (key, val) => {
     if (key === "$") {
-      const { meta, parent, key, value } = val
+      const { meta, parent$, key, value, index } = val as Meta$<any>
       const state = filterObject(val.state, statePredicate)
-      return { meta, parent, key, value, state }
+      return { meta, parent$, key, value, index, state }
     } else {
       return val
     }
