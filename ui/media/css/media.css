@@ -7,6 +7,12 @@
 	min-height: 50px;
 }
 
+.mq-field.mq-disabled.mq-file-input-field {
+	background: var(--mq-disabled-background);
+	border-color: var(--mq-disabled-border-color);
+	color: var(--mq-disabled-color);
+}
+
 .mq-field:not(.mq-checkbox-field).mq-file-input-field .mq-input-label {
 	top: 10px;
 	left: 30px;
