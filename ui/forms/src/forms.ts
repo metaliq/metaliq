@@ -126,7 +126,7 @@ export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T>
  */
 export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
   const result = $.term("disabled", true)
-  return result ?? false
+  return !!result
 }
 
 /**

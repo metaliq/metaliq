@@ -5,6 +5,9 @@
 	--mq-warning-color: #ff9b06;
 	--mq-input-border: solid 1px #707070;
 	--mq-checkbox-size: 20px;
+	--mq-disabled-background: #f5f5f5;
+	--mq-disabled-border-color: #b3b3b3;
+	--mq-disabled-color: #474747;
 }
 
 textarea,
@@ -111,10 +114,11 @@ input[type="checkbox"]:disabled {
 	outline-color: #d73f3f;
 }
 
-.mq-field.mq-disabled, .mq-field .mq-input:disabled {
-	background: #f5f5f5;
-	border-color: #b3b3b3;
-	color: #474747;
+.mq-field .mq-input:disabled,
+.mq-field.mq-text-area-field.mq-disabled {
+	background: var(--mq-disabled-background);
+	border-color: var(--mq-disabled-border-color);
+	color: var(--mq-disabled-color);
 }
 
 .mq-checkbox-field {
