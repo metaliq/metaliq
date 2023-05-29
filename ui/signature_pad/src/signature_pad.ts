@@ -1,8 +1,8 @@
-import { MetaView } from "@metaliq/presentation"
+import { getViewState, MetaView, setViewState } from "@metaliq/presentation"
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
 import { guard } from "lit/directives/guard.js"
-import { fieldClasses, fieldLabel } from "@metaliq/forms"
+import { fieldClasses, fieldLabel, isDisabled } from "@metaliq/forms"
 import { up } from "@metaliq/up"
 import SignaturePad from "signature_pad"
 import { Meta$ } from "metaliq"
@@ -49,12 +49,35 @@ const sigPadFormatMap: { [index in SignaturePadFormat]: string } = {
   RAW: ""
 }
 
+const disabledFlag = "sig-pad-disabled"
+const sigPadInstance = "sig-pad-instance"
+
 /**
  * A configurable MetaView<string> that displays a signature pad
  * and saves the value as either a data URL or a JSON string (recommended).
  */
 export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string> => (value, $) => {
   options = { ...defaultSignaturePadOptions, ...options }
+
+  const metaDisabled = $.fn(isDisabled)
+  const viewerDisabled = !!$.fn(getViewState(disabledFlag))
+
+  if (viewerDisabled !== metaDisabled) {
+    const sigPad = $.fn(getViewState(sigPadInstance)) as SignaturePad
+    if (metaDisabled) {
+      sigPad.off()
+      $.fn(setViewState(disabledFlag, true))
+    } else {
+      sigPad.on()
+      $.fn(setViewState(disabledFlag, false))
+    }
+  }
+
+  const clearSignature = ($: Meta$<string>) => {
+    const sigPad = $.fn(getViewState(sigPadInstance)) as SignaturePad
+    $.value = ""
+    sigPad.clear()
+  }
 
   return html`
     <label class="mq-field mq-signature-pad-field ${classMap(fieldClasses($))}">
@@ -63,11 +86,6 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
         const id = `mq-signature-pad-${Math.ceil(Math.random() * 1000000)}`
 
         let sigPad: SignaturePad = null
-
-        const clearSignature = ($: Meta$<string>) => {
-          $.value = ""
-          sigPad.clear()
-        }
 
         setTimeout(() => {
           const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)
@@ -83,7 +101,7 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
               } else {
                 $.value = sigPad.toDataURL(sigPadFormatMap[options.format])
               }
-            })()
+            })().catch(console.error)
           })
 
           const ratio = Math.max(window.devicePixelRatio || 1, 1)
@@ -99,18 +117,26 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
               if (options.format === "RAW") {
                 sigPad.fromData(JSON.parse($.value))
               } else {
-                sigPad.fromDataURL($.value)
+                sigPad.fromDataURL($.value).catch(console.error)
               }
             } catch (e) {
               console.warn("Invalid value for signature pad")
             }
           }
+
+          if ($.fn(isDisabled)) {
+            sigPad.off()
+            $.fn(setViewState(disabledFlag, true))
+          }
+          $.fn(setViewState(sigPadInstance, sigPad))
         }, 100)
         return html`
           <canvas class="mq-input" id=${id} height="600" width="1000" >  </canvas>
-          <button class="mq-field-clear" @mouseup=${up(clearSignature, $)} > </button>
         `
       })}
+      ${metaDisabled ? "" : html`
+        <button class="mq-field-clear" @mouseup=${up(clearSignature, $)} > </button>
+      `}
     </label>
   `
 }

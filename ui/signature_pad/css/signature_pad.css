@@ -2,3 +2,9 @@
 	height: 200px;
 	width: 100%;
 }
+
+.mq-field.mq-signature-pad-field.mq-disabled {
+	background: var(--mq-disabled-background);
+	border-color: var(--mq-disabled-border-color);
+	color: var(--mq-disabled-color);
+}
