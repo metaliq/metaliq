@@ -66,6 +66,7 @@ nav {
 	padding-top: var(--mq-nav-indent-size);
 	opacity: 0;
 	transition: var(--mq-nav-transition);
+	overflow: scroll;
 }
 
 /* Menu container when shown */
