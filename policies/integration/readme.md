@@ -25,11 +25,7 @@ This module provides a number of capabilities around developing GraphQL clients 
 
 ### Updating a local GraphQL Schema
 
-GraphQL solutions are based around a schema which defines the data types and the operations that can be called. Once published, the service makes this schema available along with its other operational capabilities. This is one of the main value propositions of GraphQL. The service is self describing. It defines and publishes its own schema definition, having a clear and discoverable interface  which can never be out of sync with the service itself.
 
-If your solution includes the implementation of the GraphQL server itself, using `@metaliq/graphql-server`, then your local schema represents the central, original service definition, and you author and maintain it within its project location. It is conventionally located at `gql/schema.gql`.
-
-On the other hand, if you are connecting to an external schema, whether it was developed using MetaliQ or another technology or provided by another organisation altogether, then the schema will come from the service itself. But your project will maintain a local, version controlled copy of that schema, in order to act as a reference to the API definition against which it is developed. So you could, for example, go back to a previous revision of the project and it would include the version of the schema that was current when that version was published.
 
 In this case, where you're connecting to and developing against an external schema, there are various ways to obtain the schema for inclusion in your local project, but MetaliQ makes this easy with a convenient wrapper around the `get-graphql-schema` utility. The integration policy makes this available via the MetaliQ CLI as follows:
 
@@ -43,7 +39,7 @@ MetaliQ solutions that connect to a single service often use the conventional sc
 
 ### Generate TypeScript Code
 
-Having authored or obtained a local copy of the GraphQL schema, MetaliQ will then assist you in generating a set of TypeScript source files within the `src/gen` folder location. This location is conventionally ignored from version control using `.gitignore`, as it includes source code which is itself generated from other sources (in this case the GraphQL schema) and thus can always be re-generated. These files are thus not truly original solution source code, but they need to live within the `src` folder for TypeScript compilation reasons.
+Having authored or obtained a local copy of the GraphQL schema, MetaliQ will then assist you in generating a set of TypeScript source files within the `src/gen` folder location. This location is conventionally ignored from version control using `.gitignore`, as it includes source code which is itself generated from other sources (in this case the GraphQL schema) and thus can always be re-generated. These files are thus not truly original solution source code, but they need to live within the `src` folder for TypeScript compilation reasons.
 
 
 
