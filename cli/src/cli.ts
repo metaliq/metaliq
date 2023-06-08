@@ -36,7 +36,7 @@ type ServeOptions = {
 const program = new Command()
 program
   .name("metaliq")
-  .version("1.0.0-beta.76")
+  .version("1.0.0-beta.77")
 
 program
   .command("run [modelName]")
