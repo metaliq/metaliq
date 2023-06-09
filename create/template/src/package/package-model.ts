@@ -75,7 +75,10 @@ export const packageModel: MetaModel<Package> = {
   view: [
     content(html`<h1>Project Configuration</h1>`),
     fields({ exclude: ["devDependencies", "peerDependencies"] }),
-    button({ onClick: op(updatePackageMutation, null, { message: "Updating package" }), label: "Save" })
+    button({
+      onClick: op(updatePackageMutation, null, { message: "Updating package" }),
+      label: "Save"
+    })
   ],
   bootstrap: (v, $) => {
     initApi(
