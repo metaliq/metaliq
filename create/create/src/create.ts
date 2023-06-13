@@ -47,12 +47,11 @@
  */
 
 import { URL } from "url"
-import { cp, readFile, writeFile, readdir, mkdir } from "fs/promises"
+import { cp, readFile, writeFile, readdir, mkdir, rename } from "fs/promises"
 import { cwd, chdir } from "process"
 import { resolve } from "path"
 import { templateUrl } from "@metaliq/template"
 import { execaCommand } from "execa"
-import { dedent } from "ts-dedent"
 
 const exec = (command: string) => execaCommand(command, { stdio: "inherit" })
 
@@ -92,18 +91,10 @@ const main = async () => {
     recursive: true
   })
 
-  // Add .gitignore (filtered out by NPM)
-  const gitignore = dedent`
-    /.idea/
-    /.vscode/
-    /node_modules/
-    /prod/
-    /bin/
-    /src/gen/
-    pnpm-lock.yaml
-  `
-  const gitignorePath = resolve(projectDir, ".gitignore")
-  await writeFile(gitignorePath, gitignore)
+  // These files get excluded under their standard names
+  // See: https://docs.npmjs.com/cli/v9/using-npm/developers
+  await rename(resolve(projectDir, ".gitignore.template"), resolve(".gitignore"))
+  await rename(resolve(projectDir, ".npmrc.template"), resolve(".npmrc"))
 
   // Remove project extension from tsconfig
   const tsConfigPath = resolve(projectDir, "tsconfig.json")

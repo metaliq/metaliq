@@ -2,6 +2,8 @@
 **/.idea/
 **/node_modules/
 **/lib/
+**/bin/
+**/src/gen/
 **/tsconfig.tsbuildinfo
 pnpm-lock.yaml
 /doc/api
