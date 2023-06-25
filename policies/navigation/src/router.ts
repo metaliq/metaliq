@@ -20,19 +20,56 @@ export type RouteParams<P, Q = any> = Partial<P & Q>
 export type RouteHandler<P, Q = any> = (params?: RouteParams<P, Q>) => any
 
 /**
- * An route related to a given pattern, which has the embedded URL parameters P,
+ * A route related to a given pattern, which has the embedded URL parameters P,
  * and potentially also takes optional query terms Q.
- * Routes maintain association with their handler (the `on` function)
+ * Routes maintain association with their handlers (`onEnter` and `onLeave`)
  * and provide various functions including `go`, which navigates to the route
  * with the given URL parameters and query terms.
  */
 export type Route<P extends object, Q = any> = {
+  /**
+   * The route pattern to match, including parameters, using the `path-to-regexp` format.
+   */
   pattern: string
+
+  /**
+   * Use this route as a fallback in the case of unrecognised URL paths.
+   * Typically would be the `home` route with pattern `\` but could be assigned differently.
+   * In the case where this is true for multiple routes, the first one in the
+   * order of the collection of routes provided to the Router will be the fallback.
+   */
+  isFallback?: boolean
+
+  /**
+   * A hook for functionality performed on entering the route.
+   * If this returns false, the route is not entered.
+   */
   onEnter?: RouteHandler<P, Q> // Performed on entering the route
+
+  /**
+   * A hook for functionality to be performed on leaving the route.
+   * If this returns false, the route will not be changed.
+   */
   onLeave?: RouteHandler<P, Q> // Performed on leaving the route, return false to cancel
+
+  /**
+   * The matching function created when the route is initialised.
+   */
   match: MatchFunction<P> // Matcher for the route's given pattern
+
+  /**
+   * The maker function created when the route is initialised.
+   */
   make: PathFunction<P> // Function to construct a route of the given pattern
+
+  /**
+   * Navigate to the given route, with the provided route parameters.
+   */
   go: RouteGoer<P, Q> // Function to go to the given route
+
+  /**
+   * The router that contains this route.
+   */
   router?: Router
 }
 
@@ -73,7 +110,10 @@ export class Router {
 
   onHandled: (...params: any[]) => any
 
-  constructor (routes: Array<Route<object>>, onHandled?: (...params: any[]) => any) {
+  constructor (
+    routes: Array<Route<object>>,
+    onHandled?: (...params: any[]) => any
+  ) {
     (this.routes = routes).forEach(route => {
       route.router = this
     })
@@ -82,6 +122,9 @@ export class Router {
 
   oldLocation: { pathParams: any, queryParams: any } = null
 
+  /**
+   * Test whether the current route can be left.
+   */
   async canLeave () {
     if (typeof this.currentRoute?.onLeave === "function") {
       const leave = await this.currentRoute.onLeave({
