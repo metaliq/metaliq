@@ -36,8 +36,8 @@ export const apiModel: MetaModel<Resolvers> = {
           ...oldPkg,
           ...pkg,
           dependencies: setDeps(pkg.dependencies),
-          peerDependencies: setDeps(pkg.dependencies),
-          devDependencies: setDeps(pkg.dependencies)
+          peerDependencies: setDeps(pkg.peerDependencies),
+          devDependencies: setDeps(pkg.devDependencies)
         } // Consolidated package structured with dependencies as objects
         const newJson = JSON.stringify(newPkg, (k, v) => v === null ? undefined : v, "  ")
         await writeFile("./package.json", newJson)
