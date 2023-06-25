@@ -30,7 +30,7 @@
     "@metaliq/up": "workspace:*",
     "@metaliq/validation": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
-    "graphqlex": "0.15.0",
+    "graphqlex": "0.16.0",
     "lit": "^2.7.0",
     "metaliq": "workspace:*"
   },
