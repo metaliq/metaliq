@@ -204,6 +204,7 @@ export const field = <T, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
 ): MetaView<T> => (v, $) => {
     const field$ = $.child$(key)
+    if (!field$) console.warn(`No field() key '${key}'`)
     return field$?.view(view, options)
   }
 

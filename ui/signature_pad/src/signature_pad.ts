@@ -49,8 +49,8 @@ const sigPadFormatMap: { [index in SignaturePadFormat]: string } = {
   RAW: ""
 }
 
-const disabledFlag = "sig-pad-disabled"
-const sigPadInstance = "sig-pad-instance"
+const DISABLED_FLAG = "sig-pad-disabled"
+const SIG_PAD_INSTANCE = "sig-pad-instance"
 
 /**
  * A configurable MetaView<string> that displays a signature pad
@@ -60,21 +60,21 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
   options = { ...defaultSignaturePadOptions, ...options }
 
   const metaDisabled = $.fn(isDisabled)
-  const viewerDisabled = !!$.fn(getViewState(disabledFlag))
+  const viewerDisabled = !!$.fn(getViewState(DISABLED_FLAG))
 
   if (viewerDisabled !== metaDisabled) {
-    const sigPad = $.fn(getViewState(sigPadInstance)) as SignaturePad
+    const sigPad = $.fn(getViewState(SIG_PAD_INSTANCE)) as SignaturePad
     if (metaDisabled) {
-      sigPad.off()
-      $.fn(setViewState(disabledFlag, true))
+      if (sigPad) sigPad.off()
+      $.fn(setViewState(DISABLED_FLAG, true))
     } else {
-      sigPad.on()
-      $.fn(setViewState(disabledFlag, false))
+      if (sigPad) sigPad.on()
+      $.fn(setViewState(DISABLED_FLAG, false))
     }
   }
 
   const clearSignature = ($: Meta$<string>) => {
-    const sigPad = $.fn(getViewState(sigPadInstance)) as SignaturePad
+    const sigPad = $.fn(getViewState(SIG_PAD_INSTANCE)) as SignaturePad
     $.value = ""
     sigPad.clear()
   }
@@ -126,9 +126,9 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
 
           if ($.fn(isDisabled)) {
             sigPad.off()
-            $.fn(setViewState(disabledFlag, true))
+            $.fn(setViewState(DISABLED_FLAG, true))
           }
-          $.fn(setViewState(sigPadInstance, sigPad))
+          $.fn(setViewState(SIG_PAD_INSTANCE, sigPad))
         }, 100)
         return html`
           <canvas class="mq-input" id=${id} height="600" width="1000" >  </canvas>

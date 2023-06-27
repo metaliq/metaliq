@@ -33,10 +33,14 @@ const flatpickrInstance = "flatpickr-instance"
 
 export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
   const disabled = $.fn(isDisabled)
+  const fl = $.fn(getViewState(flatpickrInstance)) as Instance
+
+  if (fl && $.value && new Date(fl.selectedDates[0]) !== new Date($.value)) {
+    fl.setDate(new Date($.value))
+  }
 
   const clearDate = ($: Meta$<string>) => {
     $.value = ""
-    const fl = $.fn(getViewState(flatpickrInstance))
     fl.clear()
   }
 
