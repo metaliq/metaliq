@@ -19,7 +19,7 @@
     "@types/clean-css": "4.2.5",
     "@types/fs-extra": "9.0.13",
     "@types/mime-types": "2.1.1",
-    "@types/node": "16.10.3",
+    "@types/node": "18.14.1",
     "typescript": "4.7.3"
   },
   "license": "MIT",

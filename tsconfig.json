@@ -8,7 +8,7 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,
@@ -40,6 +40,7 @@
     { "path": "ui/signature_pad" },
     { "path": "ui/wizard" },
     { "path": "ui/barcode-scanner" },
+    { "path": "ui/metadoc" },
 
     { "path": "targets/web-page-app"},
     { "path": "targets/web-component"},

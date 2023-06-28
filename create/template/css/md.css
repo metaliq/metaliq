@@ -1,0 +1,14 @@
+.md-page {
+	padding: 60px 50px;
+}
+
+.markdown-body {
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+@media (max-width: 940px) {
+	.md-page {
+		padding: 100px 30px;
+	}
+}
