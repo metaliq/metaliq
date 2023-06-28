@@ -15,7 +15,14 @@ export type EndoFunction = <T> (o: T) => T
 export type MaybeReturn <T> = T | void
 
 /**
- * Shorthand assertive type-cast. Use with care.
+ * Shorthand assertive type-cast. Use with care. Instead of:
+ * ```ts
+ * <unknown>value as <Type>
+ * ```
+ * use:
+ * ```ts
+ * as<Type>(value)
+ * ```
  */
 export const as = <T> (value: any): T => value as T
 
