@@ -6,8 +6,10 @@ import { content, fields, repeat, tag } from "@metaliq/presentation"
 import { button } from "@metaliq/forms"
 import { showMessage, showProgress } from "@metaliq/modals"
 import { handleResponseErrors, op } from "@metaliq/integration"
+import { route } from "@metaliq/navigation"
 
 export { APPLICATION } from "@metaliq/application"
+export { NAVIGATION } from "@metaliq/navigation"
 
 /**
  * This is a validator for semantic versions, showing how a validator function is made.
@@ -42,6 +44,8 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
  * A MetaModel for the data type Package.
  */
 export const packageModel: MetaModel<Package> = {
+  label: "Package Details",
+  route: route("/package"),
   fields: {
     name: {
       label: "Name"
@@ -85,6 +89,12 @@ export const packageModel: MetaModel<Package> = {
       "http://localhost:8940/graphql",
       { onResponse: handleResponseErrors(showMessage, showProgress) }
     )
-    $.op(fetchPackageQuery, null, { message: "Fetching project information" })()
+  },
+  onEnter: (v, $) => () => {
+    $.op(
+      fetchPackageQuery,
+      null,
+      { message: "Fetching project information" }
+    )()
   }
 }
