@@ -219,6 +219,7 @@ const packageJson: Record<Cloud, object> = {
     type: "module",
     main: "index.js",
     dependencies: {
+      "@google-cloud/functions-framework": "^3.2.1",
       "@lit-labs/ssr": "1.0.0",
       "apollo-server-cloud-functions": "3.6.1",
       "firebase-admin": "9.8.0",
