@@ -1,10 +1,12 @@
 import { MetaModel } from "metaliq"
 import { Package } from "./gen/graphql-types"
-import { ModalInfo, modalModel } from "@metaliq/modals"
-import { packageModel } from "./package/package-model"
+import { ModalInfo, modalModel, showMessage, showProgress } from "@metaliq/modals"
+import { packageDepndenciesModel, packageInfoModel } from "./package/package-models"
 import { intro } from "./gen/content/intro"
 import { navigator } from "@metaliq/navigator"
 import { route, setNavSelectionResponsive } from "@metaliq/navigation"
+import { initApi } from "./gen/graphql-operations"
+import { handleResponseErrors } from "@metaliq/integration"
 
 export { labelPath } from "@metaliq/terminology"
 export { validate } from "@metaliq/validation"
@@ -19,7 +21,10 @@ export type App = {
 
 export type Nav = {
   welcome: any
-  package: Package
+  configure: {
+    info: Package,
+    deps: Package
+  }
 }
 
 const navModel: MetaModel<Nav> = {
@@ -33,7 +38,13 @@ const navModel: MetaModel<Nav> = {
       view: intro,
       route: route("/")
     },
-    package: packageModel
+    configure: {
+      label: "Configure",
+      fields: {
+        info: packageInfoModel,
+        deps: packageDepndenciesModel
+      }
+    }
   }
 }
 
@@ -46,5 +57,11 @@ export const appModel: MetaModel<App> = {
   fields: {
     nav: navModel,
     modal: modalModel
-  }
+  },
+  bootstrap: (v, $) => {
+    initApi(
+      "http://localhost:8940/graphql",
+      { onResponse: handleResponseErrors(showMessage, showProgress) }
+    )
+  },
 }

@@ -43,9 +43,9 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
 /**
  * A MetaModel for the data type Package.
  */
-export const packageModel: MetaModel<Package> = {
-  label: "Package Details",
-  route: route("/package"),
+export const packageInfoModel: MetaModel<Package> = {
+  label: "Information",
+  route: route("/config/info"),
   fields: {
     name: {
       label: "Name"
@@ -62,7 +62,29 @@ export const packageModel: MetaModel<Package> = {
     version: {
       label: "Version",
       validator: versionValidator
-    },
+    }
+  },
+  view: [
+    tag("h1")("Configure Solution Information"),
+    fields(),
+    button({
+      onClick: op(updatePackageMutation, null, { message: "Updating package" }),
+      label: "Save"
+    })
+  ],
+  onEnter: (v, $) => () => {
+    $.op(
+      fetchPackageQuery,
+      null,
+      { message: "Fetching project information" }
+    )()
+  }
+}
+
+export const packageDepndenciesModel: MetaModel<Package> = {
+  label: "Dependencies",
+  route: route("/config/deps"),
+  fields: {
     dependencies: {
       label: "Dependencies",
       ...dependenciesModel
@@ -77,19 +99,13 @@ export const packageModel: MetaModel<Package> = {
     }
   },
   view: [
-    content(html`<h1>Project Configuration</h1>`),
-    fields({ exclude: ["devDependencies", "peerDependencies"] }),
+    tag("h1")("Configure Project Dependencies"),
+    fields(),
     button({
       onClick: op(updatePackageMutation, null, { message: "Updating package" }),
       label: "Save"
     })
   ],
-  bootstrap: (v, $) => {
-    initApi(
-      "http://localhost:8940/graphql",
-      { onResponse: handleResponseErrors(showMessage, showProgress) }
-    )
-  },
   onEnter: (v, $) => () => {
     $.op(
       fetchPackageQuery,
