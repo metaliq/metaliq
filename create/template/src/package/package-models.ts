@@ -103,10 +103,6 @@ export const packageDependenciesModel: MetaModel<Package> = {
     devDependencies: {
       ...dependenciesModel,
       label: "Development Dependencies"
-    },
-    peerDependencies: {
-      ...dependenciesModel,
-      label: "Peer Dependencies"
     }
   },
   view: page([

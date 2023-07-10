@@ -1,3 +1,11 @@
+:root {
+	--mq-modal-header-background: #458;
+	--mq-modal-header-text-color: #000022;
+	--mq-modal-background: white;
+	--mq-modal-border: solid 1px #aaa;
+	--mq-modal-text-color: black;
+}
+
 @keyframes spin {
 	from {
 		transform: rotate(0deg);
@@ -21,12 +29,12 @@
 }
 
 .mq-modal {
-	background: white;
+	background: var(--mq-modal-background);
 	min-width: 400px;
 	max-width: 450px;
 	min-height: 200px;
 	border-radius: 4px;
-	border: solid 1px #aaa;
+	border: var(--mq-modal-border);
 	box-shadow: rgba(125 125 125 / 0.2) 5px 5px 5px 5px;
 	display: grid;
 	grid-template-rows: 40px 1fr 70px;
@@ -42,9 +50,9 @@
 .mq-modal-header {
 	padding: 7px 10px 5px;
 	font-size: 19px;
-	background: blue;
+	background: var(--mq-modal-header-background);
 	width: 100%;
-	color: white;
+	color: var(--mq-modal-header-text-color);
 	text-align: center;
 }
 

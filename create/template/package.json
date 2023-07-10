@@ -58,6 +58,5 @@
     "graphql": "^16.6.0",
     "graphqlex-codegen": "0.20.0",
     "typescript": "4.7.3"
-  },
-  "peerDependencies": {}
+  }
 }

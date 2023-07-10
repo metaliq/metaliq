@@ -8,7 +8,6 @@ type Package {
   license: String
   dependencies: [Dependency]
   devDependencies: [Dependency]
-  peerDependencies: [Dependency]
 }
 
 input PackageIn {
@@ -19,7 +18,6 @@ input PackageIn {
   license: String
   dependencies: [DependencyIn]
   devDependencies: [DependencyIn]
-  peerDependencies: [DependencyIn]
 }
 
 type Dependency {

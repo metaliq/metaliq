@@ -12,10 +12,6 @@ fragment packageContent on Package {
     name
     version
   }
-  peerDependencies{
-    name
-    version
-  }
 }
 
 fragment unusedFragment on Package {

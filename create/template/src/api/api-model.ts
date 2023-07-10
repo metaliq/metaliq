@@ -18,8 +18,7 @@ export const apiModel: MetaModel<Resolvers> = {
           Object.entries(pkg[key] || {}).map(([k, v]) => ({ name: k, version: v })) as Dependency[]
         const dependencies = getDeps("dependencies")
         const devDependencies = getDeps("devDependencies")
-        const peerDependencies = getDeps("peerDependencies")
-        return { author, name, license, version, description, devDependencies, dependencies, peerDependencies } as Package
+        return { author, name, license, version, description, devDependencies, dependencies } as Package
       }
     },
     Mutation: {
@@ -36,10 +35,9 @@ export const apiModel: MetaModel<Resolvers> = {
           ...oldPkg,
           ...pkg,
           dependencies: setDeps(pkg.dependencies),
-          peerDependencies: setDeps(pkg.peerDependencies),
           devDependencies: setDeps(pkg.devDependencies)
         } // Consolidated package structured with dependencies as objects
-        const newJson = JSON.stringify(newPkg, (k, v) => v === null ? undefined : v, "  ")
+        const newJson = JSON.stringify(newPkg, (k, v) => v === null ? undefined : v, "  ") + "\n"
         await writeFile("./package.json", newJson)
         return { ...oldPkg, ...pkg } // Consolidated package with dependencies as arrays, as per schema
       }
