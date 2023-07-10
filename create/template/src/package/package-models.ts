@@ -40,10 +40,19 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
     }
   },
   view: [
-    content(html`<h3>Dependencies</h3>`),
+    tag("h3")((v, $) => $.term("label")),
     repeat(tag(".deps-grid")(fields()))
-  ]
+  ],
+  hidden: v => !v // Hide until populated
 }
+
+const savePackageButton = tag(".form-controls")(
+  button({
+    type: "success",
+    onClick: op(updatePackageMutation, null, { message: "Updating package" }),
+    label: "Save"
+  })
+)
 
 /**
  * A MetaModel for the data type Package.
@@ -72,10 +81,7 @@ export const packageInfoModel: MetaModel<Package> = {
   view: page([
     tag("h1")("Configure Solution Information"),
     fields(),
-    button({
-      onClick: op(updatePackageMutation, null, { message: "Updating package" }),
-      label: "Save"
-    })
+    savePackageButton,
   ]),
   onEnter: (v, $) => () => {
     $.op(
@@ -86,30 +92,27 @@ export const packageInfoModel: MetaModel<Package> = {
   }
 }
 
-export const packageDepndenciesModel: MetaModel<Package> = {
+export const packageDependenciesModel: MetaModel<Package> = {
   label: "Dependencies",
   route: route("/config/deps"),
   fields: {
     dependencies: {
-      label: "Dependencies",
-      ...dependenciesModel
+      ...dependenciesModel,
+      label: "Dependencies"
     },
     devDependencies: {
-      label: "Development Dependencies",
-      ...dependenciesModel
+      ...dependenciesModel,
+      label: "Development Dependencies"
     },
     peerDependencies: {
-      label: "Peer Dependencies",
-      ...dependenciesModel
+      ...dependenciesModel,
+      label: "Peer Dependencies"
     }
   },
   view: page([
     tag("h1")("Configure Project Dependencies"),
     fields(),
-    button({
-      onClick: op(updatePackageMutation, null, { message: "Updating package" }),
-      label: "Save"
-    })
+    savePackageButton
   ]),
   onEnter: (v, $) => () => {
     $.op(

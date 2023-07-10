@@ -1,6 +1,16 @@
+:root {
+	--mq-success-color: #458;
+}
+
 body, input, textarea {
 	font-family: 'Source Sans Pro', sans-serif;
 	font-size: 16px;
+}
+
+.form-controls {
+	display: grid;
+	justify-content: right;
+	padding: 10px 0;
 }
 
 .deps-grid {

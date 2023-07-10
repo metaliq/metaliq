@@ -233,14 +233,12 @@ export const errorsBlock: MetaView<any> = (v, $ = meta$(v)) => {
   `
 }
 
-export type ButtonOptions<T, P = any> = {
-  label?: string | MetaFn<T, P>
-  classes?: string
+export type ButtonOptions<T, P = any> = FieldOptions<T, P> & {
   onClick?: MetaFn<T, P>
 }
 
 export const button = <T, P = any>(options: ButtonOptions<T, P> = {}): MetaView<T, P> => (v, $ = meta$(v)) => html`
-  <button class="mq-button ${options.classes ?? ""}" @click=${$ ? $.up(options.onClick) : up(options.onClick, v)}>
+  <button class="mq-button ${options.classes ?? ""} ${options.type ? `mq-${options.type}-button` : ""}" @click=${$ ? $.up(options.onClick) : up(options.onClick, v)}>
     ${$?.maybeFn(options.label) ?? $?.term("label") ?? options.label}
   </button> 
 `

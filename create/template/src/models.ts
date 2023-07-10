@@ -1,7 +1,7 @@
 import { MetaModel } from "metaliq"
 import { Package } from "./gen/graphql-types"
 import { ModalInfo, modalModel, showMessage, showProgress } from "@metaliq/modals"
-import { packageDepndenciesModel, packageInfoModel } from "./package/package-models"
+import { packageDependenciesModel, packageInfoModel } from "./package/package-models"
 import { intro } from "./gen/content/intro"
 import { navigator } from "@metaliq/navigator"
 import { route, setNavSelectionResponsive } from "@metaliq/navigation"
@@ -42,7 +42,7 @@ const navModel: MetaModel<Nav> = {
       label: "Configure",
       fields: {
         info: packageInfoModel,
-        deps: packageDepndenciesModel
+        deps: packageDependenciesModel
       }
     }
   }
