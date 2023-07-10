@@ -44,21 +44,30 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
           (item$.childKeys().some(k => item$.child$(k).term("route"))))
     })
   if (keys.length) {
-    const selected$ = getNavSelection($)
+    const selectedChild$ = getNavSelection($, { recurse: false })
+    const selectedLeaf$ = getNavSelection($, { recurse: true })
     return html`
       <ul class=${`mq-level-${level}`}>
-        ${keys.map(key => menuItem($.child$(key), selected$, level))}
+        ${keys.map(key => {
+          const child$ = $.child$(key)
+          const isSelected = selectedChild$ === child$ // Anywhere in the selection chain
+          const isSelectedItem = selectedLeaf$ === child$ // The specifically selected item
+          return menuItem(child$, isSelected, isSelectedItem, level)
+        })}
       </ul>
     `
   } else return ""
 }
 
-const menuItem = (navItem$: Meta$<any>, selected$: Meta$<any>, level: number = 1): ViewResult => {
+const menuItem = (
+  navItem$: Meta$<any>, isSelected: boolean, isSelectedItem: boolean, level: number = 1
+): ViewResult => {
   const text = navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
     <li @click=${navItem$.up(goNavRoute)} class=${classMap({
-      "mq-selected": navItem$ === selected$
+      "mq-nav-selected": isSelected,
+      "mq-nav-selected-item": isSelectedItem
     })}>
       ${icon ? html`<i class=${icon}>` : ""}
       ${text ? html`<span>${text}</span>` : ""}

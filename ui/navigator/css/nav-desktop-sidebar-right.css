@@ -1,0 +1,16 @@
+/* PROGRESSIVE MODS FOR DEKSTOP */
+@media (min-width: 940px) {
+	header {
+		right: 0;
+	}
+
+	nav {
+		left: auto;
+		right: 0;
+	}
+
+	/* Content area */
+	.mq-article {
+		padding: 0 var(--mq-nav-width) 0 0;
+	}
+}
