@@ -185,8 +185,8 @@ export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
 /**
  * Get the meta$ for the current selection in the given ancestor navigation meta$.
  *
- * By default this
- * Pass option `{ recurse: false }` to find the nav selection at the level of the
+ * By default, this is a recursive function that returns the innermost (leaf) selection.
+ * Pass option `{ recurse: false }` to find the immediate child selection at the level of the
  * provided meta value and no deeper.
  */
 export const getNavSelection = ($: Meta$<any>, {
@@ -257,7 +257,7 @@ export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
  * Usually not used directly, but referenced via {@link setNavSelectionResponsive}.
  */
 export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $ = meta$(v)) => {
-  if (typeof window === "object" && window.outerWidth < width) {
+  if (typeof document === "object" && document.body?.clientWidth < width) {
     $.fn(root$).fn(onDescendants((v, $) => {
       if ($.state.nav?.showMenu) {
         $.state.nav.showMenu = false
