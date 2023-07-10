@@ -1,5 +1,7 @@
 :root {
 	--mq-success-color: #458;
+	--grid-border: solid #ccc;
+	--grid-border-width: 1px;
 }
 
 body, input, textarea {
@@ -10,10 +12,46 @@ body, input, textarea {
 .form-controls {
 	display: grid;
 	justify-content: right;
-	padding: 10px 0;
+	padding: 20px 0;
 }
 
-.deps-grid {
+.deps-grid-cols {
 	display: grid;
-	grid-template-columns: 50% 50%;
+	grid-template-columns: 1fr 125px;
+}
+
+.deps-grid-header {
+	background: #eee;
+}
+
+.deps-grid-header > * {
+	padding: 10px;
+	border: solid #ccc;
+}
+
+.deps-grid .mq-field {
+	margin: 0;
+}
+
+.deps-grid .mq-field .mq-input-label {
+	display: none;
+}
+
+.deps-grid .mq-field .mq-input {
+	padding: 0 10px;
+	border: none;
+}
+
+.deps-grid-cols > * {
+	border: var(--grid-border);
+	border-width: var(--grid-border-width) 0 0 var(--grid-border-width);
+	border-radius: 0;
+}
+
+.deps-grid-cols > *:last-child {
+	border-right-width: var(--grid-border-width);
+}
+
+.deps-grid-cols:last-child > * {
+	border-bottom-width: var(--grid-border-width);
 }

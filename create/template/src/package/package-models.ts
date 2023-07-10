@@ -2,7 +2,7 @@ import { MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { html } from "lit"
 import { fetchPackageQuery, initApi, updatePackageMutation } from "../gen/graphql-operations"
-import { content, fields, repeat, tag } from "@metaliq/presentation"
+import { content, fields, repeat, tag, tags } from "@metaliq/presentation"
 import { button } from "@metaliq/forms"
 import { showMessage, showProgress } from "@metaliq/modals"
 import { handleResponseErrors, op } from "@metaliq/integration"
@@ -40,8 +40,13 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
     }
   },
   view: [
-    tag("h3")((v, $) => $.term("label")),
-    repeat(tag(".deps-grid")(fields()))
+    tag("h2")((v, $) => $.term("label")),
+    tag(".deps-grid-cols .deps-grid-header")(
+      tags()(["Package Name", "Version"])
+    ),
+    tag(".deps-grid")(
+      repeat(tag(".deps-grid-cols")(fields()))
+    )
   ],
   hidden: v => !v // Hide until populated
 }

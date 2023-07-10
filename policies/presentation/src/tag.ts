@@ -1,5 +1,5 @@
 import { html, literal } from "lit/static-html.js"
-import { MetaView, MetaViewTerm, SingularViewResult, ViewResult } from "./presentation"
+import { MetaView, MetaViewTerm, ViewResult } from "./presentation"
 import { nothing } from "lit"
 import { isMetaFn, MetaFn } from "metaliq"
 
@@ -17,7 +17,7 @@ export type TagConfig = string // Leave scope for extended object tag config in 
  * a meta view term, which is a single meta view or an
  * array of meta views.
  */
-export type TagBody<T, P = any> = MetaViewTerm<T, P> | SingularViewResult
+export type TagBody<T, P = any> = MetaViewTerm<T, P> | ViewResult
 
 /**
  * Options to support additional functionality, e.g. click handling.
@@ -38,8 +38,10 @@ export const tag = (config: TagConfig = "") =>
     }
     const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1] || nothing
     const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ") || nothing
-    const isViewResult = (body: TagBody<T, P>): body is SingularViewResult =>
-      typeof body === "string" || (typeof body === "object" && "strings" in body)
+    const isViewResult = (body: TagBody<T, P>): body is ViewResult =>
+      typeof body === "string" ||
+      (typeof body === "object" && "strings" in body) ||
+      (Array.isArray(body) && isViewResult(body[0]))
     let content: ViewResult
     if (isViewResult(body)) {
       content = body
@@ -50,6 +52,18 @@ export const tag = (config: TagConfig = "") =>
     return html`
       <${tagLiteral} id=${id} class=${classes} @click=${onClick}>${content}</${tagLiteral}>
     `
+  }
+
+export const tags = (config: TagConfig = "") =>
+  <T = any, P = any>(
+    body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
+  ): Array<MetaView<T, P>> => {
+    const configured = tag(config)
+    if (Array.isArray(body)) {
+      return body.map(b => configured(b))
+    } else {
+      return [configured(body)]
+    }
   }
 
 /**
