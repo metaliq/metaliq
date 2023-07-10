@@ -5,8 +5,11 @@
 @import "../node_modules/@metaliq/navigator/css/navigator.css";
 @import "../node_modules/@metaliq/navigator/css/nav-desktop-sidebar.css";
 
+@import "reset.css";
+
 @import "github-markdown-light.min.css";
 
-@import "reset.css";
 @import "md.css";
+@import "prose.css";
+
 @import "app.css";

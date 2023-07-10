@@ -1,0 +1,23 @@
+h1 {
+	font-size: 2em;
+	margin: 20px 0 40px;
+}
+
+h2 {
+	font-size: 1.5em;
+}
+
+p {
+	margin-block-start: 1em;
+	margin-block-end: 1em;
+}
+
+li {
+	list-style: disc;
+	margin-bottom: 0.5em;
+	margin-left: 1em;
+}
+
+li li {
+	list-style: circle;
+}

@@ -16,9 +16,14 @@ export { NAVIGATION } from "@metaliq/navigation"
  * It takes a proposed value, checks it (in this case against a regex)
  * and returns either `true` (indicating that the value is valid) or an error message.
  */
-export const versionValidator = (version: string) =>
+const versionValidator = (version: string) =>
   !!version.match(/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/) ||
   "This needs to be a valid semantic version"
+
+/**
+ * Set up a tag configured with classes that apply the same styling used by the metadocs.
+ */
+const page = tag(".md-page.markdown-body")
 
 /**
  * A MetaModel for the data type Dependency.
@@ -64,14 +69,14 @@ export const packageInfoModel: MetaModel<Package> = {
       validator: versionValidator
     }
   },
-  view: [
+  view: page([
     tag("h1")("Configure Solution Information"),
     fields(),
     button({
       onClick: op(updatePackageMutation, null, { message: "Updating package" }),
       label: "Save"
     })
-  ],
+  ]),
   onEnter: (v, $) => () => {
     $.op(
       fetchPackageQuery,
@@ -98,14 +103,14 @@ export const packageDepndenciesModel: MetaModel<Package> = {
       ...dependenciesModel
     }
   },
-  view: [
+  view: page([
     tag("h1")("Configure Project Dependencies"),
     fields(),
     button({
       onClick: op(updatePackageMutation, null, { message: "Updating package" }),
       label: "Save"
     })
-  ],
+  ]),
   onEnter: (v, $) => () => {
     $.op(
       fetchPackageQuery,

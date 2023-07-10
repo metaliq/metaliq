@@ -47,4 +47,4 @@ export const apiModel: MetaModel<Resolvers> = {
   }
 }
 
-const wait = (delay: number = 1000) => new Promise(resolve => setTimeout(resolve, delay))
+const wait = (delay: number = 500) => new Promise(resolve => setTimeout(resolve, delay))
