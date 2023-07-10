@@ -17,9 +17,16 @@ let server: { stop: () => void } // Simple typing for non-exposed DevServer type
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
 
+const addBaseHref = (config: WebPageAppConfig) => {
+  config.pageInfo = config.pageInfo || {}
+  // Use ?? to allow passing an empty string to exclude base href
+  config.pageInfo.baseHref = config.pageInfo.baseHref ?? "/"
+}
+
 export const webPageAppRunner = (
   config: WebPageAppConfig = {}
 ): Runner => async ({ modelName, simplePath, model }) => {
+  addBaseHref(config)
 
   let port = config.run?.port
   if (!port) {
@@ -105,6 +112,8 @@ export const webPageAppCleaner = (
 export const webPageAppBuilder = (
   config: WebPageAppConfig = {}
 ): Builder => async ({ modelName, simplePath, model }) => {
+  addBaseHref(config)
+
   // Deduce locations
   const destDir = config.build?.destDir || "prod/www"
   const htmlDest = config.build?.html?.dest || "index.html"
