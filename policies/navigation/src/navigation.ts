@@ -1,13 +1,5 @@
-import { Route, RouteHandler, Router } from "./router"
-import {
-  FieldKey,
-  fieldKeys,
-  Meta$,
-  MetaFn,
-  metaSetups,
-  MetaModel,
-  onDescendants, root$, meta$
-} from "metaliq"
+import { Route, RouteParams, Router } from "./router"
+import { FieldKey, fieldKeys, Meta$, meta$, MetaFn, MetaModel, metaSetups, onDescendants, root$ } from "metaliq"
 import { up } from "@metaliq/up"
 import { APPLICATION } from "@metaliq/application"
 
@@ -83,7 +75,8 @@ declare module "metaliq" {
   }
 }
 
-export type MetaRouteHandler<T, P = any, RP = any, RQ = any> = MetaFn<T, P, RouteHandler<RP, RQ>>
+export type MetaRouteHandler<T, P = any, RP = any, RQ = any> =
+  (params?: RouteParams<RP, RQ>) => MetaFn<T, P>
 
 /**
  * Policy-level state store.
@@ -106,13 +99,13 @@ metaSetups.push($ => {
     policy.routes.push(model.route)
     if (typeof model.onLeave === "function") {
       model.route.onLeave = async () => {
-        const result = await model.onLeave($.value, $)()
+        const result = await model.onLeave()($.value, $)
         return result
       }
     }
     model.route.onEnter = async (params) => {
       if (typeof model.onEnter === "function") {
-        const routeResult = await model.onEnter($.value, $)(params)
+        const routeResult = await model.onEnter(params)($.value, $)
         if (routeResult === false) return false
       }
       const onNavigate = $.raw("onNavigate", true)

@@ -88,13 +88,11 @@ export const packageInfoModel: MetaModel<Package> = {
     fields(),
     savePackageButton,
   ]),
-  onEnter: (v, $) => () => {
-    $.op(
-      fetchPackageQuery,
-      null,
-      { message: "Fetching project information" }
-    )()
-  }
+  onEnter: () => op(
+    fetchPackageQuery,
+    null,
+    { message: "Fetching project information" }
+  )
 }
 
 export const packageDependenciesModel: MetaModel<Package> = {
@@ -115,11 +113,9 @@ export const packageDependenciesModel: MetaModel<Package> = {
     fields(),
     savePackageButton
   ]),
-  onEnter: (v, $) => () => {
-    $.op(
-      fetchPackageQuery,
-      null,
-      { message: "Fetching project information" }
-    )()
-  }
+  onEnter: () => op(
+    fetchPackageQuery,
+    null,
+    { message: "Fetching project information" }
+  )
 }
