@@ -8,7 +8,6 @@ import rehypeSlug from "rehype-slug"
 import Path from "path"
 import { dedent } from "ts-dedent"
 import rehypeRaw from "rehype-raw"
-import { directiveInterpreter } from "./directive-interpreter"
 import { ModuleImport, ModuleData, ModuleModel } from "./types"
 import { remarkMetaCode } from "./remark-meta-code"
 import { capitalize } from "@metaliq/util"
@@ -25,7 +24,6 @@ const processor = unified()
   })
   .use(remarkMetaCode)
   .use(remarkDirective)
-  .use(directiveInterpreter)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
   .use(rehypeStringify)
