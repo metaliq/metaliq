@@ -65,7 +65,7 @@ const menuItem = (
   const text = navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
-    <li @click=${navItem$.up(goNavRoute)} class=${classMap({
+    <li @click=${menuItemClick(navItem$)} class=${classMap({
       "mq-nav-selected": isSelected,
       "mq-nav-selected-item": isSelectedItem
     })}>
@@ -74,4 +74,16 @@ const menuItem = (
       ${menuItems(navItem$, level + 1)}
     </li>
   `
+}
+
+/**
+ * Don't need to wrap call to route goer in `up` as this will be
+ * handled within the path change handler.
+ * This function provides some of `up`s capabilities, such as
+ * preventing event defaults and bubbling.
+ */
+const menuItemClick = (navItem$: Meta$<any>) => (event: Event) => {
+  event.preventDefault()
+  event.stopPropagation()
+  goNavRoute(navItem$.value, navItem$)
 }

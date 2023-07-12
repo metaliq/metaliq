@@ -54,7 +54,7 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
 const savePackageButton = tag(".form-controls")(
   button({
     type: "success",
-    onClick: op(updatePackageMutation, null, { message: "Updating package" }),
+    onClick: op(updatePackageMutation, { message: "Updating package" }),
     label: "Save"
   })
 )
@@ -90,7 +90,6 @@ export const packageInfoModel: MetaModel<Package> = {
   ]),
   onEnter: () => op(
     fetchPackageQuery,
-    null,
     { message: "Fetching project information" }
   )
 }
@@ -115,7 +114,6 @@ export const packageDependenciesModel: MetaModel<Package> = {
   ]),
   onEnter: () => op(
     fetchPackageQuery,
-    null,
     { message: "Fetching project information" }
   )
 }

@@ -263,3 +263,11 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
   // Return the created `up` function for local usage
   return started
 }
+
+/**
+ * A convenience function to do a pseudo-synchronous call to `up`.
+ * Useful for situations where not all updates can be wrapped in `up`.
+ */
+export const catchUp = () => {
+  up()().catch(console?.error)
+}

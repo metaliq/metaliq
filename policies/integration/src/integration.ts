@@ -29,12 +29,23 @@ export interface Integration$ <T, P> {
    * The resulting event handling is wrapped in an Update and performed with `up`
    * so that it is "wrapped" into the application cycle.
    */
-  op?: <I> (operation: Operation<I, T>, input?: I, options?: UpOptions & OperationOptions<T>) => (message?: any) => any
+  op?: <I> (
+    operation: Operation<I, T>,
+    options?: UpOptions & OperationOptions<T, I>
+  ) => (event?: any) => any
 }
 
 export type Operation<I, O> = (input?: I) => Promise<GraphQLResponse<O>>
 
-export type OperationOptions <T, P = any> = {
+export type OperationOptions <T, I = any> = {
+  /**
+   * Operation input, such as the vars for a query.
+   * If this is not provided then the data value of the meta to which the operation is applied
+   * will be the input value, with any surplus fields not existing in the operation's
+   * defined input type being pruned away.
+   */
+  input?: I
+
   /**
    * By default, any field errors in the operation result
    * are applied to the associated meta state.
@@ -48,7 +59,7 @@ export type OperationOptions <T, P = any> = {
    * This will be called prior to the default global response hook,
    * so it can handle pre-processing of error messages, for example.
    */
-  onResponse?: MetaFn<T, P, ResponseHandler<T>>
+  onResponse?: MetaFn<T, any, ResponseHandler<T>>
 
   /**
    * Progress message to display during the call.
@@ -66,9 +77,9 @@ declare module "metaliq" {
   interface Meta$<T, P> extends Integration$<T, P> {}
 }
 
-Meta$.prototype.op = function (operation, input, options) {
+Meta$.prototype.op = function (operation, options) {
   return up(async ($, event) => {
-    await $.fn(op(operation, input, options))
+    await $.fn(op(operation, options))
   }, this, options)
 }
 
@@ -85,10 +96,10 @@ let showMessage: (msg: string, title?: string) => any = () => {}
 let showProgress: (msg: string, title?: string) => any = () => {}
 
 export const op = <I, O> (
-  operation: Operation<I, O>, input?: I, options: OperationOptions<O> = {}
+  operation: Operation<I, O>, options: OperationOptions<O, I> = {}
 ): MetaFn<O> => async (v, $) => {
     if (options.message) showProgress?.(options.message)
-    input = input ?? as<I>($.value)
+    const input = options.input ?? as<I>($.value)
     options = { ...defaultOperationOptions, ...options }
     const response = await operation(input)
     // Operation-level response handling option

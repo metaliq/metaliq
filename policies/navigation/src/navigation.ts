@@ -1,6 +1,6 @@
 import { Route, RouteParams, Router } from "./router"
 import { FieldKey, fieldKeys, Meta$, meta$, MetaFn, MetaModel, metaSetups, onDescendants, root$ } from "metaliq"
-import { up } from "@metaliq/up"
+import { catchUp } from "@metaliq/up"
 import { APPLICATION } from "@metaliq/application"
 
 export * from "./router"
@@ -92,6 +92,15 @@ const policy: NavigationPolicy = {
   routes: []
 }
 
+// Handle async updates within route handler that is NOT wrapped in `up`
+const handleRouteResult = async (result: any) => {
+  if (result instanceof Promise) {
+    catchUp()
+    result = await result
+  }
+  return result
+}
+
 metaSetups.push($ => {
   const model = $.model
   // If this model has a route, initialise any route handling functions
@@ -99,14 +108,14 @@ metaSetups.push($ => {
     policy.routes.push(model.route)
     if (typeof model.onLeave === "function") {
       model.route.onLeave = async () => {
-        const result = await model.onLeave()($.value, $)
+        const result = await handleRouteResult(model.onLeave()($.value, $))
         return result
       }
     }
     model.route.onEnter = async (params) => {
       if (typeof model.onEnter === "function") {
-        const routeResult = await model.onEnter(params)($.value, $)
-        if (routeResult === false) return false
+        const result = await handleRouteResult(model.onEnter(params)($.value, $))
+        if (result === false) return false
       }
       const onNavigate = $.raw("onNavigate", true)
       if (typeof onNavigate === "function") {
@@ -133,10 +142,9 @@ metaSetups.push($ => {
       const origBootstrap = $.model.bootstrap
       $.model.bootstrap = async (v, $) => {
         const origResult = await $.fn(origBootstrap)
-        new Router(
-          policy.routes,
-          () => up()()
-        ).start().catch(console.error)
+        new Router(policy.routes, catchUp)
+          .start()
+          .catch(console.error)
         return origResult
       }
     }

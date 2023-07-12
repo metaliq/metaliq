@@ -31,7 +31,7 @@ const navModel: MetaModel<Nav> = {
   view: navigator({
     logoUrl: "res/metaliq-logo-dark.png"
   }),
-  onNavigate: setNavSelectionResponsive(800),
+  onNavigate: setNavSelectionResponsive(940),
   fields: {
     welcome: {
       label: "Welcome",
