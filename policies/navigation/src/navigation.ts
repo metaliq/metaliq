@@ -90,30 +90,20 @@ export type MetaRouteHandler<T, P = any, RP = any, RQ = any> = MetaFn<T, P, Rout
  */
 type NavigationPolicy = {
   /**
-   * A map of routes to their associated Meta$.
+   * Used to collect routes from meta setups for use in Router initialisation.
    */
-  route$s: Map<Route<object>, Meta$<any>>
-
-  /**
-   * The selected route's Meta$.
-   */
-  selectedRoute$: Meta$<any>
+  routes: Array<Route<object>>
 }
+
 const policy: NavigationPolicy = {
-  route$s: new Map(),
-  selectedRoute$: null
+  routes: []
 }
-
-/**
- * Obtain the Meta$ associated with the given route.
- */
-export const route$ = (route: Route<object>) => policy.route$s.get(route)
 
 metaSetups.push($ => {
   const model = $.model
   // If this model has a route, initialise any route handling functions
   if (model?.route) {
-    policy.route$s.set(model.route, $)
+    policy.routes.push(model.route)
     if (typeof model.onLeave === "function") {
       model.route.onLeave = async () => {
         const result = await model.onLeave($.value, $)()
@@ -145,13 +135,13 @@ metaSetups.push($ => {
     ) {
       history.pushState(null, null, model.urlPath)
     }
-    if (policy.route$s.size) {
+    if (policy.routes.length) {
       // Extend any existing bootstrap to initialise the Router
       const origBootstrap = $.model.bootstrap
       $.model.bootstrap = async (v, $) => {
         const origResult = await $.fn(origBootstrap)
         new Router(
-          Array.from(policy.route$s.keys()),
+          policy.routes,
           () => up()()
         ).start().catch(console.error)
         return origResult
@@ -227,8 +217,6 @@ export const getNavSelection = ($: Meta$<any>, {
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
 export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
-  policy.selectedRoute$ = $
-
   const clearSelection: MetaFn<any> = (v, $) => {
     if ($.state.nav) {
       delete $.state.nav.selected

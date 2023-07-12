@@ -12,7 +12,7 @@ It provides an abstraction for the mechanism of navigation within an application
 
 Most apps have a logical data model, based upon the business domain and the functionality of the app itself. In Metaliq, this application data model is defined as a TypeScript type, and is generally structured in a pragmatic, information-centric manner that does not necessarily map directly to an application's navigation structure.
 
-For this reason the navigation model in a MetaliQ app is usually defined as a separate structure, which is also a TypeScript type. The type structure can be nested, to enable navigation to scale both up and down. The "leaf" nodes represent pages within the navigational system, and are defined with the specific data type that is provided to that page.
+For this reason the navigation model in a MetaliQ app is usually defined as a separate structuxre, which is also a TypeScript type. The type structure can be nested, to enable navigation to scale both up and down. The "leaf" nodes represent pages within the navigational system, and are defined with the specific data type that is provided to that page.
 
 Note: recurrent navigational structures (such as trees) are not supported by this policy at this time.
 
