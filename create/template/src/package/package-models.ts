@@ -8,6 +8,7 @@ import { showMessage, showProgress } from "@metaliq/modals"
 import { handleResponseErrors, op } from "@metaliq/integration"
 import { route } from "@metaliq/navigation"
 
+// Policy term registration
 export { APPLICATION } from "@metaliq/application"
 export { NAVIGATION } from "@metaliq/navigation"
 
@@ -41,14 +42,13 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
   },
   view: [
     tag("h2")((v, $) => $.term("label")),
-    tag(".deps-grid-cols .deps-grid-header")(
+    tag(".deps-grid-cols.deps-grid-header")(
       tags()(["Package Name", "Version"])
     ),
     tag(".deps-grid")(
       repeat(tag(".deps-grid-cols")(fields()))
     )
-  ],
-  hidden: v => !v // Hide until populated
+  ]
 }
 
 const savePackageButton = tag(".form-controls")(
@@ -114,6 +114,6 @@ export const packageDependenciesModel: MetaModel<Package> = {
   ]),
   onEnter: () => op(
     fetchPackageQuery,
-    { message: "Fetching project information" }
+    { message: "Fetching dependencies" }
   )
 }

@@ -4,29 +4,58 @@ import { ModalInfo, modalModel, showMessage, showProgress } from "@metaliq/modal
 import { packageDependenciesModel, packageInfoModel } from "./package/package-models"
 import { intro } from "./gen/content/intro"
 import { navigator } from "@metaliq/navigator"
-import { route, setNavSelectionResponsive } from "@metaliq/navigation"
+import { redirect, route, setNavSelectionResponsive } from "@metaliq/navigation"
 import { initApi } from "./gen/graphql-operations"
 import { handleResponseErrors } from "@metaliq/integration"
 
-export { labelPath } from "@metaliq/terminology"
-export { validate } from "@metaliq/validation"
-export { op } from "@metaliq/integration"
+/**
+ * Register the terminology policy to enable access to its terms
+ */
+export { TERMINOLOGY } from "@metaliq/terminology"
 
+/**
+ * This is for internal use during the MetaliQ solution template setup
+ * You can go ahead and delete it from your solution code
+ */
 export const templateUrl = () => import.meta.url
 
+/**
+ * A top-level data type for the front-end application
+ */
 export type App = {
   nav: Nav
   modal: ModalInfo
 }
 
+/**
+ * A data type for the app's navigation structure
+ */
 export type Nav = {
   welcome: any
   configure: {
     info: Package,
     deps: Package
-  }
+  },
+  fallback: any
 }
 
+/**
+ * The route to use for the home page.
+ */
+export const homeRoute = route("/")
+
+/**
+ * A catch-all for redirecting unknown routes.
+ * Specifying it directly like this rather than in the navigation policy
+ * allows for solutions to define significant portions of the route
+ * (such as initial path elements within a multi-tenant hosted solution)
+ * that should be preserved and passed back to the default.
+ */
+export const fallbackRoute = route("/:a?/:b?/:c?/:d?/:e?/:f?/:g?")
+
+/**
+ * A MetaModel for the Nav type that defines the app's navigation structure.
+ */
 const navModel: MetaModel<Nav> = {
   view: navigator({
     logoUrl: "res/metaliq-logo-dark.png"
@@ -36,7 +65,7 @@ const navModel: MetaModel<Nav> = {
     welcome: {
       label: "Welcome",
       view: intro,
-      route: route("/")
+      route: homeRoute
     },
     configure: {
       label: "Configure",
@@ -44,13 +73,20 @@ const navModel: MetaModel<Nav> = {
         info: packageInfoModel,
         deps: packageDependenciesModel
       }
+    },
+    fallback: {
+      route: fallbackRoute,
+      onEnter: () => redirect(homeRoute)
     }
   }
 }
 
 /**
- * MetaliQ runs the meta model called `appModel` by default
+ * MetaliQ runs the MetaModel called `appModel` by default
  * if you don't specify a model to `metaliq run`.
+ *
+ * This is a typical top-level app MetaModel that combines the navigation structure
+ * with the modal display capability provided by MetaliQ.
  */
 export const appModel: MetaModel<App> = {
   label: "New MetaliQ Solution",
@@ -58,10 +94,8 @@ export const appModel: MetaModel<App> = {
     nav: navModel,
     modal: modalModel
   },
-  bootstrap: (v, $) => {
-    initApi(
-      "http://localhost:8940/graphql",
-      { onResponse: handleResponseErrors(showMessage, showProgress) }
-    )
-  },
+  bootstrap: () => initApi("http://localhost:8940/graphql", {
+    // Link the initialised API to a response handler that displays progress and errors
+    onResponse: handleResponseErrors(showMessage, showProgress)
+  }),
 }

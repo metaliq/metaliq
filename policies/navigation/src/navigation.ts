@@ -305,3 +305,11 @@ export const isMenuShown: MetaFn<any> = (_, item$: Meta$<any>) => {
   }
   return true
 }
+
+/**
+ * Use in a route handler to redirect to a different route.
+ */
+export const redirect = (route: Route<any>, params?: any): MetaFn<any> => () => {
+  route.go(params)
+  return false // Prevents further handling on the original route
+}
