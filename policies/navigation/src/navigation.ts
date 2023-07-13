@@ -85,12 +85,23 @@ type NavigationPolicy = {
   /**
    * Used to collect routes from meta setups for use in Router initialisation.
    */
-  routes: Array<Route<object>>
+  route$s: Map<Route<object>, Meta$<any>>
+
+  /**
+   * The selected route's Meta$.
+   */
+  selectedRoute$: Meta$<any>
 }
 
 const policy: NavigationPolicy = {
-  routes: []
+  route$s: new Map(),
+  selectedRoute$: null
 }
+
+/**
+ * Obtain the Meta$ associated with the given route.
+ */
+export const route$ = (route: Route<object>) => policy.route$s.get(route)
 
 // Handle async updates within route handler that is NOT wrapped in `up`
 const handleRouteResult = async (result: any) => {
@@ -105,7 +116,7 @@ metaSetups.push($ => {
   const model = $.model
   // If this model has a route, initialise any route handling functions
   if (model?.route) {
-    policy.routes.push(model.route)
+    policy.route$s.set(model.route, $)
     if (typeof model.onLeave === "function") {
       model.route.onLeave = async () => {
         const result = await handleRouteResult(model.onLeave()($.value, $))
@@ -137,12 +148,12 @@ metaSetups.push($ => {
     ) {
       history.pushState(null, null, model.urlPath)
     }
-    if (policy.routes.length) {
+    if (policy.route$s.size) {
       // Extend any existing bootstrap to initialise the Router
       const origBootstrap = $.model.bootstrap
       $.model.bootstrap = async (v, $) => {
         const origResult = await $.fn(origBootstrap)
-        new Router(policy.routes, catchUp)
+        new Router(Array.from(policy.route$s.keys()), catchUp)
           .start()
           .catch(console.error)
         return origResult
@@ -218,6 +229,8 @@ export const getNavSelection = ($: Meta$<any>, {
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
 export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
+  policy.selectedRoute$ = $
+
   const clearSelection: MetaFn<any> = (v, $) => {
     if ($.state.nav) {
       delete $.state.nav.selected
@@ -313,3 +326,36 @@ export const redirect = (route: Route<any>, params?: any): MetaFn<any> => () => 
   route.go(params)
   return false // Prevents further handling on the original route
 }
+
+/**
+ * Make a route handler that calls the given handler, passing the child
+ * of the current meta node with the given key.
+ *
+ * Useful where parent and child navigation items share a similar
+ * behaviour for e.g. onEnter.
+ *
+ * For example, given a nav structure for contacts with a parent item
+ * that displays a summary view and child item that displays a detail view
+ * of the same contact data object:
+ *
+ * ```
+ *   contact: {
+ *     label: v => `Summary for ${v.detail.fullName}`
+ *     route: route("/contacts/:contactId"),
+ *     onEnter: onChild(loadContact, "detail"),
+ *     view: field("detail", contactSummary)
+ *     fields: {
+ *       detail: {
+ *         label: v => `Detail for ${v.fullName}`
+ *         route: ("contacts/:contactId/detail"),
+ *         onEnter: loadContact,
+ *         view: contactDetail
+ *       }
+ *     }
+ *   }
+ * ```
+ */
+export const onChild = <T, P, RP, RQ, K extends FieldKey<T>> (
+  handler: MetaRouteHandler<T[K], T, RP, RQ>,
+  key: K
+) => (p: RouteParams<RP, RQ>): MetaFn<T, P> => (v, $) => handler(p)(v[key], $.child$(key))
