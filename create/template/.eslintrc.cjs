@@ -3,6 +3,8 @@ module.exports = {
   parserOptions: {
     project: "./tsconfig.json"
   },
+  // Prevent inheriting rules relating to the rest of the MetaliQ monorepo
+  root: true,
   // Add specific overrides to tweak StandardJS defaults to match our usage
   rules: {
     // We prefer double quoted strings ...
