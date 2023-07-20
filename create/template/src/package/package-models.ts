@@ -1,11 +1,9 @@
 import { MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
-import { html } from "lit"
-import { fetchPackageQuery, initApi, updatePackageMutation } from "../gen/graphql-operations"
-import { content, fields, repeat, tag, tags } from "@metaliq/presentation"
+import { fetchPackageQuery, updatePackageMutation } from "../gen/graphql-operations"
+import { fields, repeat, tag, tags } from "@metaliq/presentation"
 import { button } from "@metaliq/forms"
-import { showMessage, showProgress } from "@metaliq/modals"
-import { handleResponseErrors, op } from "@metaliq/integration"
+import { op } from "@metaliq/integration"
 import { route } from "@metaliq/navigation"
 
 // Policy term registration
@@ -86,7 +84,7 @@ export const packageInfoModel: MetaModel<Package> = {
   view: page([
     tag("h1")("Configure Solution Information"),
     fields(),
-    savePackageButton,
+    savePackageButton
   ]),
   onEnter: () => op(
     fetchPackageQuery,
