@@ -33,9 +33,9 @@ export type App = {
 export type Nav = {
   welcome: any
   configure: {
-    info: Package,
+    info: Package
     deps: Package
-  },
+  }
   fallback: any
 }
 
@@ -97,5 +97,5 @@ export const appModel: MetaModel<App> = {
   bootstrap: () => initApi("http://localhost:8940/graphql", {
     // Link the initialised API to a response handler that displays progress and errors
     onResponse: handleResponseErrors(showMessage, showProgress)
-  }),
+  })
 }
