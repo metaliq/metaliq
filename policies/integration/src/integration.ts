@@ -65,6 +65,18 @@ export type OperationOptions <T, I = any> = {
    * Progress message to display during the call.
    */
   message?: string
+
+  /**
+   * The default behaviour of `op` when the both the provided value and received result
+   * are object data types is to apply the received object onto
+   * the initially provided object on a key-for-key basis,
+   * leaving any keys that are not defined in the
+   * received result intact in the provided object.
+   *
+   * To override this behaviour with a straightforward reassignment of the whole object,
+   * set `overwrite` to `true`.
+   */
+  overwrite?: boolean
 }
 
 export type ResponseHandler <T> = (response: GraphQLResponse<T>) => any
@@ -107,7 +119,12 @@ export const op = <I, O> (
       await $.fn(options.onResponse)(response)
     }
     // Assign response data back into local graph
-    $.value = response.data
+    const isObject = (x: any) => typeof x === "object" && !Array.isArray(x)
+    if (isObject($.value) && isObject(response.data)) {
+      Object.assign($.value, response.data) // TODO: Consider recursive
+    } else {
+      $.value = response.data
+    }
     // Handle any reported field-level errors
     if (options.linkFieldErrors) {
       for (const err of response.graphQLErrors || []) {
