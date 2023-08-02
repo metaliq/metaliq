@@ -11,16 +11,16 @@ export const textArea = (options: FieldOptions<string> = {}): MetaView<string> =
     classMap({ [options.classes]: !!options.classes, ...fieldClasses($) })
   }">
     ${fieldLabel(options)(v, $)}
-    <textarea rows=3
+    <textarea 
+      rows=3
       ?disabled=${$.fn(isDisabled)}
       class="mq-input ${classMap({
         "mq-error-field": $.state.error,
         "mq-disabled": $.fn(isDisabled)
       })}"
       @focus=${up(onFocus, $)}
-      @blur=${up(onBlur, $)}>
-      ${$.value ?? ""}
-    </textarea>
+      @blur=${up(onBlur, $)}
+    >${$.value ?? ""}</textarea>
     ${errorMsg({ classes: "mq-field-error" })(v, $)}
   </label>
 `
