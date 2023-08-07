@@ -5,5 +5,4 @@
 create/template/bin/
 **/src/gen/
 **/tsconfig.tsbuildinfo
-pnpm-lock.yaml
 /doc/api
