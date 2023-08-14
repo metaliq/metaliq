@@ -217,6 +217,14 @@ export class Meta$<T, P = any> {
   }
 
   /**
+   * Obtain the parent data value, if present.
+   * So `$.parent` is equivalent to `$.parent$.value`.
+   */
+  get parent () {
+    return this.parent$?.value
+  }
+
+  /**
    * Return the child meta value for the given key.
    */
   child$ <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
