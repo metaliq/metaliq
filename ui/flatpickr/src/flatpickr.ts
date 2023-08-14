@@ -6,7 +6,7 @@ import flatpickr from "flatpickr"
 import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
 import { hasValue, validate } from "@metaliq/validation"
-import { fieldError, isDisabled } from "@metaliq/forms"
+import { fieldContainer, isDisabled } from "@metaliq/forms"
 import { Meta$ } from "metaliq"
 import Instance = flatpickr.Instance
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -31,7 +31,7 @@ export type DatePickerOptions = {
 
 const flatpickrInstance = "flatpickr-instance"
 
-export const datePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
+const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
   const disabled = $.fn(isDisabled)
   const fl = $.fn(getViewState(flatpickrInstance)) as Instance
 
@@ -44,55 +44,47 @@ export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
     fl.clear()
   }
 
-  return html`
-    <label class="mq-field mq-date-field ${classMap({
-      [options.classes]: !!options.classes,
-      "mq-mandatory": $.term("mandatory"),
-      "mq-active": $.state.active,
-      "mq-populated": !!value
-    })}">
-      <span class="mq-input-label">
-        ${$.term("label")}
-      </span>
-      ${guard([$, disabled], () => {
-        const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
+  return [
+    html`${guard([$, disabled], () => {
+      const id = `mq-datepicker-${Math.ceil(Math.random() * 1000000)}`
 
-        setTimeout(
-          () => {
-            const fl = flatpickr(`#${id}`, {
-              allowInput: true,
-              onClose (selectedDates, dateStr) {
-                if (selectedDates[0]) {
-                  value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
-                  $.value = value
-                  up(validate, $)().catch(e => { throw e })
-                }
-              },
-              defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
-              disable: options.disable || [],
-              dateFormat: options.displayFormat || "Y-m-d",
-              disableMobile: true
-            }) as Instance
-            $.fn(setViewState(flatpickrInstance, fl))
-          },
-          250
-        )
-        return html`
-          <input id=${id}
-            ?disabled=${disabled}
-            class="mq-input ${classMap({ "mq-disabled": disabled })}"
-            @focus=${up(() => { $.state.active = true })}
-            @blur=${up(() => { $.state.active = false })}
-          />
-        `
-      })}
-      ${hasValue($) && !disabled ? html`
-        <button class="mq-field-clear" @click=${up(clearDate, $)} tabindex="-1"></button>
-      ` : ""}
-      ${fieldError(value, $)}
-    </label>
-  `
+      setTimeout(
+        () => {
+          const fl = flatpickr(`#${id}`, {
+            allowInput: true,
+            onClose (selectedDates, dateStr) {
+              if (selectedDates[0]) {
+                value = flatpickr.formatDate(selectedDates[0], options.valueFormat || "Y-m-d")
+                $.value = value
+                up(validate, $)().catch(e => { throw e })
+              }
+            },
+            defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
+            disable: options.disable || [],
+            dateFormat: options.displayFormat || "Y-m-d",
+            disableMobile: true
+          }) as Instance
+          $.fn(setViewState(flatpickrInstance, fl))
+        },
+        250
+      )
+      return html`
+        <input id=${id}
+          ?disabled=${disabled}
+          class="mq-input ${classMap({ "mq-disabled": disabled })}"
+          @focus=${up(() => { $.state.active = true })}
+          @blur=${up(() => { $.state.active = false })}
+        />
+      `
+    })}`,
+    hasValue($) && !disabled ? html`
+      <button class="mq-field-clear" @click=${up(clearDate, $)} tabindex="-1"></button>
+    ` : ""
+  ]
 }
+
+export const datePicker = (options: DatePickerOptions = {}): MetaView<string> =>
+  fieldContainer({ type: "date", ...options })(innerDatePicker(options))
 
 export const formatDate = flatpickr.formatDate
 export const parseDate = flatpickr.parseDate

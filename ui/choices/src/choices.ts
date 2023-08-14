@@ -5,7 +5,7 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta$, MetaFn } from "metaliq"
-import { fieldContainer, isDisabled, FieldOptions } from "@metaliq/forms"
+import { fieldContainer, isDisabled, FieldOptions, fieldKey, fieldPath } from "@metaliq/forms"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
@@ -156,6 +156,8 @@ const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P
 
       return html`
         <select id=${id}
+          data-mq-field-key=${fieldKey(v, $)}
+          data-mq-field-path=${fieldPath(v, $)}
           @change=${up(onChange(options), $)}
           @addItem=${up(onAddItem(options), $)}
           @removeItem=${up(onRemoveItem(options), $)}

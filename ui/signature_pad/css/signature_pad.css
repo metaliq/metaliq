@@ -1,9 +1,9 @@
-.mq-field.mq-signature-pad-field .mq-input {
+.mq-field.mq-signature-field .mq-input {
 	height: 200px;
 	width: 100%;
 }
 
-.mq-field.mq-signature-pad-field.mq-disabled {
+.mq-field.mq-signature-field.mq-disabled {
 	background: var(--mq-disabled-background);
 	border-color: var(--mq-disabled-border-color);
 	color: var(--mq-disabled-color);

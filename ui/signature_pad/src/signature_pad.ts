@@ -1,8 +1,7 @@
 import { getViewState, MetaView, setViewState } from "@metaliq/presentation"
 import { html } from "lit"
-import { classMap } from "lit/directives/class-map.js"
 import { guard } from "lit/directives/guard.js"
-import { fieldClasses, fieldLabel, isDisabled } from "@metaliq/forms"
+import { fieldContainer, isDisabled } from "@metaliq/forms"
 import { up } from "@metaliq/up"
 import SignaturePad from "signature_pad"
 import { Meta$ } from "metaliq"
@@ -79,64 +78,64 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
     sigPad.clear()
   }
 
-  return html`
-    <label class="mq-field mq-signature-pad-field ${classMap(fieldClasses($))}">
-      ${fieldLabel<string>({})(value, $)}
-      ${guard($, () => {
-        const id = `mq-signature-pad-${Math.ceil(Math.random() * 1000000)}`
+  return [
+    html` ${guard($, () => {
+      const id = `mq-signature-pad-${Math.ceil(Math.random() * 1000000)}`
 
-        let sigPad: SignaturePad = null
+      let sigPad: SignaturePad = null
 
-        setTimeout(() => {
-          const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)
-          sigPad = new SignaturePad(canvas, {
-            penColor: options.penColor,
-            backgroundColor: options.backgroundColor
-          })
+      setTimeout(() => {
+        const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)
+        sigPad = new SignaturePad(canvas, {
+          penColor: options.penColor,
+          backgroundColor: options.backgroundColor
+        })
 
-          sigPad.addEventListener("endStroke", () => {
-            up(() => {
-              if (options.format === "RAW") {
-                $.value = JSON.stringify(sigPad.toData())
-              } else {
-                $.value = sigPad.toDataURL(sigPadFormatMap[options.format])
-              }
-            })().catch(console.error)
-          })
-
-          const ratio = Math.max(window.devicePixelRatio || 1, 1)
-
-          // Clear and resize canvas
-          canvas.width = canvas.offsetWidth * ratio
-          canvas.height = canvas.offsetHeight * ratio
-          canvas.getContext("2d").scale(ratio, ratio)
-
-          // Display current sig pad value
-          if ($.value) {
-            try {
-              if (options.format === "RAW") {
-                sigPad.fromData(JSON.parse($.value))
-              } else {
-                sigPad.fromDataURL($.value).catch(console.error)
-              }
-            } catch (e) {
-              console.warn("Invalid value for signature pad")
+        sigPad.addEventListener("endStroke", () => {
+          up(() => {
+            if (options.format === "RAW") {
+              $.value = JSON.stringify(sigPad.toData())
+            } else {
+              $.value = sigPad.toDataURL(sigPadFormatMap[options.format])
             }
-          }
+          })().catch(console.error)
+        })
 
-          if ($.fn(isDisabled)) {
-            sigPad.off()
-            $.fn(setViewState(DISABLED_FLAG, true))
+        const ratio = Math.max(window.devicePixelRatio || 1, 1)
+
+        // Clear and resize canvas
+        canvas.width = canvas.offsetWidth * ratio
+        canvas.height = canvas.offsetHeight * ratio
+        canvas.getContext("2d").scale(ratio, ratio)
+
+        // Display current sig pad value
+        if ($.value) {
+          try {
+            if (options.format === "RAW") {
+              sigPad.fromData(JSON.parse($.value))
+            } else {
+              sigPad.fromDataURL($.value).catch(console.error)
+            }
+          } catch (e) {
+            console.warn("Invalid value for signature pad")
           }
-          $.fn(setViewState(SIG_PAD_INSTANCE, sigPad))
-        }, 100)
-        return html`
-          <canvas class="mq-input" id=${id} height="600" width="1000" >  </canvas>
-        `
-      })}
-      ${metaDisabled ? "" : html`
-        <button class="mq-field-clear" @mouseup=${up(clearSignature, $)} > </button>
-      `}
-    </label>
-  `
+        }
+
+        if ($.fn(isDisabled)) {
+          sigPad.off()
+          $.fn(setViewState(DISABLED_FLAG, true))
+        }
+        $.fn(setViewState(SIG_PAD_INSTANCE, sigPad))
+      }, 100)
+      return html`
+        <canvas class="mq-input" id=${id} height="600" width="1000" >  </canvas>
+      `
+    })}`,
+    metaDisabled ? "" : html`
+      <button class="mq-field-clear" @mouseup=${up(clearSignature, $)} > </button>
+    `
+  ]
 }
+
+export const signatureField = (options: SignaturePadOptions = {}): MetaView<string> =>
+  fieldContainer({ type: "signature", ...options })(signaturePad(options))

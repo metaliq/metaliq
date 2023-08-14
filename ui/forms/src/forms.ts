@@ -162,20 +162,37 @@ export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value,
       : html`<span class="mq-input-label">${options?.label || labelOrKey($)}</span>`
 
 /**
- *
+ * Standard container for MetaliQ form fields.
  */
 export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): ViewWrapper<T, P> =>
   fieldContent => (v, $) => html`
-    <label class="mq-field ${classMap({
-      [options?.classes]: !!options?.classes,
-      [`mq-${options?.type || "text"}-field`]: options?.type,
-      ...fieldClasses($)
-    })}" >
+    <label
+      data-mq-field-key=${fieldKey(v, $)}
+      data-mq-field-path=${fieldPath(v, $)}
+      class="mq-field ${classMap({
+        [options?.classes]: !!options?.classes,
+        [`mq-${options?.type || "text"}-field`]: options?.type,
+        ...fieldClasses($)
+      })}">
       ${fieldLabel(options)(v, $)}
       ${fieldContent(v, $)}
-      ${errorMsg({ classes: "mq-field-error" })(v, $)}
+      ${fieldError(v, $)}
     </label>
   `
+
+/**
+ * Value for the data-mq-field-key attribute of MetaliQ form fields.
+ */
+export const fieldKey: MetaFn<any> = (v, $) =>
+  $.key + (typeof $.index === "number" ? `[${$.index}]` : "")
+
+/**
+ * Value for the data-mq-field-path property of MetaliQ form fields.
+ */
+export const fieldPath: MetaFn<any> = (v, $) => {
+  const key = fieldKey(v, $)
+  return $.parent$?.parent$ ? [fieldPath($.parent$.value, $.parent$), key].join(".") : key
+}
 
 /**
  * Input field with default options for a validated checkbox
