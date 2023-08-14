@@ -21,6 +21,13 @@ export const remarkMetaCode: Plugin = function () {
           const textNode = text(code.value)
           const newNode = is(node, "code") ? paragraph(textNode) : textNode
           parent.children.splice(parent.children.indexOf(node), 1, newNode)
+        } else if (!code.value.match(divEx)) {
+          code.value = code.value
+            // Escape template interpolation within non-dynamic code blocks
+            .replace(/\$\{/g, "\\${")
+            // Enable a pattern of adding a space before an otherwise dynamic code block to make non-dynamic
+            // (Useful for documenting MetaliQ itself)
+            .replace(/^ \\\${/g, "\\${")
         }
       } else if (is(node, "paragraph")) {
         // Extract div nodes from their paragraph

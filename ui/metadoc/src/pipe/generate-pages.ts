@@ -15,6 +15,7 @@ import { mkdir, readdir } from "fs/promises"
 import Watcher from "chokidar"
 import remarkFrontmatter from "remark-frontmatter"
 import { matter } from "vfile-matter"
+import rehypeHighlight from "rehype-highlight"
 
 const processor = unified()
   .use(remarkParse)
@@ -26,6 +27,7 @@ const processor = unified()
   .use(remarkDirective)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
+  .use(rehypeHighlight, { detect: true })
   .use(rehypeStringify)
   .use(rehypeSlug)
 
@@ -107,12 +109,22 @@ export async function generatePage (inDir: string, outDir: string, inPath: strin
   }
 
   const html = file.value.toString()
-    .replace(/&#x3C;/g, "<") // TODO: Proper fix to prevent munging embedded tags in code expressions
     .replace(/`/gm, "\\`") // Escape any remaining backtick characters, for example within code blocks
-  const value = htmlTs(html, moduleData)
+  const value = fixCodeIndent(htmlTs(html, moduleData))
 
   await write({ path: outPath, value })
 }
+
+const fixCodeIndent = (html: string) => html
+  // Outdent subsequent code block lines
+  .replace(/<pre><code(((?!<\/pre>).)*\n {2})*/g, s => {
+    return s
+      .split("\n")
+      .map((l, i) => i > 0 ? l.substr(2) : l)
+      .join("\n")
+  })
+  // Join code block closing line to previous
+  .replace(/\s*<\/code><\/pre>/g, "</code></pre>")
 
 const htmlTs = (html: string, moduleData: ModuleData) => {
   const imports: ModuleImport[] = [
