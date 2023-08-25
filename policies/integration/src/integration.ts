@@ -120,7 +120,7 @@ export const op = <I, O> (
     }
     // Assign response data back into local graph
     const isObject = (x: any) => typeof x === "object" && !Array.isArray(x)
-    if (isObject($.value) && isObject(response.data)) {
+    if (isObject($.value) && isObject(response.data) && !options.overwrite) {
       Object.assign($.value, response.data) // TODO: Consider recursive
     } else {
       $.value = response.data
