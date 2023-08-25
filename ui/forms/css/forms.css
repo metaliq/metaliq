@@ -115,7 +115,8 @@ input[type="checkbox"]:disabled {
 }
 
 .mq-field .mq-input:disabled,
-.mq-field.mq-text-area-field.mq-disabled {
+.mq-field.mq-text-area-field.mq-disabled,
+.mq-button:disabled {
 	background: var(--mq-disabled-background);
 	border-color: var(--mq-disabled-border-color);
 	color: var(--mq-disabled-color);
