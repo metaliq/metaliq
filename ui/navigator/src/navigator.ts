@@ -33,15 +33,17 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
   </header>
 `
 
+// Test whether a part of the navigation structure contains a route itself or at any descendant level
+const containsRoute = ($: Meta$<any>): boolean =>
+  !!($.term("route") || $.childKeys().some(k => containsRoute($.child$(k))))
+
 const menuItems = ($: Meta$<any>, level: number = 0) => {
   const keys = ($.childKeys() || [])
     .filter(key => {
       const item$ = $.child$(key)
       return !item$.term("hidden") &&
         (item$.term("label") || item$.term("symbol")) &&
-        (item$.term("route") ||
-          // Navigator currently allows for a single-level of route-less parent
-          (item$.childKeys().some(k => item$.child$(k).term("route"))))
+        containsRoute(item$)
     })
   if (keys.length) {
     const selectedChild$ = getNavSelection($, { recurse: false })

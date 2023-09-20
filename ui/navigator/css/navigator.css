@@ -108,8 +108,10 @@ nav ul.mq-level-0 > li > span, nav ul.mq-level-0 > li > i  {
 
 nav ul.mq-level-1 > li > span {
 	padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 2);
-	font-size: calc(var(--mq-nav-font-size) - 4);
+	font-size: calc(var(--mq-nav-font-size) - 2px);
 }
+
 nav ul.mq-level-2 > li > span {
-	padding-left: calc(var(--mq-nav-indent-size) * 3);
+	padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 3);
+	font-size: calc(var(--mq-nav-font-size) - 4px);
 }
