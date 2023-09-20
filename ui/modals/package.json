@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/modals",
   "description": "Basic modal display for MetaliQ",
-  "version": "1.0.0-beta.87",
+  "version": "1.0.0-beta.88",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
