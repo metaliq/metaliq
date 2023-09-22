@@ -37,7 +37,10 @@
     "publish-master": "pnpm publish -r --access public && pnpm run test-create",
     "publish-beta": "pnpm publish -r --tag beta --access public",
     "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
-    "test": "mocha --experimental-specifier-resolution=node -r source-map-support/register ./**/lib/test/**/*.js",
+    "test": "mocha --import=extensionless/register -r source-map-support/register './!(node_modules)/*/lib/test/**/*.js'",
     "test-create": "cd ~/dev && rm -rf test-create && pnpm create @metaliq test-create"
+  },
+  "dependencies": {
+    "extensionless": "1.5.2"
   }
 }

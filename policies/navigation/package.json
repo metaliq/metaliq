@@ -18,5 +18,9 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/navigation.d.ts"
+  "types": "lib/navigation.d.ts",
+  "exports": {
+    ".": "./lib/navigation.js",
+    "./lib/router": "./lib/router.js"
+  }
 }

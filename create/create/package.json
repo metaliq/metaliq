@@ -23,5 +23,9 @@
     "test-create-folder": "cd ../../.. && rm -rf test-mq-create-folder && node --experimental-specifier-resolution=node ./metaliq/create/create/lib/create.js test-mq-create-folder"
   },
   "type": "module",
-  "types": "lib/create.d.ts"
+  "types": "lib/create.d.ts",
+  "engines": {
+    "node": "20",
+    "pnpm": "8"
+  }
 }

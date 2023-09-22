@@ -3,7 +3,7 @@ import { join } from "path"
 import { promisify } from "util"
 
 import { Command } from "commander"
-import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim"
+import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim.js"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 
 import { MetaModel } from "metaliq"

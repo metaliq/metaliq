@@ -73,7 +73,7 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
   }
 
   const clearSignature = ($: Meta$<string>) => {
-    const sigPad = $.fn(getViewState(SIG_PAD_INSTANCE)) as SignaturePad
+    const sigPad: SignaturePad = $.fn(getViewState(SIG_PAD_INSTANCE))
     $.value = ""
     sigPad.clear()
   }

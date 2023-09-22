@@ -16,5 +16,10 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/validation.d.ts"
+  "types": "lib/validation.d.ts",
+  "exports": {
+    ".": "./lib/validation.js",
+    "./lib/constrainst/business": "./lib/constrainst/business.js",
+    "./lib/constrainst/foundation": "./lib/constrainst/foundation.js"
+  }
 }

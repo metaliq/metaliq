@@ -17,5 +17,10 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/util.d.ts"
+  "types": "lib/util.d.ts",
+  "exports": {
+    ".": "./lib/util.js",
+    "./lib/import": "./lib/import.js",
+    "./lib/fs": "./lib/fs.js"
+  }
 }

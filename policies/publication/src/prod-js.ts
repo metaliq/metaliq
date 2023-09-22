@@ -3,12 +3,12 @@ import ignore from "rollup-plugin-ignore"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
 import pluginJson from "@rollup/plugin-json"
-import minifyHTMLLiteralsModule from "rollup-plugin-minify-html-literals"
+import minifyHTMLLiteralsModule from "rollup-plugin-minify-html-literals-cjs-rollup3"
 import { defaultShouldMinify } from "minify-html-literals"
 import { minify } from "terser"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 
-// Workaround for named `default` export in rollup-plugin-minify-html-literals
+// Workaround for named `default` export in rollup-plugin-minify-html-literals-cjs-rollup3
 const minifyHTMLLiterals = getModuleDefault(minifyHTMLLiteralsModule)
 
 export type ProdJsOptions = {

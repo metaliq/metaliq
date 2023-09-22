@@ -7,14 +7,15 @@
     "metaliq": "./bin/cli-es6.js"
   },
   "dependencies": {
+    "@lit-labs/ssr": "1.0.0",
     "@metaliq/application": "workspace:*",
     "@metaliq/presentation": "workspace:*",
     "@metaliq/publication": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
-    "metaliq": "workspace:*",
-    "@lit-labs/ssr": "1.0.0",
     "@web/dev-server": "0.1.35",
-    "commander": "8.2.0"
+    "commander": "8.2.0",
+    "extensionless": "1.5.2",
+    "metaliq": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "18.14.1",
@@ -25,5 +26,9 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/cli.d.ts"
+  "types": "lib/cli.d.ts",
+  "engines": {
+    "node": "20",
+    "pnpm": "8"
+  }
 }
