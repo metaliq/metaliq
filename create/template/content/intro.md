@@ -13,4 +13,4 @@ This solution demonstrates various capabilities including:
 * GraphQL API with `@metaliq/graphql-server`
 * Content generated from Markdown using `@metaliq/metadoc`
 
-Visit <a href="https://metaliq.dev" target="_blank">MetaliQ•Dev</a> to learn more about how to build digital solutions with MetaModels and MetaliQ.
+Visit <a href="https://metaliq.dev/guide/intro" target="_blank">MetaliQ•Dev</a> to learn more about how to build digital solutions with MetaModels and MetaliQ.

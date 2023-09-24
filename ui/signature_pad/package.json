@@ -12,7 +12,7 @@
     "signature_pad": "^4.1.4"
   },
   "devDependencies": {
-    "typescript": "4.7.3"
+    "typescript": "5.2.2"
   },
   "license": "MIT",
   "main": "lib/signature_pad.js",

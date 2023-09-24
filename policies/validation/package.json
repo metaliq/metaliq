@@ -9,7 +9,7 @@
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "4.7.3"
+    "typescript": "5.2.2"
   },
   "license": "MIT",
   "main": "lib/validation.js",
