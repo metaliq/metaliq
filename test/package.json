@@ -18,5 +18,8 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/test.d.ts"
+  "types": "lib/test.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

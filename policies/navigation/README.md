@@ -4,7 +4,7 @@
 pnpm install @metaliq/navigation
 ```
 
-The MetaliQ Navigation policy is one of the core policies provided in the @metaliq organisation on NPM, and is sourced from the MetaliQ mono-repository on GitHub.
+The MetaliQ Navigation policy is one of the core policies provided in the `@metaliq` organisation on NPM, and is sourced from the MetaliQ mono-repository on GitHub.
 
 It provides an abstraction for the mechanism of navigation within an application space, and is designed to be flexible and extendable enough to support various navigation needs.
 

@@ -22,5 +22,8 @@
   "exports": {
     ".": "./lib/navigation.js",
     "./lib/router": "./lib/router.js"
+  },
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
   }
 }

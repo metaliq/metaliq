@@ -14,5 +14,8 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/communication.d.ts"
+  "types": "lib/communication.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

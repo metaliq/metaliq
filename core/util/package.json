@@ -22,5 +22,8 @@
     ".": "./lib/util.js",
     "./lib/import": "./lib/import.js",
     "./lib/fs": "./lib/fs.js"
+  },
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
   }
 }

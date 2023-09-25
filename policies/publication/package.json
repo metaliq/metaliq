@@ -31,5 +31,8 @@
     ".": "./lib/publication.js",
     "./lib/page": "./lib/page.js",
     "./lib/prod-js": "./lib/prod-js.js"
+  },
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
   }
 }

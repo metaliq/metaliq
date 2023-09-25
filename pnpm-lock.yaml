@@ -58,13 +58,13 @@ importers:
         specifier: 8.2.4
         version: 8.2.4
       typedoc:
-        specifier: 0.23.25
-        version: 0.23.25(typescript@5.2.2)
+        specifier: 0.25.1
+        version: 0.25.1(typescript@5.2.2)
       typedoc-plugin-resolve-crossmodule-references:
         specifier: 0.3.3
-        version: 0.3.3(typedoc@0.23.25)
+        version: 0.3.3(typedoc@0.25.1)
       typescript:
-        specifier: 5.2.2
+        specifier: ^5.2.2
         version: 5.2.2
 
   cli:
@@ -195,8 +195,8 @@ importers:
         specifier: 0.16.0
         version: 0.16.0
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -344,8 +344,8 @@ importers:
         specifier: workspace:*
         version: link:../validation
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -616,8 +616,8 @@ importers:
         specifier: 2.3.7
         version: 2.3.7
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -650,8 +650,8 @@ importers:
         specifier: 10.1.0
         version: 10.1.0
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -669,8 +669,8 @@ importers:
         specifier: workspace:*
         version: link:../../policies/validation
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -700,8 +700,8 @@ importers:
         specifier: 4.6.13
         version: 4.6.13
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -731,8 +731,8 @@ importers:
         specifier: workspace:*
         version: link:../../policies/validation
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -762,8 +762,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -796,8 +796,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       mdast-builder:
         specifier: ^1.1.1
         version: 1.1.1
@@ -878,8 +878,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/up
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -909,8 +909,8 @@ importers:
         specifier: workspace:*
         version: link:../../policies/validation
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -931,8 +931,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/up
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -968,8 +968,8 @@ importers:
         specifier: workspace:*
         version: link:../../policies/validation
       lit:
-        specifier: ^2.7.0
-        version: 2.7.0
+        specifier: ^2.8.0
+        version: 2.8.0
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
@@ -7433,14 +7433,6 @@ packages:
       '@types/trusted-types': 2.0.3
     dev: false
 
-  /lit@2.7.0:
-    resolution: {integrity: sha512-qSy2BAVA+OiWtNptP404egcC/izDdNRw6iHGIbUmkZtbMJvPKfNsaoKrNs8Zmsbjmv5ZX2tur1l9TfzkSWWT4g==}
-    dependencies:
-      '@lit/reactive-element': 1.6.3
-      lit-element: 3.3.3
-      lit-html: 2.8.0
-    dev: false
-
   /lit@2.8.0:
     resolution: {integrity: sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==}
     dependencies:
@@ -8110,9 +8102,9 @@ packages:
     dependencies:
       brace-expansion: 2.0.1
 
-  /minimatch@6.2.0:
-    resolution: {integrity: sha512-sauLxniAmvnhhRjFwPNnJKaPFYyddAgbYdeUpHULtCT/GhzdCx/MDNy+Y40lBxTQUrMzDE8e0S43Z5uqfO0REg==}
-    engines: {node: '>=10'}
+  /minimatch@9.0.3:
+    resolution: {integrity: sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==}
+    engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       brace-expansion: 2.0.1
     dev: true
@@ -9818,25 +9810,25 @@ packages:
     dev: false
     optional: true
 
-  /typedoc-plugin-resolve-crossmodule-references@0.3.3(typedoc@0.23.25):
+  /typedoc-plugin-resolve-crossmodule-references@0.3.3(typedoc@0.25.1):
     resolution: {integrity: sha512-ZWWBy2WR8z9a6iXYGlyB3KrpV+JDdZv1mndYU6Eh6mInrfMCrQJi3Y5K9ihMBfuaBGB//le1nEmQLgzU3IO+dw==}
     engines: {node: '>=14'}
     peerDependencies:
       typedoc: '>=0.22 <=0.23'
     dependencies:
-      typedoc: 0.23.25(typescript@5.2.2)
+      typedoc: 0.25.1(typescript@5.2.2)
     dev: true
 
-  /typedoc@0.23.25(typescript@5.2.2):
-    resolution: {integrity: sha512-O1he153qVyoCgJYSvIyY3bPP1wAJTegZfa6tL3APinSZhJOf8CSd8F/21M6ex8pUY/fuY6n0jAsT4fIuMGA6sA==}
-    engines: {node: '>= 14.14'}
+  /typedoc@0.25.1(typescript@5.2.2):
+    resolution: {integrity: sha512-c2ye3YUtGIadxN2O6YwPEXgrZcvhlZ6HlhWZ8jQRNzwLPn2ylhdGqdR8HbyDRyALP8J6lmSANILCkkIdNPFxqA==}
+    engines: {node: '>= 16'}
     hasBin: true
     peerDependencies:
-      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x
+      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x
     dependencies:
       lunr: 2.3.9
       marked: 4.3.0
-      minimatch: 6.2.0
+      minimatch: 9.0.3
       shiki: 0.14.1
       typescript: 5.2.2
     dev: true

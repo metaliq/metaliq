@@ -14,5 +14,8 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/terminology.d.ts"
+  "types": "lib/terminology.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

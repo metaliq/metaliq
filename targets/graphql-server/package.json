@@ -35,5 +35,8 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/graphql-server.d.ts"
+  "types": "lib/graphql-server.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

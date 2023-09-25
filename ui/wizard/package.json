@@ -11,7 +11,7 @@
     "@metaliq/up": "workspace:*",
     "@metaliq/util": "workspace:*",
     "@metaliq/validation": "workspace:*",
-    "lit": "^2.7.0",
+    "lit": "^2.8.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
@@ -22,5 +22,8 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {},
   "type": "module",
-  "types": "lib/wizard.d.ts"
+  "types": "lib/wizard.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

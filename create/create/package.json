@@ -27,5 +27,8 @@
   "engines": {
     "node": "20",
     "pnpm": "8"
+  },
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
   }
 }

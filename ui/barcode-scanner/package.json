@@ -11,7 +11,7 @@
     "@metaliq/util": "workspace:*",
     "compressorjs": "1.1.1",
     "html5-qrcode": "2.3.7",
-    "lit": "^2.7.0",
+    "lit": "^2.8.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
@@ -25,5 +25,8 @@
     "prepare": "pnpm run pkg-prepare"
   },
   "type": "module",
-  "types": "lib/barcode-scanner.d.ts"
+  "types": "lib/barcode-scanner.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

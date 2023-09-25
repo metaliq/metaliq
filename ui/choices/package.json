@@ -11,7 +11,7 @@
     "@metaliq/terminology": "workspace:*",
     "@metaliq/validation": "workspace:*",
     "choices.js": "10.1.0",
-    "lit": "^2.7.0",
+    "lit": "^2.8.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
@@ -27,5 +27,8 @@
     "prepare": "pnpm run pkg-prepare"
   },
   "type": "module",
-  "types": "lib/choices.d.ts"
+  "types": "lib/choices.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }

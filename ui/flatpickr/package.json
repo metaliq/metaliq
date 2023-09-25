@@ -10,7 +10,7 @@
     "@metaliq/terminology": "workspace:*",
     "@metaliq/validation": "workspace:*",
     "flatpickr": "4.6.13",
-    "lit": "^2.7.0",
+    "lit": "^2.8.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
@@ -24,5 +24,8 @@
     "prepare": "pnpm run pkg-prepare"
   },
   "type": "module",
-  "types": "lib/flatpickr.d.ts"
+  "types": "lib/flatpickr.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
 }
