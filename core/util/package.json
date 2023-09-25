@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "9.0.13",
-    "typescript": "5.2.2"
+    "typescript": "^5.2.2"
   },
   "license": "MIT",
   "main": "lib/util.js",

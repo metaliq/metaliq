@@ -4,27 +4,27 @@
   "version": "1.0.0-beta.88",
   "author": "tstewart@klaudhaus.com",
   "devDependencies": {
-    "@types/chai": "4.3.4",
-    "@types/mocha": "10.0.1",
-    "@types/node": "18.14.1",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
-    "chai": "4.3.7",
-    "eslint": "^8.35.0",
-    "eslint-config-standard-with-typescript": "^34.0.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^15.6.1",
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.6.5",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "chai": "^4.3.8",
+    "eslint": "^8.50.0",
+    "eslint-config-standard-with-typescript": "^39.1.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^16.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "madge": "5.0.1",
-    "mocha": "10.2.0",
-    "source-map-support": "0.5.21",
-    "syncpack": "8.2.4",
+    "extensionless": "1.5.2",
+    "mocha": "^10.2.0",
+    "source-map-support": "^0.5.21",
+    "syncpack": "^11.2.1",
     "typescript": "^5.2.2"
   },
   "license": "MIT",
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
-    "check-package-versions": "syncpack list-mismatches -pdP",
+    "check-package-versions": "syncpack list-mismatches --types dev,prod,peer",
     "clean": "npm run clean-lib && npm run clean-buildinfo",
     "clean-buildinfo": "find . -name 'tsconfig.tsbuildinfo' -not -path '*/node_modules/*' -exec rm -f {} +",
     "clean-lib": "find . -name 'lib' -type d -not -path '*/node_modules/*' -prune -exec rm -rf {} +",
@@ -37,11 +37,5 @@
     "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
     "test": "mocha --import=extensionless/register -r source-map-support/register './!(node_modules)/*/lib/test/**/*.js'",
     "test-create": "cd ~/dev && rm -rf test-create && pnpm create @metaliq test-create"
-  },
-  "dependencies": {
-    "extensionless": "1.5.2"
-  },
-  "typedocOptions": {
-    "entryPoints": ["./src/*.ts"]
   }
 }

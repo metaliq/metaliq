@@ -33,8 +33,8 @@
     "vfile-matter": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "18.14.1",
-    "typescript": "5.2.2",
+    "@types/node": "^20.6.5",
+    "typescript": "^5.2.2",
     "mdast-util-to-markdown": "1.3.0",
     "unist-util-visit-parents": "5.1.0"
   },

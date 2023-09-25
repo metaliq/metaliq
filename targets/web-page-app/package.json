@@ -19,8 +19,8 @@
     "@types/clean-css": "4.2.5",
     "@types/fs-extra": "9.0.13",
     "@types/mime-types": "2.1.1",
-    "@types/node": "18.14.1",
-    "typescript": "5.2.2"
+    "@types/node": "^20.6.5",
+    "typescript": "^5.2.2"
   },
   "license": "MIT",
   "main": "lib/web-page-app.js",

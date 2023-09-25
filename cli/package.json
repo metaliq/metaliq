@@ -18,8 +18,8 @@
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "18.14.1",
-    "typescript": "5.2.2"
+    "@types/node": "^20.6.5",
+    "typescript": "^5.2.2"
   },
   "license": "MIT",
   "main": "lib/cli.js",

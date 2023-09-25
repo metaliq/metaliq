@@ -15,7 +15,7 @@
     "metaliq": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "5.2.2"
+    "typescript": "^5.2.2"
   },
   "license": "MIT",
   "main": "lib/barcode-scanner.js",
