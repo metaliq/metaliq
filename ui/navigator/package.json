@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/navigator",
   "description": "Basic navigator for MetaliQ",
-  "version": "1.0.0-beta.88",
+  "version": "1.0.0-beta.89",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
