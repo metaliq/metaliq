@@ -1,2 +1,3 @@
-#!/usr/bin/env node --experimental-specifier-resolution=node
-import * as sideFx from "../lib/create.js"
+#!/usr/bin/env node
+await import("extensionless/register")
+await import("../lib/create")

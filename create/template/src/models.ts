@@ -14,12 +14,6 @@ import { handleResponseErrors } from "@metaliq/integration"
 export { TERMINOLOGY } from "@metaliq/terminology"
 
 /**
- * This is for internal use during the MetaliQ solution template setup
- * You can go ahead and delete it from your solution code
- */
-export const templateUrl = () => import.meta.url
-
-/**
  * A top-level data type for the front-end application
  */
 export type App = {

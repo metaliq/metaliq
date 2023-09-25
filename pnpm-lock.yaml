@@ -129,6 +129,9 @@ importers:
       execa:
         specifier: 6.1.0
         version: 6.1.0
+      extensionless:
+        specifier: 1.5.2
+        version: 1.5.2
       ts-dedent:
         specifier: 2.2.0
         version: 2.2.0

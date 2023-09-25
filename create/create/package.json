@@ -6,6 +6,7 @@
   "dependencies": {
     "@metaliq/template": "workspace:*",
     "execa": "6.1.0",
+    "extensionless": "1.5.2",
     "ts-dedent": "2.2.0"
   },
   "devDependencies": {
@@ -19,8 +20,8 @@
   },
   "scripts": {
     "clean-local": "",
-    "test-create": "cd ../../.. && rm -rf test-mq-create && mkdir test-mq-create && cd test-mq-create && node --experimental-specifier-resolution=node ../metaliq/create/create/lib/create.js",
-    "test-create-folder": "cd ../../.. && rm -rf test-mq-create-folder && node --experimental-specifier-resolution=node ./metaliq/create/create/lib/create.js test-mq-create-folder"
+    "test-create": "cd ../../.. && rm -rf test-mq-create && mkdir test-mq-create && cd test-mq-create && node ../metaliq/create/create/lib/create.js",
+    "test-create-folder": "cd ../../.. && rm -rf test-mq-create-folder && node ./metaliq/create/create/lib/create.js test-mq-create-folder"
   },
   "type": "module",
   "types": "lib/create.d.ts",

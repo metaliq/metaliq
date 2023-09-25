@@ -50,7 +50,7 @@ import { URL } from "url"
 import { cp, readFile, writeFile, readdir, mkdir, rename } from "fs/promises"
 import { cwd, chdir } from "process"
 import { resolve } from "path"
-import { templateUrl } from "@metaliq/template"
+import { templateUrl } from "@metaliq/template/bin/templateUrl.js"
 import { execaCommand } from "execa"
 
 const exec = (command: string) => execaCommand(command, { stdio: "inherit" })
