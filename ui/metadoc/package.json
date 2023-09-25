@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/metadoc",
   "description": "MetaliQ publication target for generating MetaViews from documents",
-  "version": "1.0.0-beta.89",
+  "version": "1.0.0-beta.90",
   "author": "tstewart@klaudhaus.com",
   "bin": {
     "metadoc": "bin/cli-es6.js"
