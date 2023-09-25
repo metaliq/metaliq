@@ -36,6 +36,11 @@
     "publish-beta": "pnpm publish -r --tag beta --access public",
     "reinstall": "npm run clean-node-modules && pnpm install -r --prefer-offline",
     "test": "mocha --import=extensionless/register -r source-map-support/register './!(node_modules)/*/lib/test/**/*.js'",
-    "test-create": "cd ~/dev && rm -rf test-create && pnpm create @metaliq test-create"
+    "test-create": "cd ~/dev && rm -rf test-metaliq-create && pnpm create @metaliq test-metaliq-create"
+  },
+  "pnpm": {
+    "allowedDeprecatedVersions": {
+      "sourcemap-codec": "1"
+    }
   }
 }
