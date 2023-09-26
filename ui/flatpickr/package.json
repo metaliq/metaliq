@@ -21,7 +21,7 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
     "pkg-prepare": "mkdir -p lib && cp ./node_modules/flatpickr/dist/flatpickr.css ./lib/",
-    "prepare": "pnpm run pkg-prepare"
+    "prepare": "pnpm pkg-prepare"
   },
   "type": "module",
   "types": "lib/flatpickr.d.ts",

@@ -22,7 +22,7 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
     "pkg-prepare": "mkdir -p lib && cp ./node_modules/html5-qrcode/html5-qrcode.min.js ./lib/",
-    "prepare": "pnpm run pkg-prepare"
+    "prepare": "pnpm pkg-prepare"
   },
   "type": "module",
   "types": "lib/barcode-scanner.d.ts",

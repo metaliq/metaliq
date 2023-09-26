@@ -24,7 +24,7 @@
   "repository": "https://github.com/metaliq/metaliq",
   "scripts": {
     "pkg-prepare": "mkdir -p lib && cp ./node_modules/choices.js/public/assets/styles/choices.css ./lib/",
-    "prepare": "pnpm run pkg-prepare"
+    "prepare": "pnpm pkg-prepare"
   },
   "type": "module",
   "types": "lib/choices.d.ts",
