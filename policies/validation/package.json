@@ -19,8 +19,8 @@
   "types": "lib/validation.d.ts",
   "exports": {
     ".": "./lib/validation.js",
-    "./lib/constrainst/business": "./lib/constrainst/business.js",
-    "./lib/constrainst/foundation": "./lib/constrainst/foundation.js"
+    "./lib/constraints/business": "./lib/constrainst/business.js",
+    "./lib/constraints/foundation": "./lib/constrainst/foundation.js"
   },
   "typedocOptions": {
     "entryPoints": ["./src/*.ts"]
