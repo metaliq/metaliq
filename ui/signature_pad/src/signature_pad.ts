@@ -114,7 +114,10 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
             if (options.format === "RAW") {
               sigPad.fromData(JSON.parse($.value))
             } else {
-              sigPad.fromDataURL($.value).catch(console.error)
+              const value = $.value.match(/^<svg/)
+                ? `data:image/svg+xml;utf8,${$.value}`
+                : $.value
+              sigPad.fromDataURL(value).catch(console.error)
             }
           } catch (e) {
             console.warn("Invalid value for signature pad")
