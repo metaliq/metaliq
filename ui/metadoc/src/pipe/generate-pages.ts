@@ -133,12 +133,18 @@ const htmlTs = (html: string, moduleData: ModuleData) => {
     ...moduleData.imports
   ]
 
+  const modelType = moduleData.model.type || "any"
+  if (modelType === "any") imports.unshift({ id: "{ Meta$ }", from: "metaliq" })
   const importsTs = imports.map(i => `import ${i.id} from "${i.from}"`).join("\n")
+
+  const mvParamTypes = modelType !== "any"
+    ? `(${moduleData.model.name}, ${moduleData.model.name$})`
+    : `(${moduleData.model.name}: any, ${moduleData.model.name$}: Meta$<any>)`
 
   const ts = dedent`
     ${importsTs}
 
-    export const ${moduleData.viewName}: MetaView<${moduleData.model.type || "any"}> = (${moduleData.model.name}, ${moduleData.model.name$}) => html\`
+    export const ${moduleData.viewName}: MetaView<${modelType}> = ${mvParamTypes} => html\`
       ${html.trim()}
     \`
     
