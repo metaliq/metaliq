@@ -1,0 +1,21 @@
+{
+  "name": "@metaliq/collection",
+  "description": "MetaliQ collections policy",
+  "version": "1.0.0-beta.93",
+  "author": "tstewart@klaudhaus.com",
+  "dependencies": {
+    "metaliq": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  },
+  "license": "MIT",
+  "main": "lib/collection.js",
+  "repository": "https://github.com/metaliq/metaliq",
+  "scripts": {},
+  "type": "module",
+  "types": "lib/collection.d.ts",
+  "typedocOptions": {
+    "entryPoints": ["./src/*.ts"]
+  }
+}

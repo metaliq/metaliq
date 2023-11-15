@@ -265,6 +265,16 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
+  policies/collection:
+    dependencies:
+      metaliq:
+        specifier: workspace:*
+        version: link:../../core/metaliq
+    devDependencies:
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+
   policies/communication:
     dependencies:
       metaliq:
