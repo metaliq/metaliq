@@ -60,7 +60,7 @@
     "eslint-plugin-n": "^16.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "graphql": "^16.6.0",
-    "graphqlex-codegen": "0.20.0",
+    "graphqlex-codegen": "0.21.0",
     "typescript": "^5.2.2"
   },
   "typedocOptions": {

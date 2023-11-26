@@ -214,7 +214,7 @@ const packageJson: Record<Cloud, object> = {
       logs: "firebase functions:log"
     },
     engines: {
-      node: "18"
+      node: "20"
     },
     type: "module",
     main: "index.js",
