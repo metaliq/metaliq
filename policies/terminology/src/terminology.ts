@@ -48,5 +48,5 @@ export function labelPath (from: Meta$<any>, to: Meta$<any>) {
  */
 export const labelOrKey = <T, P>(v$: T | Meta$<T, P>) => {
   const $ = (meta$(v$) || v$) as Meta$<T, P>
-  return $.term("label") || $.key
+  return $.term("label") ?? $.key
 }

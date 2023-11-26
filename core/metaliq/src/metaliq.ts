@@ -396,10 +396,14 @@ export function applyModel<T> ($: Meta$<T>, model: MetaModel<T>) {
 /**
  * Obtain the meta value ($) object from either its associated data value object or itself.
  */
-export const meta$ = <T>(value: T): Meta$<T> => {
+export const meta$ = <T>(value: T | Meta$<T>): Meta$<T> => {
   if (typeof value !== "object") {
     throw new Error(`Cannot obtain Meta$ from primitive value: ${value}`)
   }
+  return (<unknown>value as HasMeta$<T>)?.$
+}
+
+export const v$ = <T>(value: T | Meta$<T>): Meta$<T> => {
   return (<unknown>value as HasMeta$<T>)?.$
 }
 
