@@ -7,6 +7,7 @@ import { navigator } from "@metaliq/navigator"
 import { redirect, route, setNavSelectionResponsive } from "@metaliq/navigation"
 import { initApi } from "./gen/graphql-operations"
 import { handleResponseErrors } from "@metaliq/integration"
+import { webPageApp } from "@metaliq/web-page-app"
 
 /**
  * Register the terminology policy to enable access to its terms
@@ -91,5 +92,10 @@ export const appModel: MetaModel<App> = {
   bootstrap: () => initApi("http://localhost:8940/graphql", {
     // Link the initialised API to a response handler that displays progress and errors
     onResponse: handleResponseErrors(showMessage, showProgress)
+  }),
+  publicationTarget: webPageApp({
+    build: {
+      copy: ["node_modules/bootstrap-icons/font/fonts"]
+    }
   })
 }
