@@ -12,7 +12,7 @@
     "@metaliq/presentation": "workspace:*",
     "@metaliq/publication": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
-    "@web/dev-server": "0.1.35",
+    "@web/dev-server": "0.4.1",
     "commander": "8.2.0",
     "extensionless": "1.5.2",
     "metaliq": "workspace:*"
