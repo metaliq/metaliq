@@ -130,24 +130,44 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
  */
 export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): Promise<T> {
   if (typeof model.init === "function") {
-    const data = await (model.init as InitFunction<T>)(model)
-    return data
+    return await (model.init as InitFunction<T>)(model)
   } else if (typeof model.init !== "undefined") {
     return model.init
   } else {
-    const keys = fieldKeys(model, options)
-    if (keys?.length) {
-      const data = {} as any
-      for (const key of keys) {
-        const fieldData = await init(model.fields[key])
-        if (typeof fieldData !== "undefined") {
-          data[key] = fieldData
-        }
+    return await initFields(model, options)
+  }
+}
+
+/**
+ * Runs initialisation on each of the model's child fields and returns the resulting object.
+ * Useful where a parent model needs to set its own values but also include the result of
+ * descendant inits, or to override some aspect of its initialised descendant data,
+ * for example by sharing a value between children, like:
+ *
+ * ```ts
+ *  init: model => {
+ *    const sharedList = []
+ *    const data = await initFields(model)
+ *    data.someValue = "hello"
+ *    data.someChild.list = sharedList
+ *    data.otherChild.list = sharedList
+ *    return data
+ *  }
+ * ```
+ */
+export async function initFields<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): Promise<T> {
+  const keys = fieldKeys(model, options)
+  if (keys?.length) {
+    const data = {} as any
+    for (const key of keys) {
+      const fieldData = await init(model.fields[key])
+      if (typeof fieldData !== "undefined") {
+        data[key] = fieldData
       }
-      return data as T
-    } else {
-      return undefined
     }
+    return data as T
+  } else {
+    return undefined
   }
 }
 
