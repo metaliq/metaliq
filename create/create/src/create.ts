@@ -94,7 +94,7 @@ const main = async () => {
   // These files get excluded under their standard names
   // See: https://docs.npmjs.com/cli/v9/using-npm/developers
   await rename(resolve(projectDir, ".gitignore.template"), resolve(".gitignore"))
-  await rename(resolve(projectDir, ".npmrc.template"), resolve(".npmrc"))
+  await rename(resolve(projectDir, "_npmrc"), resolve(".npmrc"))
 
   // Remove project extension from tsconfig
   const tsConfigPath = resolve(projectDir, "tsconfig.json")
