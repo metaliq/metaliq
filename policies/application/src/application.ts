@@ -1,5 +1,5 @@
 import { fieldKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
-import { LogFunction, startUp, Up, up, UpOptions } from "@metaliq/up"
+import { LogFunction, startUp, up, UpOptions } from "@metaliq/up"
 
 /**
  * Policy registration.
@@ -54,13 +54,6 @@ export interface ApplicationTerms<T, P = any> {
   local?: boolean
 }
 
-export interface ApplicationState<T> {
-  /**
-   * Localised `up` function that is available when `local` has been set to true in the model.
-   */
-  up?: Up<Meta<T>>
-}
-
 export interface Application$<T, P = any> {
   /**
    * Create an event handler that calls the given meta function
@@ -75,10 +68,6 @@ export interface Application$<T, P = any> {
 declare module "metaliq" {
   namespace Policy {
     interface Terms<T, P> extends ApplicationTerms<T, P> {}
-
-    interface State<T, P> extends ApplicationState<T> {
-      this?: State<T, P>
-    }
   }
 
   interface Meta$<T, P> extends Application$<T, P> {}
