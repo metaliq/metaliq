@@ -24,7 +24,9 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
   </div>
   <header>
     <div class="header-content">
-      <img src=${options.logoUrl} alt="Logo" @click=${$.up(options.logoUpdate)}>
+      ${options.logoUrl ? html`
+        <img src=${options.logoUrl} alt="Logo" @click=${$.up(options.logoUpdate)}>
+      ` : ""}
       <i class="bi bi-list" @click=${$.up(toggleMenu)}></i>
       <nav class=${classMap({ "mq-show": $.state.nav?.showMenu })}>
         ${menuItems($)}
