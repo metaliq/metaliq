@@ -5,14 +5,21 @@ import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta$ } from "metaliq"
 import { validate } from "@metaliq/validation"
+import { ifDefined } from "lit/directives/if-defined.js"
 
-export const textArea = (options: FieldOptions<string> = {}): MetaView<string> => (v, $) => html`
+export type TextAreaOptions = FieldOptions<string> & {
+  cols?: number
+  rows?: number
+}
+
+export const textArea = (options: TextAreaOptions = {}): MetaView<string> => (v, $) => html`
   <label class="mq-field mq-text-area-field ${
     classMap({ [options.classes]: !!options.classes, ...fieldClasses($) })
   }">
     ${fieldLabel(options)(v, $)}
     <textarea 
-      rows=3
+      cols=${ifDefined(options.cols)}
+      rows=${options.rows ?? 3}
       ?disabled=${$.fn(isDisabled)}
       class="mq-input ${classMap({
         "mq-error-field": $.state.error,

@@ -708,9 +708,6 @@ importers:
       '@metaliq/application':
         specifier: workspace:*
         version: link:../../policies/application
-      '@metaliq/elements':
-        specifier: workspace:*
-        version: link:../elements
       '@metaliq/presentation':
         specifier: workspace:*
         version: link:../../policies/presentation

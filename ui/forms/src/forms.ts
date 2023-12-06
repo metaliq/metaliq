@@ -9,9 +9,7 @@ import { fields, FieldsOptions, MetaView, repeat, setViewResolver, ViewResult, V
 import { ifDefined } from "lit/directives/if-defined.js"
 import { APPLICATION } from "@metaliq/application"
 
-export { expander } from "@metaliq/elements"
-export { AnimatedHideShow } from "@metaliq/elements"
-export { textArea } from "./text-area"
+export * from "./text-area"
 
 APPLICATION()
 
