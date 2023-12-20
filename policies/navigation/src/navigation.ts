@@ -1,7 +1,7 @@
 import { Route, RouteParams, Router } from "./router"
 import { FieldKey, fieldKeys, Meta$, meta$, MetaFn, MetaModel, metaSetups, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
-import { APPLICATION } from "@metaliq/application"
+import { APPLICATION, bootstrapComplete } from "@metaliq/application"
 
 export * from "./router"
 
@@ -153,9 +153,11 @@ metaSetups.push($ => {
       const origBootstrap = $.model.bootstrap
       $.model.bootstrap = async (v, $) => {
         const origResult = await $.fn(origBootstrap)
-        new Router(Array.from(policy.route$s.keys()), catchUp)
-          .start()
-          .catch(console.error)
+        bootstrapComplete.then(() => {
+          new Router(Array.from(policy.route$s.keys()), catchUp)
+            .start()
+            .catch(console.error)
+        })
         return origResult
       }
     }
