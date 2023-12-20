@@ -109,7 +109,7 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     log,
     local
   })
-  bootstrap(meta.$.value, meta.$)
+  await bootstrap(meta.$.value, meta.$)
 
   return meta
 }
@@ -160,6 +160,14 @@ export async function initFields<T> (model: MetaModel<T>, options: IncludeExclud
   }
 }
 
+let bootstrapPromiseResolve: (value: unknown) => void
+/**
+ * An exported promise enabling processes to await full application boostrap.
+ */
+export const bootstrapComplete = new Promise((resolve) => {
+  bootstrapPromiseResolve = resolve
+})
+
 /**
  * Bootstrap a Meta$.
  *
@@ -188,5 +196,6 @@ export const bootstrap: MetaFn<any> = async (v, $) => {
     // No bootstrap function was called, do a direct `up` call to start first review
     await up()()
   }
+  bootstrapPromiseResolve(true)
   return bootstrapped
 }
