@@ -14,7 +14,7 @@
     "commander": "8.2.0",
     "extensionless": "1.5.2",
     "hastscript": "^7.0.2",
-    "lit": "^2.8.0",
+    "lit": "^3.1.0",
     "mdast-builder": "^1.1.1",
     "rehype-highlight": "^6.0.0",
     "rehype-raw": "^6.1.1",

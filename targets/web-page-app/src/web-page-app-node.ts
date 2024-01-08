@@ -73,6 +73,10 @@ export const webPageAppRunner = (
         ctx.url = "/index.html"
         return next()
       },
+      (ctx, next) => {
+        ctx.set("Access-Control-Allow-Origin", "*")
+        return next()
+      },
       async (ctx, next) => {
         if (ctx.path === "/bin/index.js") {
           ctx.body = indexJs(modelName, simplePath)

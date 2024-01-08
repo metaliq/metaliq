@@ -7,7 +7,7 @@
     "@metaliq/forms": "workspace:*",
     "@metaliq/presentation": "workspace:*",
     "@metaliq/up": "workspace:*",
-    "lit": "^2.8.0",
+    "lit": "^3.1.0",
     "metaliq": "workspace:*",
     "signature_pad": "^4.1.4"
   },

@@ -9,7 +9,7 @@
     "@metaliq/presentation": "workspace:*",
     "@metaliq/terminology": "workspace:*",
     "@metaliq/up": "workspace:*",
-    "lit": "^2.8.0",
+    "lit": "^3.1.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {

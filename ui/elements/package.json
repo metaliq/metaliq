@@ -6,7 +6,7 @@
   "dependencies": {
     "@metaliq/presentation": "workspace:*",
     "@metaliq/validation": "workspace:*",
-    "lit": "^2.8.0",
+    "lit": "^3.1.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {
