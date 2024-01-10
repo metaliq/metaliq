@@ -83,6 +83,11 @@ export type MetaRouteHandler<T, P = any, RP = any, RQ = any> =
  */
 type NavigationPolicy = {
   /**
+   * The router instance, can be used for pausing navigation behaviour for example.
+   */
+  router?: Router
+
+  /**
    * Used to collect routes from meta setups for use in Router initialisation.
    */
   route$s: Map<Route<object>, Meta$<any>>
@@ -154,9 +159,8 @@ metaSetups.push($ => {
       $.model.bootstrap = async (v, $) => {
         const origResult = await $.fn(origBootstrap)
         bootstrapComplete.then(() => {
-          new Router(Array.from(policy.route$s.keys()), catchUp)
-            .start()
-            .catch(console.error)
+          policy.router = new Router(Array.from(policy.route$s.keys()), catchUp)
+          policy.router.start().catch(console.error)
         })
         return origResult
       }
@@ -284,13 +288,23 @@ export const setNavSelectionResponsive = (width: number): MetaFn<any> => (v, $) 
 /**
  * Go to the given nav node's route if it has one,
  * otherwise find and go to its first child route.
+ *
+ * Don't need to wrap call to this fn in `up`
+ * as the path change handler will call `up`.
+ * So this function provides some of `up`s capabilities,
+ * such as preventing event defaults and bubbling.
+ *
  */
-export const goNavRoute: MetaFn<any> = (v, item$) => {
+export const goNavRoute: MetaFn<any> = (v, item$, event) => {
   while (item$ && !item$.model.route) {
     const firstChildKey = item$.childKeys()[0]
     item$ = item$.child$(firstChildKey)
   }
-  item$?.model.route?.go()
+  if (item$.model.route?.router?.enabled) {
+    event?.preventDefault()
+    event?.stopPropagation()
+    item$?.model.route?.go()
+  }
 }
 
 export const toggleMenu: MetaFn<any> = (v, $) => {
@@ -361,3 +375,11 @@ export const onChild = <T, P, RP, RQ, K extends FieldKey<T>> (
   handler: MetaRouteHandler<T[K], T, RP, RQ>,
   key: K
 ) => (p: RouteParams<RP, RQ>): MetaFn<T, P> => (v, $) => handler(p)(v[key], $.child$(key))
+
+export const disableNav = () => {
+  policy.router?.stop()
+}
+
+export const enableNav = () => {
+  policy.router?.start()
+}

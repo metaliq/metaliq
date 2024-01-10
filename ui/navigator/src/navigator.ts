@@ -56,7 +56,7 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
           const child$ = $.child$(key)
           const isSelected = selectedChild$ === child$ // Anywhere in the selection chain
           const isSelectedItem = selectedLeaf$ === child$ // The specifically selected item
-          return menuItem(child$, isSelected, isSelectedItem, level)
+          return child$.view(menuItem(isSelected, isSelectedItem, level))
         })}
       </ul>
     `
@@ -64,12 +64,12 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
 }
 
 const menuItem = (
-  navItem$: Meta$<any>, isSelected: boolean, isSelectedItem: boolean, level: number = 1
-): ViewResult => {
+  isSelected: boolean, isSelectedItem: boolean, level: number = 1
+): MetaView<any> => (navItem, navItem$) => {
   const text = navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
-    <li @click=${menuItemClick(navItem$)} class=${classMap({
+    <li @click=${(evt: Event) => navItem$.fn(goNavRoute, evt)} class=${classMap({
       "mq-nav-selected": isSelected,
       "mq-nav-selected-item": isSelectedItem
     })}>
@@ -78,16 +78,4 @@ const menuItem = (
       ${menuItems(navItem$, level + 1)}
     </li>
   `
-}
-
-/**
- * Don't need to wrap call to route goer in `up` as this will be
- * handled within the path change handler.
- * This function provides some of `up`s capabilities, such as
- * preventing event defaults and bubbling.
- */
-const menuItemClick = (navItem$: Meta$<any>) => (event: Event) => {
-  event.preventDefault()
-  event.stopPropagation()
-  goNavRoute(navItem$.value, navItem$)
 }
