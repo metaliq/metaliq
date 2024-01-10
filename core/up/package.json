@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/up",
   "description": "Framework-agnostic state management",
-  "version": "1.0.0-beta.96",
+  "version": "1.0.0-beta.97",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {},
   "devDependencies": {
