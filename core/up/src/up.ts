@@ -128,6 +128,12 @@ export type LogEntry<T> = {
 }
 
 /**
+ * A globally unique symbol that can be used as the result of an update function
+ * to indicate that no update has taken place and cancel any following review.
+ */
+export const NO_UPDATE = Symbol("no-update")
+
+/**
  * The `up` function for the global app context,
  * typically used to prepare event handlers for a UI.
  *
@@ -220,6 +226,9 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
       await context.review?.()
       throw e
     }
+
+    // Update function has indicated that no update has take place, cancelling further processing.
+    if (result === NO_UPDATE) return
 
     if (result instanceof Promise) {
       // Review and log after initial stage, then await the promised result
