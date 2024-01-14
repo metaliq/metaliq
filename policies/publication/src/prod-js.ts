@@ -1,5 +1,4 @@
 import { ModuleFormat, OutputChunk, rollup } from "rollup"
-import ignore from "rollup-plugin-ignore"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
 import pluginJson from "@rollup/plugin-json"
@@ -27,13 +26,12 @@ export type ProdJsOutput = {
  * Provide an optimised bundle for the given entry point.
  * Includes module bundling and minification of JS and embedded lit HTML templates.
  */
-export const makeProdJs = async ({ src, exclude = [], external = [], format = "es" }: ProdJsOptions) => {
+export const makeProdJs = async ({ src, external = [], format = "es" }: ProdJsOptions) => {
   // Bundle all JS modules
   const bundler = await rollup({
     input: src,
     external,
     plugins: [
-      ignore(exclude, { commonjsBugFix: true }),
       nodeResolve(),
       commonjs(),
       pluginJson(),

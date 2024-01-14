@@ -133,7 +133,7 @@ export const webPageAppBuilder = (
   await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
-    exclude: ["electron", "./spa-node"]
+    external: ["electron"]
   })
   await remove(jsSrc)
   for (const [i, output] of prodJsOutputs.entries()) {

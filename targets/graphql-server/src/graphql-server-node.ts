@@ -109,8 +109,7 @@ export const graphQLServerBuilder = (
   await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
-    exclude: ["electron", "./graphql-server-node"],
-    external: ["apollo-server-cloud-functions", "apollo-server-lambda", "firebase-functions", "node-fetch", "@supabase/supabase-js", "@sendgrid/mail"]
+    external: ["apollo-server-cloud-functions", "apollo-server-lambda", "electron", "firebase-functions", "node-fetch", "@supabase/supabase-js", "@sendgrid/mail"]
   })
   await remove(jsSrc)
   const cloudFileNames: Record<Cloud, string> = {
