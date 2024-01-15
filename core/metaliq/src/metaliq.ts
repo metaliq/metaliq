@@ -396,26 +396,32 @@ export function applyModel<T> ($: Meta$<T>, model: MetaModel<T>) {
 /**
  * Obtain the meta value ($) object from either its associated data value object or itself.
  */
-export const meta$ = <T>(value: T | Meta$<T>): Meta$<T> => {
-  if (typeof value !== "object") {
-    throw new Error(`Cannot obtain Meta$ from primitive value: ${value}`)
+export const meta$ = <T>(v$: T | Meta$<T>): Meta$<T> => {
+  if (typeof v$ !== "object") {
+    throw new Error(`Cannot obtain Meta$ from primitive value: ${v$}`)
   }
-  return (<unknown>value as HasMeta$<T>)?.$
+  return isMeta$(v$) ? v$ : ((<unknown>v$ as HasMeta$<T>)?.$)
 }
 
-export const v$ = <T>(value: T | Meta$<T>): Meta$<T> => {
-  return (<unknown>value as HasMeta$<T>)?.$
+/**
+ * A type guard to narrow a value or its meta value down to a meta value$.
+ */
+export const isMeta$ = <T, P = any>(v$: T | Meta$<T>): v$ is Meta$<T, P> => {
+  v$ = v$ as Meta$<any>
+  return !!(v$?.meta?.$ && v$?.model && v$?.fn && v$?.child$)
 }
 
 /**
  * A type guard to narrow a MetaField to a Meta.
  */
-export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> => m && !Array.isArray(m)
+export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> =>
+  m && !Array.isArray(m)
 
 /**
  * A type guard to narrow a MetaField to a MetaArray.
  */
-export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> => Array.isArray(m)
+export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> =>
+  Array.isArray(m)
 
 /**
  * Works better than keyof T where you know that T is not an array.
