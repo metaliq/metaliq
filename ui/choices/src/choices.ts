@@ -77,7 +77,7 @@ declare module "metaliq" {
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
-const innerSelector = <T, P>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
+export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
   options = { sort: true, ...options }
 
   const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
