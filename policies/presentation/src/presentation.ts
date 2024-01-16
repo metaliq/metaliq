@@ -135,11 +135,6 @@ export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
  */
 export type ViewOptions<T, P = any> = {
   /**
-   * Override or disable (by passing `false`) any default wrapper provided to {@link setViewWrapper}.
-   */
-  wrapper?: ViewWrapper<T, P> | boolean
-
-  /**
    * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
    */
   resolver?: ViewResolver | boolean
@@ -169,9 +164,6 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   }
   resetValue$(this)
 
-  const wrapper = typeof options?.wrapper === "boolean"
-    ? options?.wrapper ? viewWrapper : undefined
-    : options?.wrapper || viewWrapper
   const resolver = typeof options?.resolver === "boolean"
     ? options?.resolver ? viewResolver : undefined
     : options?.resolver || viewResolver
@@ -181,8 +173,6 @@ Meta$.prototype.view = function (viewTerm?, options?) {
     return ""
   } else if (Array.isArray(viewTerm)) {
     return viewTerm.map((each) => $.view(each))
-  } else if (wrapper) {
-    return wrapper(viewTerm)($.value, $)
   } else {
     return $.term("hidden") ? "" : viewTerm($.value, $)
   }
@@ -266,15 +256,7 @@ export const renderPage: MetaFn<any> = (v, $) => {
 /**
  * A view designed to accept and wrap another view.
  */
-export type ViewWrapper<T = any, P = any> = (metaView: MetaView<T, P>) => MetaView<T, P>
-
-/**
- * Assign a default view wrapper, for example to always do animation for dynamic hide-show fields.
- */
-export const setViewWrapper = (wrapper: ViewWrapper) => {
-  viewWrapper = wrapper
-}
-let viewWrapper: ViewWrapper = null
+export type ViewWrapper<T = any, P = any> = (metaView: MetaViewTerm<T, P>) => MetaView<T, P>
 
 /**
  * A function to obtain a MetaView appropriate for the given Meta$.
