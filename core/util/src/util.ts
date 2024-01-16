@@ -173,6 +173,7 @@ export const hasSomeVal = <T extends object>(obj: T, excludeKeys: string[] = [])
 
 /**
  * Filter the object to a subset of values based on a predicate applied to each value.
+ * Produces an object with only the keyed values from the original object that match the predicate.
  */
 export const filterObject = <T, K extends keyof T>(obj: T, predicate: (k: K, v: T[K]) => boolean) => {
   const filteredEntries = Object.entries(obj)
@@ -180,6 +181,14 @@ export const filterObject = <T, K extends keyof T>(obj: T, predicate: (k: K, v: 
     .filter(Boolean)
   const result = <unknown>Object.assign({}, ...filteredEntries) as Partial<T>
   return result
+}
+
+/**
+ * Similar to filterObject but produces the result as a list of resulting values.
+ */
+export const searchObject = <T, K extends keyof T>(obj: T, search: (k: K, v: T[K]) => boolean) => {
+  const filtered = filterObject(obj, search)
+  return Object.values(filtered)
 }
 
 /**
