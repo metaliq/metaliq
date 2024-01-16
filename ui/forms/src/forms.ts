@@ -173,7 +173,7 @@ export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): ViewWr
         ...fieldClasses($)
       })}">
       ${fieldLabel(options)(v, $)}
-      ${fieldContent(v, $)}
+      ${$.view(fieldContent)}
       ${fieldError(v, $)}
     </label>
   `
