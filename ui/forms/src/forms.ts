@@ -5,7 +5,7 @@ import { up } from "@metaliq/up"
 import { isMeta, isMetaArray, MaybeFn, meta$, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
-import { fields, FieldsOptions, MetaView, repeat, setViewResolver, ViewResult, ViewWrapper } from "@metaliq/presentation"
+import { fields, FieldsOptions, MetaView, MetaViewWrapper, repeat, setViewResolver, ViewResult } from "@metaliq/presentation"
 import { ifDefined } from "lit/directives/if-defined.js"
 import { APPLICATION } from "@metaliq/application"
 
@@ -162,7 +162,7 @@ export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value,
 /**
  * Standard container for MetaliQ form fields.
  */
-export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): ViewWrapper<T, P> =>
+export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): MetaViewWrapper<T, P> =>
   fieldContent => (v, $) => html`
     <label
       data-mq-field-key=${fieldKey(v, $)}

@@ -59,7 +59,7 @@ export interface Presentation$<T, P = any> {
    * * If `myView` is undefined it will fall back to a view defined in the MetaModel.
    *
    * * If no `myView` or MetaModel view is defined, falls back to a view provided by
-   * the {@link ViewResolver} assigned via {@link setViewResolver}. This can be overriden
+   * the {@link MetaViewResolver} assigned via {@link setViewResolver}. This can be overriden
    * or disabled with the {@link ViewOptions.resolver} option.
    *
    * * It automatically uses any default wrapper assigned using {@link setViewWrapper}.
@@ -137,7 +137,7 @@ export type ViewOptions<T, P = any> = {
   /**
    * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
    */
-  resolver?: ViewResolver | boolean
+  resolver?: MetaViewResolver | boolean
 }
 
 /**
@@ -256,20 +256,20 @@ export const renderPage: MetaFn<any> = (v, $) => {
 /**
  * A view designed to accept and wrap another view.
  */
-export type ViewWrapper<T = any, P = any> = (metaView: MetaViewTerm<T, P>) => MetaView<T, P>
+export type MetaViewWrapper<T = any, P = any> = (metaViewTerm: MetaViewTerm<T, P>) => MetaView<T, P>
 
 /**
  * A function to obtain a MetaView appropriate for the given Meta$.
  */
-export type ViewResolver<T = any, P = any> = MetaFn<T, P, MetaView<T, P>>
+export type MetaViewResolver<T = any, P = any> = MetaFn<T, P, MetaViewTerm<T, P>>
 
 /**
  * Assign a default viewResolver, for example to determine a default form field given data type.
  */
-export const setViewResolver = (resolver: ViewResolver) => {
+export const setViewResolver = (resolver: MetaViewResolver) => {
   viewResolver = resolver
 }
-let viewResolver: ViewResolver = null
+let viewResolver: MetaViewResolver = null
 
 /**
  * Obtain an item of transient view state.
