@@ -1,7 +1,7 @@
 import { html, LitElement, PropertyValues } from "lit"
 import { styleMap } from "lit/directives/style-map.js"
 import { customElement, property, state } from "lit/decorators.js"
-import { ViewWrapper } from "@metaliq/presentation"
+import { MetaViewWrapper } from "@metaliq/presentation"
 import { VALIDATION } from "@metaliq/validation"
 
 VALIDATION()
@@ -84,7 +84,7 @@ export type AnimatedHideShowOptions = {
  * Wrap a MetaView with the mq-animated-hide-show custom element and link its `mq-hidden`
  * property with the hidden term from the MetaModel.
  */
-export const animatedHideShow = <T = any, P = any>({ duration }: AnimatedHideShowOptions = {}): ViewWrapper<T, P> => (view) => (v, $) => html`
+export const animatedHideShow = <T = any, P = any>({ duration }: AnimatedHideShowOptions = {}): MetaViewWrapper<T, P> => (view) => (v, $) => html`
   <mq-animated-hide-show ?mqHidden=${!!$.term("hidden")} ?mqDuration=${duration}>
     ${$.view(view)}
   </mq-animated-hide-show>
