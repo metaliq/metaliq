@@ -326,7 +326,7 @@ export function metafy <T, P = any> (
     _value: value
   })
 
-  if (typeof index === "number") $.index = index
+  if (isArrayMember) $.index = index
 
   const result: Meta<T, P> = <unknown>Object.assign(proto, { $ }) as Meta<T, P>
 
@@ -337,9 +337,19 @@ export function metafy <T, P = any> (
   if (value && typeof value === "object") Object.assign(value, { $ })
 
   // Assign the meta into its parent if provided
-  if (parent$ && key && !isArrayMember) {
-    Object.assign(parent$.meta, { [key]: result }) // (Re)attach this meta to its parent
-    Object.assign(parent$.value || {}, { [key]: value }) // (Re)attach the new value to the parent's value
+  if (parent$ && key) {
+    if (isArrayMember) {
+      // (Re)attach this meta to its parent
+      const parentMeta = parent$.meta as Meta<P>
+      const parentMetaArray = parentMeta[key] as MetaArray<any>
+      parentMetaArray[index] = result
+      // (Re)attach the new value to the parent's value
+      const parentArray = parent$.value[key] as any[]
+      parentArray[index] = value
+    } else {
+      Object.assign(parent$.meta, { [key]: result }) // (Re)attach this meta to its parent
+      Object.assign(parent$.value || {}, { [key]: value })
+    }
   }
 
   // Descend through children creating further meta objects
