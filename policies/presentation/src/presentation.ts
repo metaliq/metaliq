@@ -62,10 +62,6 @@ export interface Presentation$<T, P = any> {
    * the {@link MetaViewResolver} assigned via {@link setViewResolver}. This can be overriden
    * or disabled with the {@link ViewOptions.resolver} option.
    *
-   * * It automatically uses any default wrapper assigned using {@link setViewWrapper}.
-   * This allows for global handling of animated hide/show, for example.
-   * This can be overridden / disabled with the {@link ViewOptions.wrapper} option.
-   *
    * * The $ backlink on the value object will be re-established.
    * This can assist in situations where a single value object is being shared
    * (with possibly different MetaModels) across multiple points in the meta graph.
