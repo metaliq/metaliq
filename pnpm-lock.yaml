@@ -373,9 +373,6 @@ importers:
       rollup:
         specifier: ^3.29.2
         version: 3.29.2
-      rollup-plugin-ignore:
-        specifier: ^1.0.10
-        version: 1.0.10
       rollup-plugin-minify-html-literals-cjs-rollup3:
         specifier: ^1.0.0
         version: 1.0.0(rollup@3.29.2)
@@ -8886,10 +8883,6 @@ packages:
     dependencies:
       glob: 7.2.3
     dev: true
-
-  /rollup-plugin-ignore@1.0.10:
-    resolution: {integrity: sha512-VsbnfwwaTv2Dxl2onubetX/3RnSnplNnjdix0hvF8y2YpqdzlZrjIq6zkcuVJ08XysS8zqW3gt3ORBndFDgsrg==}
-    dev: false
 
   /rollup-plugin-minify-html-literals-cjs-rollup3@1.0.0(rollup@3.29.2):
     resolution: {integrity: sha512-rKvUkpB0zrbeab2uTHRU791rsbZuMInpLRk23QOJ/mas2OdSTdPP7wendIw2w7iDwnOCjqJLM4YRD+008nSxeQ==}
