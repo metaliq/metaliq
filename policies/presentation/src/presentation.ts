@@ -134,6 +134,14 @@ export type ViewOptions<T, P = any> = {
    * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
    */
   resolver?: MetaViewResolver | boolean
+
+  /**
+   * Override the default behaviour of not displaying hidden fields.
+   * This allows for external handling of the `hidden` term,
+   * such as filtering items out in a navigator menu whilst still showing them when selected by route,
+   * or implementing animated hide/show.
+   */
+  noHide?: boolean
 }
 
 /**
@@ -168,9 +176,9 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   if (!viewTerm) {
     return ""
   } else if (Array.isArray(viewTerm)) {
-    return viewTerm.map((each) => $.view(each))
+    return viewTerm.map((each) => $.view(each, options))
   } else {
-    return $.term("hidden") ? "" : viewTerm($.value, $)
+    return (!$.term("hidden") || options?.noHide) ? viewTerm($.value, $) : ""
   }
 }
 
