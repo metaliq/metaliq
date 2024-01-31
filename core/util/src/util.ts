@@ -1,4 +1,3 @@
-import { parse, stringify } from "flatted"
 import { FieldKey } from "metaliq"
 
 // TYPESCRIPT UTILITIES
@@ -130,13 +129,23 @@ export function extractKeys<T> (obj: T, ...keys: Array<keyof T>): Partial<T> {
 }
 
 /**
- * Make a dereferenced copy of obj, with the option of either excluding or including certain fields.
+ * Make a dereferenced copy of obj,
+ * with the option of either excluding or including certain fields.
  */
 export function copy<T> (obj: T, { exclude, include }: { exclude?: string[], include?: string[] } = {}): T {
-  const flatted = exclude
-    ? stringify(obj, (k: string, v: any) => exclude.includes(k) ? undefined : v)
-    : stringify(obj, include as Array<string | number>)
-  return parse(flatted)
+  const filter = exclude
+    ? ([k]: [string, any]): boolean => !exclude.includes(k)
+    : include
+      ? ([k]: [string, any]): boolean => include.includes(k)
+      : () => true
+  return typeof (obj ?? false) === "object"
+    ? Array.isArray(obj)
+      ? [...(Array.from(obj.values()).map(v => copy(v)))] as T
+      : Object.fromEntries(Object.entries(obj)
+        .filter(filter)
+        .map(([k, v]: [string, any]) => [k, copy(v)])
+      ) as T
+    : obj
 }
 
 /**
