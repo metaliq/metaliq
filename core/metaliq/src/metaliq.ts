@@ -358,8 +358,9 @@ export function metafy <T, P = any> (
     const metaArr = <unknown>result as MetaArray<any, P>
     const oldMetas = metaArr.splice(0, metaArr.length)
     for (const [itemIndex, item] of valueArr.entries()) {
-      const itemMeta = oldMetas.find(m => m.$.value === item)
-      metaArr.push(metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex))
+      const itemMeta = oldMetas.find(m => m.$ === $) || // Try finding old value by $
+        oldMetas.find(m => m.$.value === item) // Find old value by value (less reliable as possibly not unique in array)
+      metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex)
     }
   } else {
     for (const fieldKey of fieldKeys(model)) {
