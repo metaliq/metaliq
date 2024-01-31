@@ -20,7 +20,7 @@ const hasOwnView: MetaFn<any> = (v, $) => !!$.raw("view")
 
 export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v, $) => html`
   <div class="mq-article">
-    ${getNavSelection($, { mustHave: hasOwnView })?.view()}
+    ${getNavSelection($, { mustHave: hasOwnView })?.view(null, { noHide: true })}
   </div>
   <header>
     <div class="header-content">
@@ -43,7 +43,7 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
   const keys = ($.childKeys() || [])
     .filter(key => {
       const item$ = $.child$(key)
-      return !item$.term("hidden") &&
+      return !item$.term("offMenu") &&
         (item$.term("label") || item$.term("symbol")) &&
         containsRoute(item$)
     })

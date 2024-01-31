@@ -86,6 +86,6 @@ export type AnimatedHideShowOptions = {
  */
 export const animatedHideShow = <T = any, P = any>({ duration }: AnimatedHideShowOptions = {}): MetaViewWrapper<T, P> => (view) => (v, $) => html`
   <mq-animated-hide-show ?mqHidden=${!!$.term("hidden")} ?mqDuration=${duration}>
-    ${$.view(view)}
+    ${$.view(view, { noHide: true })}
   </mq-animated-hide-show>
 `

@@ -50,6 +50,15 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    * if one is not already present in the browser location.
    */
   urlPath?: string
+
+  /**
+   * Indicate that a navigation item should NOT be included in a menu system.
+   * This item will still be able to be navigated to using its route,
+   * allowing for pages that are "hidden" within the navigation menu structure
+   * but accessible via their route (for example a detail link in a list view)
+   * and through deep-linking URLs.
+   */
+  offMenu?: boolean
 }
 
 export interface NavigationState<T> {
