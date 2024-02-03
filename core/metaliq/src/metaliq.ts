@@ -172,7 +172,16 @@ export class Meta$<T, P = any> {
   }
 
   set value (val: T) {
-    reset(this, val)
+    this._value = val
+    if (this.parent$) {
+      const parentVal = this.parent$.value
+      const parentKey = this.key as keyof P
+      if (typeof this.index === "number") {
+        (parentVal[parentKey] as T[])[this.index] = val
+      } else {
+        Object.assign(parentVal, { [parentKey]: val })
+      }
+    }
   }
 
   /**
@@ -304,7 +313,7 @@ export function metafy <T, P = any> (
   model: MetaModel<T, P>, value: T, parent$?: Meta$<P>, key?: FieldKey<P>, proto?: HasMeta$<T>, index?: number
 ): Meta<T, P> {
   const hasProto = !!proto
-  const isArray = model.items || Array.isArray(value)
+  const isArray = Array.isArray(value) || (model.items && !model.fields)
   const isArrayMember = typeof index === "number"
 
   // Establish the correct form of prototype for this meta
@@ -367,7 +376,7 @@ export function metafy <T, P = any> (
       const fieldValue = value?.[fieldKey]
       const fieldModel = result.$.model.fields[fieldKey]
       const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
-      if (fieldModel) metafy(fieldModel, fieldValue, result.$, fieldKey, fieldMeta)
+      if (fieldModel && value !== undefined) metafy(fieldModel, fieldValue, result.$, fieldKey, fieldMeta)
     }
   }
 
@@ -377,16 +386,41 @@ export function metafy <T, P = any> (
 }
 
 /**
- * Resets the Meta$'s data value, to any provided value else the original underlying data.
- * Example uses include:
- * (a) replacing a complete object value directly rather than via its parent, and
- * (b) to restore current backlinks to a value object that is referenced more than once in the meta-graph.
+ * Resets the Meta$'s data value to any provided value else the original underlying data,
+ * and restores the meta-graph from that point inwards.
+ *
+ * This can be called directly when a value should be reset and its meta-value is required immediately
+ * during continuation of a synchronous process.
+ *
+ * This can also be called at a policy level to restore parts or the whole of the meta-graph,
+ * such as in the review process established by the `@metaliq/applivation` policy.
  */
 export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
   const $ = (meta$(valueOr$) || valueOr$) as Meta$<T>
   metafy($.model,
     typeof value === "undefined" ? $.value : value,
     $.parent$, $.key, $.meta, $.index)
+}
+
+/**
+ * Instead of a full restoration of the meta-graph, reestablish backlinks throughout
+ * a portion or a whole of an already restored meta-graph,
+ * for example by `@metaliq/presentation` to ensure correct backlinks
+ * in different parts of the overall view.
+ */
+export const relink = <T>($: Meta$<T>) => {
+  if (typeof ($.value ?? false) === "object") {
+    Object.assign($.value, { $ })
+    if (isMeta<T>($.meta)) {
+      for (const key of $.childKeys()) {
+        relink($.meta[key].$ as Meta$<any>)
+      }
+    } else if (isMetaArray($.meta)) {
+      for (const item of $.meta) {
+        relink(item.$)
+      }
+    }
+  }
 }
 
 /**
@@ -501,9 +535,16 @@ export const root$ = (v: any, $?: Meta$<any>) => {
  */
 export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => (v, $) => {
   const recurse = ($: Meta$<any>, onBase: boolean = true) => {
+    if (!$) return
     if (onBase) fn(v, $)
-    for (const key of $.childKeys()) {
-      recurse(($.child$(key)))
+    if (v && typeof v === "object") {
+      if (Array.isArray(v)) {
+        v.forEach((cv: HasMeta$<any>) => { recurse(cv.$) })
+      } else {
+        for (const key of $.childKeys()) {
+          recurse(($.child$(key)))
+        }
+      }
     }
   }
 

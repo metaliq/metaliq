@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, fieldKeys, IncludeExclude, isMeta, isMetaArray, meta$, Meta$, MetaFn } from "metaliq"
+import { FieldKey, fieldKeys, IncludeExclude, isMeta, isMetaArray, meta$, Meta$, MetaFn, relink } from "metaliq"
 import { PUBLICATION } from "@metaliq/publication"
 import { APPLICATION } from "@metaliq/application"
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -151,22 +151,7 @@ export type FieldsOptions<T> = ViewOptions<T> & IncludeExclude<T>
 
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>
-
-  const resetValue$ = <T>($: Meta$<T>) => {
-    if (typeof ($.value ?? false) === "object") {
-      Object.assign($.value, { $ })
-      if (isMeta<T>($.meta)) {
-        for (const key of $.childKeys()) {
-          resetValue$($.meta[key].$ as Meta$<any>)
-        }
-      } else if (isMetaArray($.meta)) {
-        for (const item of $.meta) {
-          resetValue$(item.$)
-        }
-      }
-    }
-  }
-  resetValue$(this)
+  relink($)
 
   const resolver = typeof options?.resolver === "boolean"
     ? options?.resolver ? viewResolver : undefined
