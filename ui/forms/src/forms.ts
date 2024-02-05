@@ -146,8 +146,10 @@ export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
-export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> =>
-  fieldContainer(options)(input({ type: "text", ...options }))
+export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> => {
+  options.type = options.type || "text"
+  return fieldContainer(options)(input({ type: "text", ...options }))
+}
 
 /**
  * Label element for input field.
