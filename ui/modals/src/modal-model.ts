@@ -1,6 +1,6 @@
 import { MetaModel } from "metaliq"
 import { closeModalChannel, showModalChannel } from "./modal-procs"
-import { ViewResult } from "@metaliq/presentation"
+import { MetaView, ViewResult } from "@metaliq/presentation"
 import { modal } from "./modal-view"
 import { TERMINOLOGY } from "@metaliq/terminology"
 import { APPLICATION } from "@metaliq/application"
@@ -16,8 +16,11 @@ export type ModalInfo = {
 
   /**
    * Modal body display content.
+   *
+   * This can be either a static ViewResult (will not be updated once modal displayed)
+   * or a MetaView (which will be updated, but will not be sent any data).
    */
-  body?: ViewResult
+  body?: ViewResult | MetaView<any>
 
   /**
    * Modal buttons.

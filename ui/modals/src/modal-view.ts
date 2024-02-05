@@ -9,7 +9,7 @@ export const modal = (info: ModalInfo) => info?.body ? html`
         ${info.title}
       </div>
       <div class="mq-modal-body">
-        ${info.body}
+        ${typeof info.body === "function" ? info.body({}) : info.body}
       </div>
       ${info.iconClasses ? html`
         <div class="mq-modal-icon-container">
