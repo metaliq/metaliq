@@ -119,7 +119,7 @@ export type SingularViewResult = TemplateResult | string
  * Term to specify meta views, can be either singular or plural
  * (in which case each view result (which themselves may be singular or plural) is rendered in sequence).
  */
-export type MetaViewTerm<T, P = any> = MetaView<T, P> | Array<MetaView<T, P>>
+export type MetaViewTerm<T, P = any> = MetaView<T, P> | ViewResult | Array<MetaViewTerm<T, P>>
 
 /**
  * A MetaView that can be configured with various options.
@@ -161,9 +161,11 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   if (!viewTerm) {
     return ""
   } else if (Array.isArray(viewTerm)) {
-    return viewTerm.map((each) => $.view(each, options))
+    return viewTerm.flat(99).map((each) => $.view(each, options))
   } else {
-    return (!$.term("hidden") || options?.noHide) ? viewTerm($.value, $) : ""
+    return (!$.term("hidden") || options?.noHide)
+      ? typeof viewTerm === "function" ? viewTerm($.value, $) : viewTerm
+      : ""
   }
 }
 
@@ -223,9 +225,12 @@ export const repeat = <T, MI extends (
  */
 export const ifThen = <T, P = any> (
   condition: MetaFn<T, P, boolean>,
-  thenView: MetaView<T, P>,
-  elseView?: MetaView<T, P>
-): MetaView<T, P> => (v, m) => condition(v, m) ? thenView(v, m) : elseView?.(v, m) ?? ""
+  thenView: MetaViewTerm<T, P>,
+  elseView?: MetaViewTerm<T, P>
+): MetaViewTerm<T, P> => (v, $) =>
+  condition(v, $) ? $.view(thenView)
+    : elseView ? $.view(elseView)
+      : ""
 
 /**
  * Return a view that consists of the given text or HTML template,
