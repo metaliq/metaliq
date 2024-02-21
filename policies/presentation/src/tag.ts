@@ -4,13 +4,23 @@ import { nothing } from "lit"
 import { isMetaFn, MetaFn } from "metaliq"
 
 /**
+ * Options to support additional functionality, e.g. click handling.
+ */
+export type TagOptions<T, P = any> = {
+  tagName?: string
+  id?: string
+  classes?: string
+  onClick?: MetaFn<T, P>
+}
+
+/**
  * Tags can be configured with a string which has the following parts:
  * <tagName>#<id>.<class1>.<class2>
  * The tag name is optional and if omitted the value `div` is used.
  * The id is optional and if omitted no ID will be assigned to the tag.
  * One or more class names may be assigned, if none are present there will be no class attribute.
  */
-export type TagConfig = string // Leave scope for extended object tag config in future
+export type TagConfig<T, P = any> = string | TagOptions<T, P> // Leave scope for extended object tag config in future
 
 /**
  * The body of a tag is either a static view result,
@@ -19,46 +29,47 @@ export type TagConfig = string // Leave scope for extended object tag config in 
  */
 export type TagBody<T, P = any> = MetaViewTerm<T, P> | ViewResult
 
-/**
- * Options to support additional functionality, e.g. click handling.
- */
-export type TagOptions<T, P = any> = {
-  onClick?: MetaFn<T, P>
-}
+export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
+  <T = any, P = any>(body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
+    const parseConfig = (config: TagConfig<any>) =>
+      (typeof config === "string") ? {
+        tagName: config?.match(/^([_a-zA-Z0-9-]*)/)?.[1],
+        id: config?.match(/#([_a-zA-Z0-9-]*)/)?.[1],
+        classes: config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ")
+      } : config
 
-export const tag = (config: TagConfig = "") =>
-  <T = any, P = any>(
-    body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
-  ): MetaView<T, P> => (v, $) => {
-    const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1] || "div"
-    const tagLiteral = tagLiterals[tagName as keyof typeof tagLiterals]
+    // Compose options object from defaults and params, parsing string format
+    const options: TagOptions<T, P> = {
+      ...{ tagName: "div" },
+      ...parseConfig(config1),
+      ...parseConfig(config2)
+    }
+
+    // Obtain tag name lit
+    const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
     if (!tagLiteral) {
-      console.warn(`Unregistered tag literal: ${tagName}`)
+      console.warn(`Unregistered tag literal: ${options.tagName}`)
       return
     }
-    const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1] || nothing
-    const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ") || nothing
-    const isViewResult = (body: TagBody<T, P>): body is ViewResult =>
-      typeof body === "string" ||
-      (typeof body === "object" && "strings" in body) ||
-      (Array.isArray(body) && isViewResult(body[0]))
-    let content: ViewResult
-    if (isViewResult(body)) {
-      content = body
-    } else {
-      content = $.view(body)
-    }
+
     const onClick = isMetaFn(options.onClick) ? $.up(options.onClick) : nothing
+
     return html`
-      <${tagLiteral} id=${id} class=${classes} @click=${onClick}>${content}</${tagLiteral}>
+      <${tagLiteral} 
+        id=${options.id || nothing} 
+        class=${options.classes || nothing} 
+        @click=${onClick}
+      >
+        $.view(body)
+      </${tagLiteral}>
     `
   }
 
-export const tags = (config: TagConfig = "") =>
+export const tags = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
   <T = any, P = any>(
-    body: TagBody<T, P> = "", options: TagOptions<T, P> = {}
+    body: MetaViewTerm<T, P> = "", options: TagOptions<T, P> = {}
   ): Array<MetaView<T, P>> => {
-    const configured = tag(config)
+    const configured = tag(config1, config2)
     if (Array.isArray(body)) {
       return body.map(b => configured(b))
     } else {
