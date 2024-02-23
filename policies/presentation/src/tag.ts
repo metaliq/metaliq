@@ -22,13 +22,6 @@ export type TagOptions<T, P = any> = {
  */
 export type TagConfig<T, P = any> = string | TagOptions<T, P> // Leave scope for extended object tag config in future
 
-/**
- * The body of a tag is either a static view result,
- * a meta view term, which is a single meta view or an
- * array of meta views.
- */
-export type TagBody<T, P = any> = MetaViewTerm<T, P> | ViewResult
-
 export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
   <T = any, P = any>(body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
     const parseConfig = (config: TagConfig<any>) =>
@@ -40,10 +33,10 @@ export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: Ta
 
     // Compose options object from defaults and params, parsing string format
     const options: TagOptions<T, P> = {
-      ...{ tagName: "div" },
       ...parseConfig(config1),
-      ...parseConfig(config2)
+      // ...parseConfig(config2)
     }
+    options.tagName ||= "div"
 
     // Obtain tag name lit
     const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
@@ -60,7 +53,7 @@ export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: Ta
         class=${options.classes || nothing} 
         @click=${onClick}
       >
-        $.view(body)
+        ${$.view(body)}
       </${tagLiteral}>
     `
   }
