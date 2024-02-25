@@ -9,11 +9,14 @@ import { isMetaFn, MetaFn } from "metaliq"
 export type TagOptions<T, P = any> = {
   tagName?: string
   id?: string
-  classes?: string
+  classes?: string | string[]
   onClick?: MetaFn<T, P>
 }
 
 /**
+ * Optional tag configuration is either a TagOptions object
+ * or a string which can be parsed to one using the following method.
+ *
  * Tags can be configured with a string which has the following parts:
  * <tagName>#<id>.<class1>.<class2>
  * The tag name is optional and if omitted the value `div` is used.
@@ -22,21 +25,29 @@ export type TagOptions<T, P = any> = {
  */
 export type TagConfig<T, P = any> = string | TagOptions<T, P> // Leave scope for extended object tag config in future
 
+export const parseTagConfig = (config: TagConfig<any>) => {
+  if (typeof config === "string") {
+    const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1]
+    const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1]
+    const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ")
+    config = {
+      ...tagName && { tagName },
+      ...id && { id },
+      ...classes && { classes }
+    }
+  }
+  return config
+}
+
 export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
   <T = any, P = any>(body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
-    const parseConfig = (config: TagConfig<any>) =>
-      (typeof config === "string") ? {
-        tagName: config?.match(/^([_a-zA-Z0-9-]*)/)?.[1],
-        id: config?.match(/#([_a-zA-Z0-9-]*)/)?.[1],
-        classes: config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ")
-      } : config
-
     // Compose options object from defaults and params, parsing string format
     const options: TagOptions<T, P> = {
-      ...parseConfig(config1),
-      // ...parseConfig(config2)
+      ...{ tagName: "div" },
+      ...parseTagConfig(config1),
+      ...parseTagConfig(config2)
     }
-    options.tagName ||= "div"
+    if (Array.isArray(options.classes)) options.classes = options.classes.join(" ")
 
     // Obtain tag name lit
     const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
