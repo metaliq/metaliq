@@ -101,6 +101,9 @@ export const tagLiterals = {
   ol: literal`ol`,
   ul: literal`ul`,
   li: literal`li`,
+  dl: literal`dl`,
+  dd: literal`dd`,
+  dt: literal`dt`,
   i: literal`i`,
   b: literal`b`,
   em: literal`em`,
@@ -117,6 +120,7 @@ export const tagLiterals = {
   table: literal`table`,
   tbody: literal`tbody`,
   thead: literal`thead`,
+  tfoot: literal`tfoot`,
   tr: literal`tr`,
   td: literal`td`
 }

@@ -19,9 +19,6 @@ export type NavigationOptions = {
 const hasOwnView: MetaFn<any> = (v, $) => !!$.raw("view")
 
 export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v, $) => html`
-  <div class="mq-article">
-    ${getNavSelection($, { mustHave: hasOwnView })?.view(null, { noHide: true })}
-  </div>
   <header>
     <div class="header-content">
       ${options.logoUrl ? html`
@@ -33,6 +30,9 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
       </nav>
     </div>
   </header>
+  <div class="mq-article">
+    ${getNavSelection($, { mustHave: hasOwnView })?.view(null, { noHide: true })}
+  </div>
 `
 
 // Test whether a part of the navigation structure contains a route itself or at any descendant level
