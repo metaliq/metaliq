@@ -36,18 +36,23 @@ export const parseTagConfig = (config: TagConfig<any>) => {
       ...classes && { classes }
     }
   }
+  if (typeof config.classes === "string") config.classes = config.classes.split(" ")
+  config.classes ||= []
   return config
 }
 
 export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
   <T = any, P = any>(body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
     // Compose options object from defaults and params, parsing string format
+    const parsed1 = parseTagConfig(config1)
+    const parsed2 = parseTagConfig(config2)
+
     const options: TagOptions<T, P> = {
       ...{ tagName: "div" },
-      ...parseTagConfig(config1),
-      ...parseTagConfig(config2)
+      ...parsed1,
+      ...parsed2
     }
-    if (Array.isArray(options.classes)) options.classes = options.classes.join(" ")
+    options.classes = Array.from(new Set([...parsed1.classes, ...parsed2.classes])).join(" ")
 
     // Obtain tag name lit
     const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
