@@ -144,7 +144,9 @@ export const webPageAppBuilder = (
   // Produce CSS
   if (cssSrc) {
     const css = new CleanCSS({
-      level: 0, // Mystery - why does level 1 get rid of keyframes?
+      // Note: at one stage we set level to 0 due to a problem with missing keyframes at higher levels.
+      // This was removed in order to support nested CSS.
+      // If missing keyframes show up as a problem again, don't solve with a level restriction.
       rebaseTo: dirname(cssDest)
     }).minify([cssSrc])
     await ensureAndWriteFile(join(destDir, cssDest), css.styles)
