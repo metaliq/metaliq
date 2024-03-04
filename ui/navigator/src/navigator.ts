@@ -1,5 +1,6 @@
 import { Meta$, MetaFn } from "metaliq"
 import { html } from "lit"
+import { ifDefined } from "lit/directives/if-defined.js"
 import { classMap } from "lit/directives/class-map.js"
 import { getNavSelection, goNavRoute, toggleMenu } from "@metaliq/navigation"
 import { MetaView, ViewResult } from "@metaliq/presentation"
@@ -66,14 +67,14 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
 const menuItem = (
   isSelected: boolean, isSelectedItem: boolean, level: number = 1
 ): MetaView<any> => (navItem, navItem$) => {
-  const text = navItem$.term("label")
+  const text = navItem$.term("labelView") ?? navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
     <li @click=${(evt: Event) => navItem$.fn(goNavRoute, evt)} class=${classMap({
       "mq-nav-selected": isSelected,
       "mq-nav-selected-item": isSelectedItem
     })}>
-      ${icon ? html`<i class=${icon}>` : ""}
+      ${icon ? html`<i class=${ifDefined(icon)}>` : ""}
       ${text ? html`<span>${text}</span>` : ""}
       ${menuItems(navItem$, level + 1)}
     </li>

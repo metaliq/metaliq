@@ -23,6 +23,11 @@ export interface PresentationTerms<T, P> {
   view?: MetaViewTerm<T, P>
 
   /**
+   * An auxiliary view that some components may support as an alternative to a text label.
+   */
+  labelView?: MetaViewTerm<T, P>
+
+  /**
    * An auxiliary view, such as for a contextual control zone.
    */
   controlView?: MetaViewTerm<T, P>
