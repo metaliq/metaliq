@@ -526,8 +526,8 @@ importers:
         specifier: 0.4.1
         version: 0.4.1
       clean-css:
-        specifier: 4.2.3
-        version: 4.2.3
+        specifier: ^5.3.3
+        version: 5.3.3
       find-free-ports:
         specifier: 3.1.1
         version: 3.1.1
@@ -4707,6 +4707,13 @@ packages:
   /clean-css@4.2.3:
     resolution: {integrity: sha512-VcMWDN54ZN/DS+g58HYL5/n4Zrqe8vHJpGA8KdgUXFU4fuP/aHNw8eld9SyEIyabIMJX/0RaY/fplOo5hYLSFA==}
     engines: {node: '>= 4.0'}
+    dependencies:
+      source-map: 0.6.1
+    dev: false
+
+  /clean-css@5.3.3:
+    resolution: {integrity: sha512-D5J+kHaVb/wKSFcyyV75uCn8fiY4sV38XJoe4CUyGQ+mOU/fMVYUdH1hJC+CJQ5uY3EnW27SbJYS4X8BiLrAFg==}
+    engines: {node: '>= 10.0'}
     dependencies:
       source-map: 0.6.1
     dev: false
