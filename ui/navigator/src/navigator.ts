@@ -74,7 +74,12 @@ const menuItem = (
       "mq-nav-selected": isSelected,
       "mq-nav-selected-item": isSelectedItem
     })}>
-      ${icon ? html`<i class=${ifDefined(icon)}>` : ""}
+      ${icon 
+        ? html`<i class=${ifDefined(icon)}>`
+        : !!navItem$.model.controlView
+          ? navItem$.view(navItem$.term("controlView"))
+          : ""
+      }
       ${text ? html`<span>${text}</span>` : ""}
       ${menuItems(navItem$, level + 1)}
     </li>

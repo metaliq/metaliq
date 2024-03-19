@@ -101,7 +101,7 @@ nav ul > li.mq-nav-selected-item > span {
 }
 
 /* Level-based individual menu item styling */
-nav ul.mq-level-0 > li > span, nav ul.mq-level-0 > li > i  {
+nav ul.mq-level-0 > li > span, nav ul.mq-level-0 > li > i, nav ul.mq-level-0 > li > svg  {
 	padding: calc(var(--mq-nav-indent-size) / 2) var(--mq-nav-indent-size);
 	font-size: var(--mq-nav-font-size);
 }
