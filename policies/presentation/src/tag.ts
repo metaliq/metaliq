@@ -57,7 +57,7 @@ export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: Ta
     // Obtain tag name lit
     const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
     if (!tagLiteral) {
-      console.warn(`Unregistered tag literal: ${options.tagName}`)
+      console.error(`Unrecognised tag name configuration: ${options.tagName}`)
       return
     }
 
@@ -75,9 +75,8 @@ export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: Ta
   }
 
 export const tags = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
-  <T = any, P = any>(
-    body: MetaViewTerm<T, P> = "", options: TagOptions<T, P> = {}
-  ): Array<MetaView<T, P>> => {
+  <T = any, P = any>(body: MetaViewTerm<T, P> = ""
+): Array<MetaView<T, P>> => {
     const configured = tag(config1, config2)
     if (Array.isArray(body)) {
       return body.map(b => configured(b))
@@ -129,3 +128,8 @@ export const tagLiterals = {
   tr: literal`tr`,
   td: literal`td`
 }
+
+/**
+ * An example of a super-simple tag to display a field value in a span.
+ */
+export const span = tag("span")(v => v)
