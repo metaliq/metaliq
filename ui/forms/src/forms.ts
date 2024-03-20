@@ -10,6 +10,7 @@ import { ifDefined } from "lit/directives/if-defined.js"
 import { APPLICATION } from "@metaliq/application"
 
 export * from "./text-area"
+export * from "./grid"
 
 APPLICATION()
 

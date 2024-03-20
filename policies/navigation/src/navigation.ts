@@ -71,6 +71,12 @@ export interface NavigationState<T> {
    * For dynamically shown menus.
    */
   showMenu?: boolean
+
+  /**
+   * A toggle set on and off separately from selected state
+   * and used for menu level collapsed / expanded.
+   */
+  expandMenu?: boolean
 }
 
 declare module "metaliq" {
@@ -244,6 +250,13 @@ export const getNavSelection = ($: Meta$<any>, {
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
 export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
+  $.state.nav ||= {}
+  if (!$.state.nav.expandMenu) {
+    $.state.nav.expandMenu = true
+  } else if ($.state.nav.selected) {
+    $.state.nav.expandMenu = false
+  }
+
   policy.selectedRoute$ = $
 
   const clearSelection: MetaFn<any> = (v, $) => {
