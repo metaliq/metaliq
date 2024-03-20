@@ -232,7 +232,10 @@ export class Meta$<T, P = any> {
     const meta = this.meta
     if (isMeta(meta)) {
       const childMeta = <unknown>meta[key] as Meta<T[K], T>
-      return childMeta?.$ as Meta$<T[K]>
+      const childMeta$ = childMeta?.$ as Meta$<T[K]> ||
+        // Fallback for accessing undefined child nodes, use default empty model
+        metafy({}, this.value?.[key], this, key).$
+      return childMeta$
     } else return null
   }
 
@@ -549,4 +552,13 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
   }
 
   recurse($, onBase)
+}
+
+/**
+ * Return the Meta$ values for each item in a Meta$ of an array type.
+ */
+export const items$: MetaFn<any[]> = (v, $) => {
+  if (isMetaArray($.meta)) {
+    return $.meta.map(m => m.$)
+  }
 }
