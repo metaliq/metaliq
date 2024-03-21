@@ -10,7 +10,7 @@ export const grid = <T, P = any>(
   headers: MetaViewTerm<T, P>,
   rows?: MetaViewTerm<T extends Array<infer I> ? I : never, T>
 ): MetaView<T, P> =>
-    tag(`.mq-grid.${name}.mq-cols-${Array.isArray(headers) ? headers.length : 1}`, config)([
+    tag(`.mq-grid.mq-cols-${Array.isArray(headers) ? headers.length : 1}`, config)([
       ...tags(".mq-grid-header")(headers),
       repeat<T, any>(rows ?? fields({ resolver: spanResolver }))
     ])
