@@ -65,8 +65,7 @@ const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (
             disableMobile: true
           }) as Instance
           $.fn(setViewState(flatpickrInstance, fl))
-        },
-        250
+        }
       )
       return html`
         <input id=${id}

@@ -136,6 +136,7 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
             removeItemButton: true,
             shouldSort: !!options.sort,
             callbackOnInit: function () {
+              v = $.value // Refresh value in closure as this call is out-of-band
               resetChoices(<unknown> this as ChoicesJs)
             }
           })
@@ -150,8 +151,7 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
 
             el.addEventListener("search", e => { asyncListener(e).catch(console.error) })
           }
-        },
-        250
+        }
       )
 
       return html`
