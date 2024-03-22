@@ -1,6 +1,6 @@
 import { call } from "@metaliq/communication"
 import { ModalButton, ModalInfo } from "./modal-model"
-import { MetaFn, reset } from "metaliq"
+import { MetaFn } from "metaliq"
 import { ViewResult } from "@metaliq/presentation"
 
 export const modalDefaults = {
@@ -8,15 +8,20 @@ export const modalDefaults = {
   progressIndicator: "bi-arrow-repeat mq-modal-progress-indicator"
 }
 
-export const showModalChannel: MetaFn<ModalInfo> = (modalInfo, modalInfo$) => (newModalInfo: ModalInfo) => {
-  reset(modalInfo$, newModalInfo)
+const closeButton: ModalButton = {
+  label: modalDefaults.closeLabel,
+  up: () => { closeModal() }
 }
 
-export const closeModalChannel: MetaFn<ModalInfo> = (modalInfo, modalInfo$) => async () => {
-  reset(modalInfo$, {
+export const showModalChannel = (newModalInfo: ModalInfo): MetaFn<ModalInfo> => (modalInfo, modalInfo$) => {
+  modalInfo$.value = newModalInfo
+}
+
+export const closeModalChannel = (): MetaFn<ModalInfo> => (modalInfo, modalInfo$) => {
+  modalInfo$.value = {
     body: "",
     title: ""
-  })
+  }
 }
 
 export const showModal = call(showModalChannel)
@@ -24,10 +29,6 @@ export const showModal = call(showModalChannel)
 export const closeModal = call(closeModalChannel)
 
 export const showMessage = (body: ViewResult, title: string = "") => {
-  const closeButton: ModalButton = {
-    label: modalDefaults.closeLabel,
-    up: () => { closeModal() }
-  }
   showModal({ title, body, buttons: [closeButton] })
 }
 
@@ -51,4 +52,5 @@ export const showThenFocus = (element: HTMLInputElement) => (content: ViewResult
       }
     }]
   })
+  return element
 }
