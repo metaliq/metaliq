@@ -174,7 +174,7 @@ export class Meta$<T, P = any> {
   set value (val: T) {
     this._value = val
     if (this.parent$) {
-      const parentVal = this.parent$.value
+      const parentVal = (this.parent$.value || (this.parent$.value = {} as P))
       const parentKey = this.key as keyof P
       if (typeof this.index === "number") {
         (parentVal[parentKey] as T[])[this.index] = val
