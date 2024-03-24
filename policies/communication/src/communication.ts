@@ -1,4 +1,4 @@
-import { ConfigurableMetaFn, Meta$, MetaFn, metaSetups } from "metaliq"
+import { ConfigurableMetaFn, FieldKey, Meta$, MetaFn, metaSetups } from "metaliq"
 
 /**
  * Policy registration.
@@ -44,3 +44,15 @@ export const call = <C, T, P, R>(channel: ConfigurableMetaFn<C, P, T, R>) => (co
   const $ = policy.channelMap.get(channel)
   if ($) return $.fn(channel(config))
 }
+
+/**
+ * A useful channel for implementing a shared value store.
+ */
+export const getValueChannel = <T, K extends FieldKey<T>>(key: K): MetaFn<T, any, T[K]> => (v, $) => {
+  return $.child$(key).value
+}
+
+/**
+ * Allows narrowing of types on an exported call to getValueChannel.
+ */
+export type GetValue<T> = <K extends FieldKey<T>>(config?: K) => T[K]

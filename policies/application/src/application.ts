@@ -110,6 +110,7 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     local
   })
   await bootstrap(meta.$.value, meta.$)
+  bootstrapPromiseResolve(true)
 
   return meta
 }
@@ -196,6 +197,5 @@ export const bootstrap: MetaFn<any> = async (v, $) => {
     // No bootstrap function was called, do a direct `up` call to start first review
     await up()()
   }
-  bootstrapPromiseResolve(true)
   return bootstrapped
 }
