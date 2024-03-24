@@ -1,4 +1,4 @@
-import { ConfigurableMetaFn, FieldKey, Meta$, MetaFn, metaSetups } from "metaliq"
+import { ConfigurableMetaFn, Meta$, MetaFn, MetaModel, metaSetups } from "metaliq"
 
 /**
  * Policy registration.
@@ -46,13 +46,29 @@ export const call = <C, T, P, R>(channel: ConfigurableMetaFn<C, P, T, R>) => (co
 }
 
 /**
- * A useful channel for implementing a shared value store.
+ * This interface should be extended by some shared value provider.
  */
-export const getValueChannel = <T, K extends FieldKey<T>>(key: K): MetaFn<T, any, T[K]> => (v, $) => {
-  return $.child$(key).value
+export interface Shared {
+  // Prevent error on empty interface
+  this?: Shared
 }
 
 /**
- * Allows narrowing of types on an exported call to getValueChannel.
+ * A useful channel for implementing a shared value store.
  */
-export type GetValue<T> = <K extends FieldKey<T>>(config?: K) => T[K]
+export const getSharedValueChannel = <K extends keyof Shared>(
+  key: K
+): MetaFn<Shared, any, Shared[K]> => (v, $) => {
+    return $.child$(key).value
+  }
+
+export const getShared: <K extends keyof Shared>(key?: K) => Shared[K] = call(getSharedValueChannel)
+
+/**
+ * A useful base model for a shared values store.
+ */
+export const sharedValuesModel: MetaModel<Shared> = {
+  channels: [
+    getSharedValueChannel
+  ]
+}
