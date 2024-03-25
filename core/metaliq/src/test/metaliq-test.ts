@@ -1,4 +1,4 @@
-import { fieldKeys, MetaModel } from "../metaliq"
+import { modelKeys, MetaModel } from "../metaliq"
 import * as chai from "chai"
 
 chai.should()
@@ -55,7 +55,7 @@ describe("MetaliQ - the core module", () => {
         }
       }
 
-      const keys = fieldKeys(customerModel)
+      const keys = modelKeys(customerModel)
       // Typescript infers that `keys` has type `MetaModelField<Customer>[]`.
 
       const expectedKeys = ["firstName", "lastName"]

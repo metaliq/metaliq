@@ -59,7 +59,7 @@ export interface Shared {
 export const getSharedValueChannel = <K extends keyof Shared>(
   key: K
 ): MetaFn<Shared, any, Shared[K]> => (v, $) => {
-    return $.child$(key).value
+    return $.field$(key).value
   }
 
 export const getShared: <K extends keyof Shared>(key?: K) => Shared[K] = call(getSharedValueChannel)

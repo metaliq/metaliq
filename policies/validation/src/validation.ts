@@ -134,7 +134,7 @@ export const validateAll = <T, P>(v$: T | Meta$<T, P>) => {
         appendTo(result, validateAll(sub.$))
       }
     } else if (isMeta(meta)) {
-      for (const key of $.childKeys()) {
+      for (const key of $.fieldKeys()) {
         const sub = meta[key]
         appendTo(result, validateAll(sub.$ as Meta$<any>))
       }
@@ -153,7 +153,7 @@ export const unvalidate = <T, P>(v$: T | Meta$<T, P>) => {
       unvalidate(sub.$)
     }
   } else if (isMeta(meta)) {
-    for (const key of $.childKeys()) {
+    for (const key of $.fieldKeys()) {
       const sub = meta[key]
       unvalidate(sub)
     }

@@ -123,7 +123,7 @@ export const op = <I, O> (
     if (isObject($.value) && isObject(response.data) && !options.overwrite) {
       Object.assign($.value, response.data)
     } else if (Array.isArray($.value) && !options.overwrite) {
-      const responseData = response.data as Array<any>
+      const responseData = response.data as any[]
       $.value.splice(0, $.value.length, ...responseData)
     } else {
       $.value = response.data
@@ -134,7 +134,7 @@ export const op = <I, O> (
         const path = err.path
         let err$: Meta$<any> = $
         while (path.length && err$) {
-          err$ = err$.child$(path.shift() as FieldKey<O>)
+          err$ = err$.field$(path.shift() as FieldKey<O>)
         }
         if (err$) err$.state.error = err.message
       }

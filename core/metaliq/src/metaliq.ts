@@ -226,24 +226,24 @@ export class Meta$<T, P = any> {
   }
 
   /**
-   * Return the child meta value for the given key.
+   * Return the nested meta value for the field with the given key.
    */
-  child$ <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
+  field$ <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
     const meta = this.meta
     if (isMeta(meta)) {
-      const childMeta = <unknown>meta[key] as Meta<T[K], T>
-      const childMeta$ = childMeta?.$ as Meta$<T[K]> ||
+      const fieldMeta = <unknown>meta[key] as Meta<T[K], T>
+      const fieldMeta$ = fieldMeta?.$ as Meta$<T[K]> ||
         // Fallback for accessing undefined child nodes, use default empty model
         metafy({}, this.value?.[key], this, key).$
-      return childMeta$
+      return fieldMeta$
     } else return null
   }
 
   /**
    * Get an array of keys of all child fields.
    */
-  childKeys (): Array<FieldKey<T>> {
-    return Object.keys(this.model?.fields || {}) as Array<FieldKey<T>>
+  fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
+    return modelKeys(this.model, options)
   }
 }
 
@@ -375,7 +375,7 @@ export function metafy <T, P = any> (
       metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex)
     }
   } else {
-    for (const fieldKey of fieldKeys(model)) {
+    for (const fieldKey of result.$.fieldKeys()) {
       const fieldValue = value?.[fieldKey]
       const fieldModel = result.$.model.fields[fieldKey]
       const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
@@ -415,7 +415,7 @@ export const relink = <T>($: Meta$<T>) => {
   if (typeof ($.value ?? false) === "object") {
     Object.assign($.value, { $ })
     if (isMeta<T>($.meta)) {
-      for (const key of $.childKeys()) {
+      for (const key of $.fieldKeys()) {
         relink($.meta[key].$ as Meta$<any>)
       }
     } else if (isMetaArray($.meta)) {
@@ -433,7 +433,7 @@ export function applyModel<T> ($: Meta$<T>, model: MetaModel<T>) {
   $.model = model
   setupMeta($)
   if (isMeta($.meta)) {
-    for (const key of fieldKeys(model)) {
+    for (const key of $.fieldKeys()) {
       const fieldModel = <unknown>model.fields[key] as MetaModel<T[FieldKey<T>]>
       const fieldMeta = <unknown>$.meta[key] as Meta<T[FieldKey<T>]>
       applyModel(fieldMeta.$, fieldModel)
@@ -456,7 +456,7 @@ export const meta$ = <T>(v$: T | Meta$<T>): Meta$<T> => {
  */
 export const isMeta$ = <T, P = any>(v$: T | Meta$<T>): v$ is Meta$<T, P> => {
   v$ = v$ as Meta$<any>
-  return !!(v$?.meta?.$ && v$?.model && v$?.fn && v$?.child$)
+  return !!(v$?.meta?.$ && v$?.model && v$?.fn && v$?.field$)
 }
 
 /**
@@ -492,9 +492,13 @@ export type IncludeExclude<T> = {
 /**
  * Return the field keys of a given MetaModel.
  *
+ * Useful for situations where a Meta$ object is not (yet) available,
+ * such as application `init`. Otherwise can use the `fieldKeys` method of
+ * the Meta$ object, which in turn calls this.
+ *
  * Takes an options object with keys to include / exclude from results.
  */
-export const fieldKeys = <T>(model: MetaModel<T>, options: IncludeExclude<T> = {}) => {
+export const modelKeys = <T>(model: MetaModel<T>, options: IncludeExclude<T> = {}) => {
   const allKeys = Object.keys(model?.fields || {}) as Array<FieldKey<T>>
   if (options?.include) return allKeys.filter(k => options.include.includes(k))
   else if (options?.exclude) return allKeys.filter(k => !options.exclude.includes(k))
@@ -544,8 +548,8 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
       if (Array.isArray(v)) {
         v.forEach((cv: HasMeta$<any>) => { recurse(cv.$) })
       } else {
-        for (const key of $.childKeys()) {
-          recurse(($.child$(key)))
+        for (const key of $.fieldKeys()) {
+          recurse(($.field$(key)))
         }
       }
     }
@@ -553,6 +557,12 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
 
   recurse($, onBase)
 }
+
+/**
+ * Return a collection of Meta$ values for each field of the given parent Meta$ value.
+ */
+export const fields$: MetaFn<any> = (v, $) =>
+  $.fieldKeys().map($.field$)
 
 /**
  * Return the Meta$ values for each item in a Meta$ of an array type.

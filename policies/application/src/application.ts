@@ -1,4 +1,4 @@
-import { fieldKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
+import { modelKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
 import { LogFunction, startUp, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -146,7 +146,7 @@ export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> =
  * ```
  */
 export async function initFields<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): Promise<T> {
-  const keys = fieldKeys(model, options)
+  const keys = modelKeys(model, options)
   if (keys?.length) {
     const data = {} as any
     for (const key of keys) {
@@ -188,8 +188,8 @@ export const bootstrap: MetaFn<any> = async (v, $) => {
     bootstrapped = true
   }
   if (recurse !== false) {
-    for (const key of $.childKeys()) {
-      const nestedBootstrap = await $.child$(key)?.fn(bootstrap)
+    for (const key of $.fieldKeys()) {
+      const nestedBootstrap = await $.field$(key)?.fn(bootstrap)
       if (nestedBootstrap) bootstrapped = true
     }
   }

@@ -1,5 +1,5 @@
 import { Route, RouteParams, Router } from "./router"
-import { FieldKey, fieldKeys, Meta$, meta$, MetaFn, MetaModel, metaSetups, onDescendants, root$ } from "metaliq"
+import { FieldKey, modelKeys, Meta$, meta$, MetaFn, MetaModel, metaSetups, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
 import { APPLICATION, bootstrapComplete } from "@metaliq/application"
 
@@ -176,7 +176,7 @@ metaSetups.push($ => {
         bootstrapComplete.then(() => {
           policy.router = new Router(Array.from(policy.route$s.keys()), catchUp)
           policy.router.start().catch(console.error)
-        })
+        }).catch(e => { throw e })
         return origResult
       }
     }
@@ -190,10 +190,10 @@ metaSetups.push($ => {
 export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
   navModel = navModel || this as MetaModel<N>
   const navData = {} as N
-  const keys = fieldKeys(navModel)
+  const keys = modelKeys(navModel)
   for (const key of keys) {
     const childModel = navModel.fields?.[key] as unknown as MetaModel<unknown>
-    const childKeys = fieldKeys(childModel)
+    const childKeys = modelKeys(childModel)
     // Continue recursing if there are nested-level routes
     const grandChildModels = childKeys.map(ck => childModel.fields[ck]) as Array<MetaModel<unknown>>
     const hasGrandChildRoutes = grandChildModels.some(s => s.route)
@@ -227,12 +227,12 @@ export const getNavSelection = ($: Meta$<any>, {
    */
   mustHave?: MetaFn<any>
 } = {}) => {
-  $ = $.child$($.state.nav?.selected)
+  $ = $.field$($.state.nav?.selected)
   const isMustHave = typeof mustHave === "function"
   let have$ = $
   if (recurse) {
     while ($?.state.nav?.selected) {
-      $ = $.child$($.state.nav?.selected)
+      $ = $.field$($.state.nav?.selected)
       if (isMustHave && $.fn(mustHave)) {
         have$ = $
       }
@@ -319,8 +319,8 @@ export const setNavSelectionResponsive = (width: number): MetaFn<any> => (v, $) 
  */
 export const goNavRoute: MetaFn<any> = (v, item$, event) => {
   while (item$ && !item$.model.route) {
-    const firstChildKey = item$.childKeys()[0]
-    item$ = item$.child$(firstChildKey)
+    const firstChildKey = item$.fieldKeys()[0]
+    item$ = item$.field$(firstChildKey)
   }
   if (item$.model.route?.router?.enabled) {
     event?.preventDefault()
@@ -396,12 +396,12 @@ export const redirect = (route: Route<any>, params?: any): MetaFn<any> => () => 
 export const onChild = <T, P, RP, RQ, K extends FieldKey<T>> (
   handler: MetaRouteHandler<T[K], T, RP, RQ>,
   key: K
-) => (p: RouteParams<RP, RQ>): MetaFn<T, P> => (v, $) => handler(p)(v[key], $.child$(key))
+) => (p: RouteParams<RP, RQ>): MetaFn<T, P> => (v, $) => handler(p)(v[key], $.field$(key))
 
 export const disableNav = () => {
   policy.router?.stop()
 }
 
 export const enableNav = () => {
-  policy.router?.start()
+  policy.router?.start().catch(e => { throw e })
 }

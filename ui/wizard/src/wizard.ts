@@ -98,7 +98,7 @@ metaSetups.push(<T>($: Meta$<T>) => {
 export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
   const stepNames = Object.keys(wizard$.model.fields) as Array<FieldKey<T>>
   const nowIndex = stepNames.indexOf(wizard$.state.step)
-  const nowStep$ = wizard$.child$(stepNames[nowIndex])
+  const nowStep$ = wizard$.field$(stepNames[nowIndex])
   return { stepNames, nowIndex, nowStep$ }
 }
 
@@ -143,7 +143,7 @@ export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v
 
   window.history.pushState({}, nowStep$.term("label"))
   window.onpopstate = (evt: PopStateEvent) => {
-    wizard$.up(changeStep({ stepName: stepNames[nowIndex] }))()
+    wizard$.up(changeStep({ stepName: stepNames[nowIndex] }))().catch(console.error)
   }
 
   wizard$.state.stepChangeDirection = (nextIndex > nowIndex) ? "forwards" : "backwards"

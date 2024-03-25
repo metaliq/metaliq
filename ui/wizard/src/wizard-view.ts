@@ -14,17 +14,17 @@ export const wizardView: MetaView<any> = (value, $) => [
 export const wizardTramline: MetaView<any> = (value, $) => {
   return html`
     <div class="mq-wizard-nav">
-      ${$.childKeys().map((stepName) => html`
+      ${$.fieldKeys().map((stepName) => html`
         <div class="mq-wizard-nav-item ${classMap({
           current: $.state.step === stepName,
-          visited: $.child$(stepName).state.validated,
+          visited: $.field$(stepName).state.validated,
           enabled: false
         })}" @click=${$.up(changeStep({ stepName }))}>
           <div class="mq-wizard-nav-pre"></div>
           <div class="mq-wizard-nav-anchor"></div>
           <div class="mq-wizard-nav-highlight"></div>
           <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${$.child$(stepName).term("label")}</span>
+          <span class="mq-wizard-nav-label">${$.field$(stepName).term("label")}</span>
         </div>
       `)}
     </div>

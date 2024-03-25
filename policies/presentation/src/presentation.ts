@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, fieldKeys, IncludeExclude, isMeta, isMetaArray, meta$, Meta$, MetaFn, relink } from "metaliq"
+import { FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, modelKeys, relink } from "metaliq"
 import { PUBLICATION } from "@metaliq/publication"
 import { APPLICATION } from "@metaliq/application"
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -76,14 +76,14 @@ export interface Presentation$<T, P = any> {
    * $.view(maybeView) // View using maybeView if present, otherwise fall back to model view if present
    * ```
    */
-  view: (view?: MetaViewTerm<T, P>, options?: ViewOptions<T, P>) => ViewResult
+  view: (view?: MetaViewTerm<T, P>, options?: ViewOptions) => ViewResult
 
   /**
    * Present a view for the given child field, with optionally specified view
    * (otherwise the field model view is used) and options.
    */
   field: <K extends FieldKey<T>> (
-    key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions<T[K], T>
+    key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
   ) => ViewResult
 
   /**
@@ -134,7 +134,7 @@ export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
 /**
  * The options type for the `$.view()` function.
  */
-export type ViewOptions<T, P = any> = {
+export type ViewOptions = {
   /**
    * Override or disable (by passing `false`) any default resolver assigned to {@link setViewResolver}
    */
@@ -152,7 +152,7 @@ export type ViewOptions<T, P = any> = {
 /**
  * Options for the `$.fields` aspect, specifying which fields should be included or excluded.
  */
-export type FieldsOptions<T> = ViewOptions<T> & IncludeExclude<T>
+export type FieldsOptions<T> = ViewOptions & IncludeExclude<T>
 
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>
@@ -175,7 +175,7 @@ Meta$.prototype.view = function (viewTerm?, options?) {
 }
 
 Meta$.prototype.field = function <T, K extends FieldKey<T>> (
-  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
+  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions
 ) {
   return field(key, view, options)(this.value, this)
 }
@@ -187,9 +187,9 @@ Meta$.prototype.field = function <T, K extends FieldKey<T>> (
  * This functionality is wrapped by the Meta$ function {@link Presentation$.field}.
  */
 export const field = <T, K extends FieldKey<T>> (
-  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions<T[K]>
+  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions
 ): MetaView<T> => (v, $) => {
-    const field$ = $.child$(key)
+    const field$ = $.field$(key)
     if (!field$) console.warn(`No field() key '${key}'`)
     return field$?.view(view, options)
   }
@@ -206,7 +206,7 @@ Meta$.prototype.fields = function (options?) {
  */
 export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = meta$(v)) => {
   return typeof v === "object"
-    ? fieldKeys($.model, options).map(key => $.field(key, null, options as ViewOptions<any>))
+    ? modelKeys($.model, options).map(key => $.field(key, null, options as ViewOptions))
     : ""
 }
 
@@ -233,9 +233,9 @@ export const ifThen = <T, P = any> (
   thenView: MetaViewTerm<T, P>,
   elseView?: MetaViewTerm<T, P>
 ): MetaViewTerm<T, P> => (v, $) =>
-  condition(v, $) ? $.view(thenView)
-    : elseView ? $.view(elseView)
-      : ""
+    condition(v, $) ? $.view(thenView)
+      : elseView ? $.view(elseView)
+        : ""
 
 /**
  * Return a view that consists of the given text or HTML template,

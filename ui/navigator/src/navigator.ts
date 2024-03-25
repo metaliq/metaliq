@@ -42,12 +42,12 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
 
 // Test whether a part of the navigation structure contains a route itself or at any descendant level
 const containsRoute = ($: Meta$<any>): boolean =>
-  !!($.term("route") || $.childKeys().some(k => containsRoute($.child$(k))))
+  !!($.term("route") || $.fieldKeys().some(k => containsRoute($.field$(k))))
 
 const menuItems = ($: Meta$<any>, level: number = 0) => {
-  const keys = ($.childKeys() || [])
+  const keys = ($.fieldKeys() || [])
     .filter(key => {
-      const item$ = $.child$(key)
+      const item$ = $.field$(key)
       return !item$.term("offMenu") &&
         (item$.term("label") || item$.term("symbol")) &&
         containsRoute(item$)
@@ -58,7 +58,7 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
     return html`
       <ul class=${`mq-level-${level}`}>
         ${keys.map(key => {
-          const child$ = $.child$(key)
+          const child$ = $.field$(key)
           const isSelected = selectedChild$ === child$ // Anywhere in the selection chain
           const isSelectedItem = selectedLeaf$ === child$ // The specifically selected item
           return child$.view(menuItem(isSelected, isSelectedItem, level))
@@ -78,9 +78,9 @@ const menuItem = (
       "mq-nav-selected": isSelected,
       "mq-nav-selected-item": isSelectedItem
     })}>
-      ${icon 
+      ${icon
         ? html`<i class=${ifDefined(icon)}>`
-        : !!navItem$.model.controlView
+        : navItem$.model.controlView
           ? navItem$.view(navItem$.term("controlView"))
           : ""
       }
