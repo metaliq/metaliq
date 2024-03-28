@@ -1,6 +1,8 @@
 :root {
 	--mq-grid-header-background: #eee;
 	--mq-grid-padding: 10px;
+	--mq-grid-border: solid #ccc;
+	--mq-grid-border-width: 1px;
 }
 
 .mq-grid {
@@ -19,87 +21,86 @@
 .mq-grid > * {
 	border: var(--grid-border);
 	border-width: var(--grid-border-width) 0 0 var(--grid-border-width);
-	border-radius: 0;
 }
 
 /* Dynamically applied classes to set right and bottom borders. */
 
 .mq-grid.mq-cols-1 > *:nth-child(1n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-1 > *:nth-last-child(-n+1) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-2 > *:nth-child(2n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-2 > *:nth-last-child(-n+2) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-3 > *:nth-child(3n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-3 > *:nth-last-child(-n+3) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-4 > *:nth-child(4n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-4 > *:nth-last-child(-n+4) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-5 > *:nth-child(5n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-5 > *:nth-last-child(-n+5) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-6 > *:nth-child(6n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-6 > *:nth-last-child(-n+6) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-7 > *:nth-child(7n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-7 > *:nth-last-child(-n+7) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-8 > *:nth-child(8n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-8 > *:nth-last-child(-n+8) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-9 > *:nth-child(9n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-9 > *:nth-last-child(-n+9) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-10 > *:nth-child(10n) {
-	border-right-width: var(--grid-border-width);
+	border-right-width: var(--mq-grid-border-width);
 }
 
 .mq-grid.mq-cols-10 > *:nth-last-child(-n+10) {
-	border-bottom-width: var(--grid-border-width);
+	border-bottom-width: var(--mq-grid-border-width);
 }
