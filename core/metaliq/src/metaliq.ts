@@ -240,6 +240,13 @@ export class Meta$<T, P = any> {
   }
 
   /**
+   * Return an array of all meta values for fields of this object.
+   */
+  fields$ (options: IncludeExclude<T> = {}) {
+    return this.fieldKeys(options).map(this.field$)
+  }
+
+  /**
    * Get an array of keys of all child fields.
    */
   fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
@@ -572,3 +579,18 @@ export const items$: MetaFn<any[]> = (v, $) => {
     return $.meta.map(m => m.$)
   }
 }
+
+/**
+ * For a given field, return either its value
+ * or the result of passing it to a given meta function.
+ */
+export const get = <
+  T, // Type of container object
+  K extends FieldKey<T>, // Field key
+  P, // Type of parent to container object
+  R, // Return type of the optional meta function parameter
+  F extends MetaFn<T[K], T, R>, // Signature of optional meta function
+  FP extends F | undefined, // Establishes whether the optional meta function is provided
+  GR extends FP extends F ? R : T[K] // Overall result of `get`
+>(key: K, fn?: FP): MetaFn<T, P, GR> => (v, $) =>
+    (fn ? $.field$(key).fn(fn) : $.field$(key).value) as GR
