@@ -1,12 +1,7 @@
 import { fields, MetaView, MetaViewResolver, MetaViewTerm, repeat, span, tag, TagOptions, tags } from "@metaliq/presentation"
 
-export type GridOptions<T, P = any> = TagOptions<T, P> & {
-  headers: MetaViewTerm<T, P>,
-  rows: MetaViewTerm<T, P>
-}
-
 export const grid = <T, P = any>(
-  config: string | GridOptions<T, P>,
+  config: string | TagOptions<T, P>,
   headers: MetaViewTerm<T, P>,
   rows?: MetaViewTerm<T extends Array<infer I> ? I : never, T>
 ): MetaView<T, P> =>
