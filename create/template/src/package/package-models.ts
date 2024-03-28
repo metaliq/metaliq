@@ -1,10 +1,11 @@
 import { MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { fetchPackageQuery, updatePackageMutation } from "../gen/graphql-operations"
-import { fields, repeat, tag, tags } from "@metaliq/presentation"
+import { fields, repeat, tag, tags, t } from "@metaliq/presentation"
 import { button } from "@metaliq/forms"
 import { op } from "@metaliq/integration"
 import { route } from "@metaliq/navigation"
+import { html } from "lit"
 
 // Policy term registration
 export { APPLICATION } from "@metaliq/application"
@@ -43,9 +44,10 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
     tag(".deps-grid-cols.deps-grid-header")(
       tags()(["Package Name", "Version"])
     ),
-    tag(".deps-grid")(
-      repeat(tag(".deps-grid-cols")(fields()))
-    )
+    tag<Dependency[]>(".deps-grid")([
+      repeat(tag<Dependency>(".deps-grid-cols")(fields())),
+      repeat((v, $) => html`<div class="deps-grid-cols">${$.fields()}</div>`)
+    ])
   ]
 }
 
@@ -81,10 +83,15 @@ export const packageInfoModel: MetaModel<Package> = {
       validator: versionValidator
     }
   },
-  view: page([
+  view: t(page, [
     tag("h1")("Configure Solution Information"),
     fields(),
-    savePackageButton
+    button({
+      type: "success",
+      // onClick: op(updatePackageMutation, { message: "Updating package" }),
+      onClick: v => console.log,
+      label: "Save"
+    })
   ]),
   onEnter: () => op(
     fetchPackageQuery,

@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, modelKeys, relink } from "metaliq"
+import { ConfigurableMetaFn, FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, modelKeys, relink } from "metaliq"
 import { PUBLICATION } from "@metaliq/publication"
 import { APPLICATION } from "@metaliq/application"
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -110,6 +110,18 @@ declare module "metaliq" {
 export type MetaView<T, P = any> = MetaFn<T, P, ViewResult>
 
 /**
+ * A MetaView that can be configured with various options.
+ */
+export type ConfigurableMetaView<C, T, P> = ConfigurableMetaFn<C, T, P, ViewResult>
+
+/**
+ * A container for other metaviews.
+ */
+export type ContainerMetaView<T, P> = ConfigurableMetaFn<MetaViewTerm<T, P>, T, P, ViewResult>
+
+export type ConfigurableContainerMetaView<C, T, P> = (config: C) => ContainerMetaView<T, P>
+
+/**
  * A view result can be either singular or plural
  * (in which case they are rendered in sequence).
  */
@@ -124,12 +136,10 @@ export type SingularViewResult = TemplateResult | string
  * Term to specify meta views, can be either singular or plural
  * (in which case each view result (which themselves may be singular or plural) is rendered in sequence).
  */
-export type MetaViewTerm<T, P = any> = MetaView<T, P> | ViewResult | Array<MetaViewTerm<T, P>>
-
-/**
- * A MetaView that can be configured with various options.
- */
-export type ConfigurableMetaView <C, T, P = any> = (config: C) => MetaView<T, P>
+export type MetaViewTerm<T, P = any> =
+  MetaView<T, P> |
+  ViewResult |
+  Array<MetaViewTerm<T, P>>
 
 /**
  * The options type for the `$.view()` function.

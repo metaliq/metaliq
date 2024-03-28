@@ -1,5 +1,5 @@
 import { html, literal } from "lit/static-html.js"
-import { MetaView, MetaViewTerm, ViewResult } from "./presentation"
+import { ContainerMetaView, MetaView, MetaViewTerm } from "./presentation"
 import { nothing } from "lit"
 import { isMetaFn, MetaFn } from "metaliq"
 
@@ -9,7 +9,7 @@ import { isMetaFn, MetaFn } from "metaliq"
 export type TagOptions<T, P = any> = {
   tagName?: string
   id?: string
-  classes?: string | string[]
+  classes?: string | string[] | MetaFn<T, P, string[]>
   onClick?: MetaFn<T, P>
 }
 
@@ -41,8 +41,9 @@ export const parseTagConfig = (config: TagConfig<any>) => {
   return config
 }
 
-export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
-  <T = any, P = any>(body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
+export const tag = <T = any, P = any>(
+  config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = ""
+) => (body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
     // Compose options object from defaults and params, parsing string format
     const parsed1 = parseTagConfig(config1)
     const parsed2 = parseTagConfig(config2)
@@ -52,7 +53,12 @@ export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: Ta
       ...parsed1,
       ...parsed2
     }
-    options.classes = Array.from(new Set([...parsed1.classes, ...parsed2.classes])).join(" ")
+    const classes1 = (typeof parsed1.classes === "function"
+      ? $.fn(parsed1.classes) : parsed1.classes) as string[]
+    const classes2 = (typeof parsed2.classes === "function"
+      ? $.fn(parsed2.classes) : parsed2.classes) as string[]
+
+    options.classes = Array.from(new Set([...classes1, ...classes2])).join(" ")
 
     // Obtain tag name lit
     const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
@@ -74,16 +80,40 @@ export const tag = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: Ta
     `
   }
 
-export const tags = <T = any, P = any>(config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = "") =>
-  <T = any, P = any>(body: MetaViewTerm<T, P> = ""
-): Array<MetaView<T, P>> => {
+export const tags = <T = any, P = any>(
+  config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = ""
+) => (body: MetaViewTerm<T, P> = ""): Array<MetaView<T, P>> => {
     const configured = tag(config1, config2)
     if (Array.isArray(body)) {
-      return body.map(b => configured(b))
+      return body.map(b => configured(b as MetaViewTerm<T, P>))
     } else {
       return [configured(body)]
     }
   }
+
+/**
+ * Convenience function for passing type information to configurable containers in views.
+ *
+ * Note that you still don't get type information on the container config.
+ *
+ * To get full typing, explicity type the configurable container, like:
+ * ```
+ *  tag<MyType>(myTypeSpecificTagConfig)(myTypeSpecificTagBody)
+ * ```
+ *
+ * However, a common case is to use tags with generic config and specific content,
+ * and it gets frustrating to keep having to provide these.
+ * You can choose to use `t` instead.
+ * ```
+ *  t(tag(".my-class")(v => v.propertyWillBeTypeChecked))
+ * ```
+ *
+ * @experimental
+ */
+export const t = <T, P>(
+  container: ContainerMetaView<any, any>,
+  body: MetaViewTerm<T, P>
+): MetaView<T, P> => container(body)
 
 /**
  * A non-exhaustive map of standard HTML tag names to tag literals.
@@ -132,4 +162,4 @@ export const tagLiterals = {
 /**
  * An example of a super-simple tag to display a field value in a span.
  */
-export const span = tag("span")(v => v)
+export const span = tag<any>("span")(v => v.toString())
