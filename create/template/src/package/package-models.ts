@@ -114,7 +114,7 @@ export const packageDependenciesModel: MetaModel<Package> = {
     }
   },
   view: page([
-    tag("h1")("Configure Project Dependencies"),
+    tag("h1", "Configure Project Dependencies"),
     fields(),
     savePackageButton
   ]),
