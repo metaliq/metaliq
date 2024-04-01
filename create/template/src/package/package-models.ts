@@ -1,7 +1,7 @@
 import { MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { fetchPackageQuery, updatePackageMutation } from "../gen/graphql-operations"
-import { fields, repeat, tag, tags, t } from "@metaliq/presentation"
+import { fields, MetaViewTerm, tag, repeat, tags } from "@metaliq/presentation"
 import { button } from "@metaliq/forms"
 import { op } from "@metaliq/integration"
 import { route } from "@metaliq/navigation"
@@ -23,7 +23,8 @@ const versionValidator = (version: string) =>
 /**
  * Set up a tag configured with classes that apply the same styling used by the metadocs.
  */
-const page = tag(".md-page.markdown-body")
+const page = <T, P>(body: MetaViewTerm<T, P>) =>
+  tag(".md-page.markdown-body", body)
 
 /**
  * A MetaModel for the data type Dependency.
@@ -40,18 +41,18 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
     }
   },
   view: [
-    tag("h2")((v, $) => $.term("label")),
-    tag(".deps-grid-cols.deps-grid-header")(
-      tags()(["Package Name", "Version"])
+    tag("h2", (v, $) => $.term("label")),
+    tag(".deps-grid-cols.deps-grid-header",
+      tags("", ["Package Name", "Version"])
     ),
-    tag<Dependency[]>(".deps-grid")([
-      repeat(tag<Dependency>(".deps-grid-cols")(fields())),
+    tag(".deps-grid", [
+      repeat(tag(".deps-grid-cols", fields())),
       repeat((v, $) => html`<div class="deps-grid-cols">${$.fields()}</div>`)
     ])
   ]
 }
 
-const savePackageButton = tag(".form-controls")(
+const savePackageButton = tag(".form-controls",
   button({
     type: "success",
     onClick: op(updatePackageMutation, { message: "Updating package" }),
@@ -83,8 +84,8 @@ export const packageInfoModel: MetaModel<Package> = {
       validator: versionValidator
     }
   },
-  view: t(page, [
-    tag("h1")("Configure Solution Information"),
+  view: page([
+    tag("h1", "Configure Solution Information"),
     fields(),
     button({
       type: "success",

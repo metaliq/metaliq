@@ -1,15 +1,15 @@
 import { html, literal } from "lit/static-html.js"
 import { ContainerMetaView, MetaView, MetaViewTerm } from "./presentation"
 import { nothing } from "lit"
-import { isMetaFn, MetaFn } from "metaliq"
+import { isMetaFn, MaybeFn, MetaFn } from "metaliq"
 
 /**
  * Options to support additional functionality, e.g. click handling.
  */
 export type TagOptions<T, P = any> = {
-  tagName?: string
+  name?: string
   id?: string
-  classes?: string | string[] | MetaFn<T, P, string[]>
+  classes?: MaybeFn<T, P, string>
   onClick?: MetaFn<T, P>
 }
 
@@ -27,43 +27,77 @@ export type TagConfig<T, P = any> = string | TagOptions<T, P> // Leave scope for
 
 export const parseTagConfig = (config: TagConfig<any>) => {
   if (typeof config === "string") {
-    const tagName = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1]
+    const name = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1]
     const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1]
     const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ")
     config = {
-      ...tagName && { tagName },
+      ...name && { name },
       ...id && { id },
       ...classes && { classes }
     }
   }
-  if (typeof config.classes === "string") config.classes = config.classes.split(" ")
-  config.classes ||= []
   return config
 }
 
+/**
+ * A general purpose container metaview for a HTML tag
+ * with configurable type, classes and other attributes
+ * as well as optional body content.
+ */
 export const tag = <T = any, P = any>(
-  config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = ""
+  config1: TagConfig<T, P> | Array<TagConfig<T, P>> = "",
+  body: MetaViewTerm<T, P> = ""
+): MetaView<T, P> =>
+    tagFactory(config1)(body)
+
+/**
+ * Create multiple tags with the same configuration.
+ * Would normally be passed a MetaViewTerm that is an array,
+ * each individual term will be wrapped in a separate tag
+ * with the common configuration.
+ */
+export const tags = <T = any, P = any>(
+  config: TagConfig<T, P> | Array<TagConfig<T, P>> = "",
+  body: MetaViewTerm<T, P> = ""
+): Array<MetaView<T, P>> => {
+  const configured = tagFactory(config)
+  if (Array.isArray(body)) {
+    return body.map(b => configured(b as MetaViewTerm<T, P>))
+  } else {
+    return [configured(body)]
+  }
+}
+
+/**
+ * The core tag creation function is curried for efficiency
+ * when multiple tags share the same config, such as `tags`.
+ */
+export const tagFactory = <T = any, P = any>(
+  config: TagConfig<T, P> | Array<TagConfig<T, P>> = ""
 ) => (body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
-    // Compose options object from defaults and params, parsing string format
-    const parsed1 = parseTagConfig(config1)
-    const parsed2 = parseTagConfig(config2)
+    // Merge options parameter into a single TagOptions
+    const configArray = Array.isArray(config) ? config : [config]
+    let mergedOptions: TagOptions<T, P> = {}
+    const allClasses: string[] = []
+    for (const eachConf of configArray) {
+      const eachOptions = parseTagConfig(eachConf)
+      allClasses.push($.maybeFn(eachOptions.classes) || "")
+      if (typeof eachOptions.classes === "function") {
+        eachOptions.classes = $.fn(eachOptions.classes)
+      }
+      mergedOptions = { ...mergedOptions, ...eachOptions }
+    }
 
     const options: TagOptions<T, P> = {
-      ...{ tagName: "div" },
-      ...parsed1,
-      ...parsed2
+      ...{ name: "div" },
+      ...mergedOptions,
+      ...{ classes: allClasses.filter(Boolean).join(" ") }
     }
-    const classes1 = (typeof parsed1.classes === "function"
-      ? $.fn(parsed1.classes) : parsed1.classes) as string[]
-    const classes2 = (typeof parsed2.classes === "function"
-      ? $.fn(parsed2.classes) : parsed2.classes) as string[]
-
-    options.classes = Array.from(new Set([...classes1, ...classes2])).join(" ")
 
     // Obtain tag name lit
-    const tagLiteral = tagLiterals[options.tagName as keyof typeof tagLiterals]
+    const tagLiteral = tagLiterals[options.name as keyof typeof tagLiterals]
     if (!tagLiteral) {
-      console.error(`Unrecognised tag name configuration: ${options.tagName}`)
+      console.error(`Unrecognised tag name configuration: ${options.name}`)
       return
     }
 
@@ -78,17 +112,6 @@ export const tag = <T = any, P = any>(
         ${$.view(body)}
       </${tagLiteral}>
     `
-  }
-
-export const tags = <T = any, P = any>(
-  config1: TagConfig<T, P> = "", config2: TagConfig<T, P> = ""
-) => (body: MetaViewTerm<T, P> = ""): Array<MetaView<T, P>> => {
-    const configured = tag(config1, config2)
-    if (Array.isArray(body)) {
-      return body.map(b => configured(b as MetaViewTerm<T, P>))
-    } else {
-      return [configured(body)]
-    }
   }
 
 /**
@@ -162,4 +185,4 @@ export const tagLiterals = {
 /**
  * An example of a super-simple tag to display a field value in a span.
  */
-export const span = tag<any>("span")(v => v.toString())
+export const span = tagFactory<any>("span")(v => v.toString())

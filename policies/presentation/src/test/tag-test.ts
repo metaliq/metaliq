@@ -1,7 +1,6 @@
 import chai from "chai"
 import { describe } from "mocha"
-import { parseTagConfig, t, tag } from "../tag"
-import { field } from "../presentation"
+import { parseTagConfig, tag } from "../tag"
 import { MetaModel } from "metaliq"
 
 chai.should()
@@ -24,7 +23,7 @@ describe("Tags", () => {
       const stringConfig = "p#my-para.info-block.second-col"
       const config = parseTagConfig(stringConfig)
       config.should.be.an("object")
-      config.should.have.ownProperty("tagName").equals("p")
+      config.should.have.ownProperty("name").equals("p")
       config.should.have.ownProperty("id").equals("my-para")
       config.should.have.ownProperty("classes").equals("info-block second-col")
     })
@@ -34,7 +33,7 @@ describe("Tags", () => {
    * The Typescript compiler can infer some aspects of the body content of a typed tag.
    */
   describe("Tag Content Type Inference", () => {
-    type Thing = { name: string, description: string }
+    type Thing = { name: string, status: string }
 
     /**
      * If you want the body of a tag (or any other configurable container meta view)
@@ -46,26 +45,36 @@ describe("Tags", () => {
      * This is due to Typescript not inferring types backward through chained function calls.
      */
     it("Configurable Container MetaView body type inference", () => {
-      // Compiles with valid field name
-      tag<Thing>(".some-config")(v => `Hello ${v.name}`)
-      // Field name typo - would fail to compile
-      // tag<Thing>(".some-config")(v => `Hello ${v.name1}`)
-
-      const mySpan = tag("span")
+      // Typed tag compiles with valid field name
+      tag<Thing>(".some-config", v => `Hello ${v.name}`)
+      // Typos will not compile
+      // newTag<Thing>(".some-config", "", v => `Hello ${v.wrongName}`)
 
       const mm: MetaModel<Thing> = {
         view: [
-          field("name"),
-          t(mySpan, [
-            v => v.name
+          // Tag infers type from the MetaModel, `v` is Thing
+          tag("span", v => v.name),
+
+          // Type inference for each configuration property including nested objects
+          tag(["span", { classes: v => v.name }], v => v.name),
+
+          // Typos will not compile
+          // newTag("span", { classes: v => [v.wrongName] }, v => v.wrongName),
+
+          // Type inference passed down throughout the view hierarchy
+          tag(".outer", [
+            tag(".middle", [
+              tag(".inner", [
+                // Typos will not compile
+                // v => v.wrongName,
+                // Valid field names will
+                v => v.name
+              ])
+            ])
           ])
         ]
       }
       mm.should.be.an("object")
-
-      // Assigning a tag to a variable with a particular meta view type DOESN'T type the content
-      // const x: MetaView<Thing> = tag()(v => `Hello ${v.misspelled}`)
-      // return x
     })
 
     /**
@@ -73,25 +82,12 @@ describe("Tags", () => {
      * if type information is added to the tag.
      */
     it("Array body content type inference", () => {
-      tag<Thing>(".some-config")([
+      tag<Thing>(".some-config", [
         v => `Hello ${v.name}`,
         [
           v => `Hello ${v.name}`
         ]
       ])
-    })
-
-    /**
-     * Typescript is unable to infer that an inner tag shares
-     * the same generic type as its containing tag,
-     * and so if it is not typed itself it reverts to `any`.
-     */
-    it("Nested tag type inference", () => {
-      // // The content of the inner tag is NOT typechecked
-      // tag<Thing>(".outer-config")(tag(".inner-config")(v => v.misspelled))
-      //
-      // // When adding inner typing, the field name must be valid.
-      // tag<Thing>(".outer-config")(tag<Thing>(".inner-config")(v => v.name))
     })
   })
 })

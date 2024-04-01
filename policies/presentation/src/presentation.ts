@@ -224,14 +224,12 @@ export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = m
  * Repeat each item for an array data / meta value with either
  * a specified view or the item's view from the model.
  */
-export const repeat = <T, MI extends (
-  T extends Array<infer I> ? MetaViewTerm<I> : never
-)> (itemView?: MI): MetaView<T> =>
-    (v, $) => {
-      if (isMetaArray($.meta)) {
-        return $.meta.map(({ $ }) => $.view(itemView))
-      } else return ""
-    }
+export const repeat = <T> (itemView?: MetaViewTerm<T extends Array<infer I> ? I : never>): MetaView<T> =>
+  (v, $) => {
+    if (isMetaArray($.meta)) {
+      return $.meta.map(({ $ }) => $.view(itemView))
+    } else return ""
+  }
 
 /**
  * Conditional display field.
@@ -239,7 +237,7 @@ export const repeat = <T, MI extends (
  * Optionally an `else` view can be specified to show if condition not met.
  */
 export const ifThen = <T, P = any> (
-  condition: MetaFn<T, P, boolean>,
+  condition: MetaFn<T, P>,
   thenView: MetaViewTerm<T, P>,
   elseView?: MetaViewTerm<T, P>
 ): MetaViewTerm<T, P> => (v, $) =>
