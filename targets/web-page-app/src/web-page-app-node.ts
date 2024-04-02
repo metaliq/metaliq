@@ -144,9 +144,9 @@ export const webPageAppBuilder = (
   // Produce CSS
   if (cssSrc) {
     const css = new CleanCSS({
-      // Note: at one stage we set level to 0 due to a problem with missing keyframes at higher levels.
-      // This was removed in order to support nested CSS.
-      // If missing keyframes show up as a problem again, don't solve with a level restriction.
+      // Stick to level 0 as other optimization levels produce strange results with nested CSS and some keyframes.
+      // TODO: Still an issue with nested pseudo selectors like &::before not working properly.
+      level: 0,
       rebaseTo: dirname(cssDest)
     }).minify([cssSrc])
     await ensureAndWriteFile(join(destDir, cssDest), css.styles)
