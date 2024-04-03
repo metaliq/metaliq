@@ -26,6 +26,7 @@ export type PageInfo = {
   baseHref?: string
   favIcon?: string
   themeColor?: ThemeColor
+  manifest?: string
 }
 
 export const page = (pageInfo: PageInfo) => dedent`
@@ -40,6 +41,7 @@ export const page = (pageInfo: PageInfo) => dedent`
       ${pageInfo.favIcon ? `<link rel="icon" href="${pageInfo.favIcon}">` : ""}
       ${pageInfo.styles.map(style => `<link href="${style}" rel="stylesheet">`).join("\n        ")}
       ${pageInfo.scripts?.map(pageScript).join("\n        ")}
+      ${pageInfo.manifest ? `<link rel="manifest" href=${pageInfo.manifest}>` : ""}
       ${typeof pageInfo.themeColor === "string"
           ? `<meta name="theme-color" content="${pageInfo.themeColor}">`
           : pageInfo.themeColor
