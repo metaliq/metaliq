@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/presentation",
   "description": "MetaliQ presentation policy",
-  "version": "1.0.0-beta.117",
+  "version": "1.0.0-beta.118",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
