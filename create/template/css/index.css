@@ -1,6 +1,7 @@
 @import "../node_modules/bootstrap-icons/font/bootstrap-icons.css";
 
 @import "../node_modules/@metaliq/forms/css/forms.css";
+@import "../node_modules/@metaliq/forms/css/grid.css";
 @import "../node_modules/@metaliq/modals/css/modals.css";
 @import "../node_modules/@metaliq/navigator/css/navigator.css";
 @import "../node_modules/@metaliq/navigator/css/nav-desktop-sidebar.css";

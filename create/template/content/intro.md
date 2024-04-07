@@ -4,7 +4,9 @@
 
 Welcome to MetaliQ!
 
-You are now running a sample full-stack solution. The front-end displays the page you're reading as well as configuration options for `package.json` within your project. The back-end data service provides queries and mutations for the values in `package.json`.
+You are now running a sample full-stack solution. 
+The front-end displays the page you're reading as well as configurable portions of your project's `package.json` file. 
+The back-end data service provides the supporting queries and mutations for the values in `package.json`.
 
 This solution demonstrates various capabilities including:
 

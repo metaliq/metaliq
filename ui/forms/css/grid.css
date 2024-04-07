@@ -1,106 +1,104 @@
 :root {
-	--mq-grid-header-background: #eee;
+	--mq-grid-header-background: #555;
+	--mq-grid-header-color: white;
+	--mq-grid-stripe-background: #eee;
 	--mq-grid-padding: 10px;
-	--mq-grid-border: solid #ccc;
+	--mq-grid-border: solid #ccc 0;
 	--mq-grid-border-width: 1px;
 }
 
 .mq-grid {
 	display: grid;
+
+	/* EDITABLE GRIDS: Remove normal field margins, labels and borders. */
+	& .mq-field {
+		margin: 0;
+
+		& .mq-input-label {
+			display: none;
+		}
+
+		.mq-input {
+			padding: 0 10px;
+			border: none;
+			background: none;
+		}
+	}
 }
 
+.mq-grid-header, .mq-grid-row {
+	/* Establish nested grid structure. */
+	display: grid;
+	grid-template-columns: subgrid;
+
+	/* Set up grid borders. */
+	border: var(--mq-grid-border);
+	border-width: var(--mq-grid-border-width);
+	border-top-width: 0;
+
+	& > * {
+		border: var(--mq-grid-border);
+		border-right-width: var(--mq-grid-border-width);
+
+		&:last-child {
+			border-right-width: 0;
+		}
+	}
+
+	/* Padding for simple span content. */
+	& > span {
+		padding: var(--mq-grid-padding);
+	}
+}
+
+/* Configurable colors for header and alternate row striping. */
 .mq-grid-header {
 	background: var(--mq-grid-header-background);
-	padding: var(--mq-grid-padding);
+	color: var(--mq-grid-header-color);
+	border: none;
 }
 
-.mq-grid > span {
-	padding: var(--mq-grid-padding);
+:nth-child(even of .mq-grid-row) {
+	background: var(--mq-grid-stripe-background);
 }
 
-.mq-grid > * {
-	border: var(--grid-border);
-	border-width: var(--grid-border-width) 0 0 var(--grid-border-width);
+/* Dynamically assign column spans to make the nested grid structure work. */
+.mq-grid.mq-cols-1 .mq-grid-row, .mq-grid.mq-cols-1 .mq-grid-header {
+	grid-column: 1 / span 1;
 }
 
-/* Dynamically applied classes to set right and bottom borders. */
-
-.mq-grid.mq-cols-1 > *:nth-child(1n) {
-	border-right-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-2 .mq-grid-row, .mq-grid.mq-cols-2 .mq-grid-header {
+	grid-column: 1 / span 2;
 }
 
-.mq-grid.mq-cols-1 > *:nth-last-child(-n+1) {
-	border-bottom-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-3 .mq-grid-row, .mq-grid.mq-cols-3 .mq-grid-header {
+	grid-column: 1 / span 3;
 }
 
-.mq-grid.mq-cols-2 > *:nth-child(2n) {
-	border-right-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-4 .mq-grid-row, .mq-grid.mq-cols-4 .mq-grid-header {
+	grid-column: 1 / span 4;
 }
 
-.mq-grid.mq-cols-2 > *:nth-last-child(-n+2) {
-	border-bottom-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-5 .mq-grid-row, .mq-grid.mq-cols-5 .mq-grid-header {
+	grid-column: 1 / span 5;
 }
 
-.mq-grid.mq-cols-3 > *:nth-child(3n) {
-	border-right-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-6 .mq-grid-row, .mq-grid.mq-cols-6 .mq-grid-header {
+	grid-column: 1 / span 6;
 }
 
-.mq-grid.mq-cols-3 > *:nth-last-child(-n+3) {
-	border-bottom-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-7 .mq-grid-row, .mq-grid.mq-cols-7 .mq-grid-header {
+	grid-column: 1 / span 7;
 }
 
-.mq-grid.mq-cols-4 > *:nth-child(4n) {
-	border-right-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-8 .mq-grid-row, .mq-grid.mq-cols-8 .mq-grid-header {
+	grid-column: 1 / span 8;
 }
 
-.mq-grid.mq-cols-4 > *:nth-last-child(-n+4) {
-	border-bottom-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-9 .mq-grid-row, .mq-grid.mq-cols-9 .mq-grid-header {
+	grid-column: 1 / span 9;
 }
 
-.mq-grid.mq-cols-5 > *:nth-child(5n) {
-	border-right-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-5 > *:nth-last-child(-n+5) {
-	border-bottom-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-6 > *:nth-child(6n) {
-	border-right-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-6 > *:nth-last-child(-n+6) {
-	border-bottom-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-7 > *:nth-child(7n) {
-	border-right-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-7 > *:nth-last-child(-n+7) {
-	border-bottom-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-8 > *:nth-child(8n) {
-	border-right-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-8 > *:nth-last-child(-n+8) {
-	border-bottom-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-9 > *:nth-child(9n) {
-	border-right-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-9 > *:nth-last-child(-n+9) {
-	border-bottom-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-10 > *:nth-child(10n) {
-	border-right-width: var(--mq-grid-border-width);
-}
-
-.mq-grid.mq-cols-10 > *:nth-last-child(-n+10) {
-	border-bottom-width: var(--mq-grid-border-width);
+.mq-grid.mq-cols-10 .mq-grid-row, .mq-grid.mq-cols-10 .mq-grid-header {
+	grid-column: 1 / span 10;
 }

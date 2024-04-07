@@ -1,11 +1,10 @@
 import { MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { fetchPackageQuery, updatePackageMutation } from "../gen/graphql-operations"
-import { fields, MetaViewTerm, tag, repeat, tags } from "@metaliq/presentation"
-import { button } from "@metaliq/forms"
+import { fields, MetaViewTerm, tag } from "@metaliq/presentation"
+import { button, grid } from "@metaliq/forms"
 import { op } from "@metaliq/integration"
 import { route } from "@metaliq/navigation"
-import { html } from "lit"
 
 // Policy term registration
 export { APPLICATION } from "@metaliq/application"
@@ -23,8 +22,8 @@ const versionValidator = (version: string) =>
 /**
  * Set up a tag configured with classes that apply the same styling used by the metadocs.
  */
-const page = <T, P>(body: MetaViewTerm<T, P>) =>
-  tag(".md-page.markdown-body", body)
+const page = <T, P>(body: MetaViewTerm<T, P>): MetaViewTerm<T, P> =>
+  tag<T, P>(".md-page.markdown-body", body)
 
 /**
  * A MetaModel for the data type Dependency.
@@ -42,13 +41,7 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
   },
   view: [
     tag("h2", (v, $) => $.term("label")),
-    tag(".deps-grid-cols.deps-grid-header",
-      tags("", ["Package Name", "Version"])
-    ),
-    tag(".deps-grid", [
-      repeat(tag(".deps-grid-cols", fields())),
-      repeat((v, $) => html`<div class="deps-grid-cols">${$.fields()}</div>`)
-    ])
+    grid(".deps-grid", ["Package Name", "Version"], fields())
   ]
 }
 
@@ -86,13 +79,9 @@ export const packageInfoModel: MetaModel<Package> = {
   },
   view: page([
     tag("h1", "Configure Solution Information"),
+    tag("p", "Project configuration from package.json is presented below as an example of a validated form."),
     fields(),
-    button({
-      type: "success",
-      // onClick: op(updatePackageMutation, { message: "Updating package" }),
-      onClick: v => console.log,
-      label: "Save"
-    })
+    savePackageButton
   ]),
   onEnter: () => op(
     fetchPackageQuery,
@@ -115,6 +104,7 @@ export const packageDependenciesModel: MetaModel<Package> = {
   },
   view: page([
     tag("h1", "Configure Project Dependencies"),
+    tag("p", "The dependencies from your project are presented below as examples of editable grids."),
     fields(),
     savePackageButton
   ]),
