@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/forms",
   "description": "A range of basic form fields for MetaliQ",
-  "version": "1.0.0-beta.120",
+  "version": "1.0.0-beta.121",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
