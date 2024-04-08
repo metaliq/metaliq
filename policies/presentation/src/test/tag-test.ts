@@ -56,7 +56,7 @@ describe("Tags", () => {
           tag("span", v => v.name),
 
           // Type inference for each configuration property including nested objects
-          tag(["span", { classes: v => v.name }], v => v.name),
+          tag(["span", { classes: v => v.name, onClick: v => { console.log(v.name) } }], v => v.name),
 
           // Typos will not compile
           // newTag("span", { classes: v => [v.wrongName] }, v => v.wrongName),
