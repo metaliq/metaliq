@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/choices",
   "description": "MetaliQ wrapper for the choices.js selector library",
-  "version": "1.0.0-beta.119",
+  "version": "1.0.0-beta.120",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/forms": "workspace:*",
