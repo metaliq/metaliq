@@ -82,9 +82,6 @@ export const tagFactory = <T = any, P = any>(
     for (const eachConf of configArray) {
       const eachOptions = parseTagConfig(eachConf)
       allClasses.push($.maybeFn(eachOptions.classes) || "")
-      if (typeof eachOptions.classes === "function") {
-        eachOptions.classes = $.fn(eachOptions.classes)
-      }
       mergedOptions = { ...mergedOptions, ...eachOptions }
     }
 
@@ -106,7 +103,7 @@ export const tagFactory = <T = any, P = any>(
     return html`
       <${tagLiteral} 
         id=${options.id || nothing} 
-        class=${options.classes || nothing} 
+        class=${options.classes || nothing}
         @click=${onClick}
       >
         ${$.view(body)}
