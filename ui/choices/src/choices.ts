@@ -55,6 +55,11 @@ export type SelectorOptions<T, P = any> = FieldOptions<T, P> & {
    * Defaults to true, assign false to prevent alpha-sorting.
    */
   sort?: boolean
+
+  /**
+   *
+   */
+  onChange?: MetaFn<T, P>
 }
 
 export type SelectorSearchFn<P> = (
@@ -215,6 +220,7 @@ const onChange = (options: SelectorOptions<any>) => ($: Meta$<any>, event: Event
   $.state.choicesValue = $.value
   validate($)
   state.proposedChange = null
+  if (typeof options.onChange === "function") $.fn(options.onChange)
 }
 
 const onAddItem = (options: SelectorOptions<any>) => ($: Meta$<any>, event: { detail: { value: string } }) => {
