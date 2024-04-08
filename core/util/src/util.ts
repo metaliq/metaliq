@@ -256,6 +256,8 @@ export function wait (delay: number = 1000) {
 
 /**
  * Test two variables for equality by value rather than reference.
+ * Ignores meta value content, i.e. any property with key `$`.
+ *
  * Adapted from example JS code at:
  * https://www.30secondsofcode.org/js/s/equals
  */
@@ -272,7 +274,7 @@ export function equals (a: any, b: any): boolean {
     return a.getTime() === b.getTime()
   }
 
-  const keys = Object.keys(a)
+  const keys = Object.keys(a).filter(k => k !== "$")
   if (keys.length !== Object.keys(b).length) return false
 
   return keys.every(k => equals(a[k], b[k]))
