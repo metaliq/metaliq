@@ -39,10 +39,11 @@
 	& > * {
 		border: var(--mq-grid-border);
 		border-right-width: var(--mq-grid-border-width);
+	}
 
-		&:last-child {
-			border-right-width: 0;
-		}
+	/* Note: trying to nest this above produces a build error, confuses clean-css. */
+	& > *:last-child {
+		border-right-width: 0;
 	}
 
 	/* Padding for simple span content. */
