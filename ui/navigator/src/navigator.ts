@@ -23,8 +23,8 @@ const hasOwnView: MetaFn<any> = (v, $) => !!$.raw("view")
 export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v, $) => {
   const pageBody = getNavSelection($, { mustHave: hasOwnView })?.view(null, { noHide: true })
   return html`
-    <header>
-      <div class="header-content">
+    <div class="mq-navigator">
+      <header>
         ${options.logoUrl ? html`
           <img src=${options.logoUrl} alt="Logo" @click=${$.up(options.logoUpdate)}>
         ` : ""}
@@ -33,7 +33,7 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
           ${menuItems($)}
         </nav>
       </div>
-    </header>
+    </div>
     <div class="mq-article">
       ${options.pageWrapper ? $.view(options.pageWrapper(pageBody)) : pageBody}
     </div>
@@ -76,13 +76,14 @@ const menuItem = (
   return html`
     <li @click=${(evt: Event) => navItem$.fn(goNavRoute, evt)} class=${classMap({
       "mq-nav-selected": isSelected,
-      "mq-nav-selected-item": isSelectedItem
+      "mq-nav-selected-item": isSelectedItem,
+      "mq-nav-no-icon": !icon
     })}>
       ${icon
         ? html`<i class=${ifDefined(icon)}>`
         : navItem$.model.controlView
           ? navItem$.view(navItem$.term("controlView"))
-          : ""
+          : html`<div></div>`
       }
       ${text ? html`<span>${text}</span>` : ""}
       ${menuItems(navItem$, level + 1)}

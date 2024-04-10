@@ -1,62 +1,63 @@
 /* PROGRESSIVE MODS FOR DESKTOP */
 @media (min-width: 940px) {
-	header {
+	.mq-navigator {
 		height: var(--mq-nav-desktop-header-height);
-	}
 
-	/** Header bar with logo */
-	.header-content {
-		height: var(--mq-nav-desktop-header-height);
-		max-width: var(--mq-nav-header-width);
-		margin: 0 auto;
-		grid-template-columns: auto 1fr;
-		justify-items: left;
-	}
+		/** Header bar with logo */
+		& header {
+			height: var(--mq-nav-desktop-header-height);
+			max-width: var(--mq-nav-header-width);
+			margin: 0 auto;
+			grid-template-columns: auto 1fr;
+			justify-items: left;
 
-	/* Hide mobile menu trigger */
-	header i {
-		display: none;
-	}
+			/* Hide mobile menu trigger */
+			& i {
+				display: none;
+			}
 
-	/* Logo */
-	header img {
-		padding: 0 0 0 10px;
-	}
+			/* Logo */
+			& img {
+				padding: 0 0 0 10px;
+			}
+		}
 
-	/* Main nav */
-	nav {
-		position: relative;
-		right: 0;
-		top: -10px;
-		width: auto;
-		justify-self: right;
-		opacity: 1;
-		transition: none;
-		padding: 0;
-		border: none;
-		overflow: visible;
-	}
+		/* Main nav */
+		& nav {
+			position: relative;
+			right: 0;
+			top: -10px;
+			width: auto;
+			justify-self: right;
+			opacity: 1;
+			transition: none;
+			padding: 0;
+			border: none;
+			overflow: visible;
+		}
 
-	/* Nav items */
-	nav ul li {
-		display: inline-block;
-	}
+		/* Nav items */
+		& ul li {
+			display: inline-block;
+		}
 
-	/* Top level nav item */
-	nav ul.mq-level-0 > li > span {
-		border: 0 solid rgba(1, 1, 1, 0);
-		border-bottom-width: 2px;
-		padding: 5px 10px 2px;
-	}
+		/* Top level nav item */
+		& ul.mq-level-0 {
+			& > li > span {
+				border: 0 solid rgba(1, 1, 1, 0);
+				border-bottom-width: 2px;
+				padding: 5px 10px 2px;
+			}
 
-	/* Top level selected item */
-	nav ul.mq-level-0 > li.mq-nav-selected > span {
-		background: none;
-		border-color: #6489de;
+			/* Top level selected item */
+			& > li.mq-nav-selected > span {
+			background: none;
+			border-color: #6489de;
+		}
 	}
 
 	/* Second level nav (hidden by default) */
-	nav ul.mq-level-1 {
+	& ul.mq-level-1 {
 		position: absolute;
 		top: 38px;
 		right: 0;
@@ -67,16 +68,37 @@
 		grid-auto-flow: column;
 		justify-content: right;
 		grid-gap: 10px;
+
+		/* Second level nav item */
+		& > li > span {
+			padding: 5px 10px;
+		}
 	}
 
 	/* Displayed second level nav */
-	li.mq-nav-selected > ul.mq-level-1 {
+	& li.mq-nav-selected > ul.mq-level-1 {
 		opacity: 1;
 		z-index: 8;
 	}
+}
 
-	/* Second level nav item */
-	nav ul.mq-level-1 > li > span {
-		padding: 5px 10px;
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

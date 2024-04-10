@@ -1,39 +1,40 @@
 /* PROGRESSIVE MODS FOR DEKSTOP */
 @media (min-width: 940px) {
-	header {
+	.mq-navigator {
 		height: var(--mq-nav-desktop-header-height);
 		width: var(--mq-nav-width);
-	}
 
-	.header-content {
-		height: var(--mq-nav-desktop-header-height);
-		grid-template: "logo" 1fr;
-		justify-items: center;
-	}
+		& header {
+			height: var(--mq-nav-desktop-header-height);
+			grid-template: "logo" 1fr;
+			justify-items: center;
 
-	/* Hide mobile menu trigger */
-	header i {
-		display: none;
-	}
+			/*Hide mobile menu trigger */
+			& i {
+				display: none;
+			}
 
-	header img {
-		padding: 0;
-	}
+			& img {
+				padding: 0;
+			}
+		}
 
-	/* Main nav */
-	nav {
-		/*	Show all the time */
-		left: 0;
-		opacity: 1;
-		transition: none;
+		/* Main nav */
+		& nav {
+			/*	Show all the time */
+			left: 0;
+			opacity: 1;
+			transition: none;
 
-		border: none;
-	}
+			border: none;
 
-	/* Displayed second level nav */
-	li.mq-nav-selected > ul.mq-level-1 {
-		opacity: 1;
-		z-index: 10;
+			/* Displayed second level nav */
+			& li.mq-nav-selected > ul.mq-level-1 {
+				opacity: 1;
+				z-index: 10;
+			}
+
+		}
 	}
 
 	/* Content area */

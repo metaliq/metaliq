@@ -20,7 +20,7 @@
 /* DEFAULT MOBILE STYLES */
 
 /* Page-top header bar with logo and menu button */
-header {
+.mq-navigator {
 	background: var(--mq-nav-background);
 	height: var(--mq-nav-mobile-header-height);
 	position: fixed;
@@ -28,90 +28,97 @@ header {
 	width: 100%;
 	text-align: center;
 	z-index: 10;
-}
 
-.header-content {
-	display: grid;
-	grid-template: "menu logo" / 50px 1fr;
-	color: var(--mq-nav-color);
-	align-items: center;
-	justify-items: center;
-	height: var(--mq-nav-mobile-header-height);
-}
+	& header {
+		display: grid;
+		grid-template: "menu logo" / 50px 1fr;
+		color: var(--mq-nav-color);
+		align-items: center;
+		justify-items: center;
+		height: var(--mq-nav-mobile-header-height);
 
-/* Menu button */
-header i {
-	grid-area: menu;
-	font-size: 30px;
-	cursor: pointer;
-}
+		/* Menu button */
+		& i {
+			grid-area: menu;
+			font-size: 30px;
+			cursor: pointer;
+		}
 
-/* Logo image */
-header img {
-	grid-area: logo;
-	max-height: 50px;
-	padding-right: 20px;
-	cursor: pointer;
-}
+		/* Logo image */
+		& img {
+			grid-area: logo;
+			max-height: 50px;
+			padding-right: 20px;
+			cursor: pointer;
+		}
+	}
 
-/* Navigation menu container when not shown */
-nav {
-	background: var(--mq-nav-background);
-	color: var(--mq-nav-color);
-	display: inline-block;
-	position: fixed;
-	width: var(--mq-nav-width);
-	left: calc(-1 * var(--mq-nav-width));
-	top: var(--mq-nav-mobile-header-height);
-	bottom: 0;
-	border-top: var(--mq-nav-border);
-	padding-top: var(--mq-nav-indent-size);
-	opacity: 0;
-	transition: var(--mq-nav-transition);
-	overflow: scroll;
-}
+	/* Navigation menu container when not shown */
+	& nav {
+		background: var(--mq-nav-background);
+		color: var(--mq-nav-color);
+		display: inline-block;
+		position: fixed;
+		width: var(--mq-nav-width);
+		left: calc(-1 * var(--mq-nav-width));
+		top: var(--mq-nav-mobile-header-height);
+		bottom: 0;
+		border-top: var(--mq-nav-border);
+		padding-top: var(--mq-nav-indent-size);
+		opacity: 0;
+		transition: var(--mq-nav-transition);
+		overflow: auto;
 
-/* Menu container when shown */
-nav.mq-show {
-	left: 0;
-	opacity: 1;
-}
+		/* Menu container when shown */
+		&.mq-show {
+			left: 0;
+			opacity: 1;
+		}
 
-/* Menu item level container */
-nav ul li {
-	list-style: none;
-	margin: 0;
-}
+		& ul {
+			/* Menu item level container */
+			& li {
+				list-style: none;
+				margin: 0;
 
-/* Menu items */
-nav li > span {
-	display: block;
-	cursor: pointer;
-	white-space: nowrap;
-	text-align: left;
-}
-/* Hovered */
-nav li > span:hover {
-	color: var(--mq-nav-color-hover);
-}
-/* Selected item */
-nav ul > li.mq-nav-selected-item > span {
-	background: var(--mq-nav-selected-background);
-	color: var(--mq-nav-selected-color);
-}
+				/* Menu items */
+				& > span {
+					display: block;
+					cursor: pointer;
+					white-space: nowrap;
+					text-align: left;
+				}
 
-/* Level-based individual menu item styling */
-nav ul.mq-level-0 > li > span, nav ul.mq-level-0 > li > i, nav ul.mq-level-0 > li > svg  {
-	padding: calc(var(--mq-nav-indent-size) / 2) var(--mq-nav-indent-size);
-	font-size: var(--mq-nav-font-size);
-}
+				/* Hovered */
+				& > span:hover {
+					color: var(--mq-nav-color-hover);
+				}
 
-nav ul.mq-level-1 > li > span {
-	padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 2);
-	font-size: calc(var(--mq-nav-font-size) - 2px);
-}
+				/* Selected item */
+				&.mq-nav-selected-item > * {
+					background: var(--mq-nav-selected-background);
+					color: var(--mq-nav-selected-color);
+				}
+			}
 
-nav ul.mq-level-2 > li > span {
-	padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 3);
-	font-size: calc(var(--mq-nav-font-size) - 4px);
+
+			/* Level-based individual menu item styling */
+			&.mq-level-0 > li {
+				& > span, & > i, & > svg  {
+					padding: calc(var(--mq-nav-indent-size) / 2) var(--mq-nav-indent-size);
+					font-size: var(--mq-nav-font-size);
+				}
+			}
+
+			&.mq-level-1 > li > span {
+				padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 2);
+				font-size: calc(var(--mq-nav-font-size) - 2px);
+			}
+
+			&.mq-level-2 > li > span {
+				padding: calc(var(--mq-nav-indent-size) / 6) calc(var(--mq-nav-indent-size) * 3);
+				font-size: calc(var(--mq-nav-font-size) - 4px);
+			}
+		}
+	}
 }

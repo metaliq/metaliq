@@ -31,7 +31,7 @@
 .mq-modal {
 	background: var(--mq-modal-background);
 	min-width: 400px;
-	max-width: 450px;
+	max-width: 600px;
 	min-height: 200px;
 	border-radius: 4px;
 	border: var(--mq-modal-border);

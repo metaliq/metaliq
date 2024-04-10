@@ -1,17 +1,19 @@
-.header-content {
-	grid-template: "logo menu" / 1fr 50px;
-}
+.mq-navigator {
+	& header {
+		grid-template: "logo menu" / 1fr 50px;
 
-header img {
-	padding: 0 0 0 20px;
-}
+		& img {
+			padding: 0 0 0 20px;
+		}
+	}
 
-nav {
-	left: auto;
-	right: calc(-1 * var(--mq-nav-width));
-}
+	& nav {
+		left: auto;
+		right: calc(-1 * var(--mq-nav-width));
 
-nav.mq-show {
-	left: auto;
-	right: 0;
+		&.mq-show {
+			left: auto;
+			right: 0;
+		}
+	}
 }

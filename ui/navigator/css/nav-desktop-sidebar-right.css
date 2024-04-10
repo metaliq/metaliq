@@ -1,12 +1,12 @@
 /* PROGRESSIVE MODS FOR DEKSTOP */
 @media (min-width: 940px) {
-	header {
+	.mq-navigator {
 		right: 0;
-	}
 
-	nav {
-		left: auto;
-		right: 0;
+		& nav {
+			left: auto;
+			right: 0;
+		}
 	}
 
 	/* Content area */
