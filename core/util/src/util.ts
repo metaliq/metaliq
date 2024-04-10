@@ -279,3 +279,8 @@ export function equals (a: any, b: any): boolean {
 
   return keys.every(k => equals(a[k], b[k]))
 }
+
+/**
+ * JSON Stringify that excludes `$` keys, i.e. meta values, from value objects.
+ */
+export const jsonifyValue = (value: any) => JSON.stringify(value, (k, v) => k === "$" ? undefined : v)
