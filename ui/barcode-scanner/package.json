@@ -1,7 +1,7 @@
 {
   "name": "@metaliq/barcode-scanner",
   "description": "Barcode scanner field for MetaliQ",
-  "version": "1.0.0-beta.121",
+  "version": "1.0.0-beta.122",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
     "@metaliq/application": "workspace:*",
