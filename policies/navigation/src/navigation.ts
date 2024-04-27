@@ -18,7 +18,7 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    *
    * The MetaFn should expect to receive the selected navigation node and behave accordingly.
    *
-   * This policy provides several standard functions {@link setNavSelection} which is
+   * This policy provides a standard function {@link setNavSelection} which is
    * a basic handler allowing free navigation between all the immediate child nodes.
    * Alternative behaviours such as step-by-step wizard navigation
    * can be provided by other policies.
@@ -251,11 +251,10 @@ export const getNavSelection = ($: Meta$<any>, {
  */
 export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
   $.state.nav ||= {}
-  if (!$.state.nav.expandMenu) {
-    $.state.nav.expandMenu = true
-  } else if ($.state.nav.selected) {
-    $.state.nav.expandMenu = false
-  }
+  $.fn(root$).fn(onDescendants((v, $) => {
+    if ($.state.nav?.expandMenu) $.state.nav.expandMenu = false
+  }))
+  $.state.nav.expandMenu = true
 
   policy.selectedRoute$ = $
 
@@ -273,6 +272,7 @@ export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
       parent$.state.nav.selected = $.key
+      parent$.state.nav.expandMenu = true
       setParentSelection(parent$.value, parent$)
     }
   }

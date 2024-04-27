@@ -530,12 +530,9 @@ export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "fun
  * Return the {@link Meta$} for the root node in the meta graph containing the
  * given node.
  *
- * In the case where you know what Meta$ type to expect,
- * you can specify with `root$<MyType>(myNode$)`.
- *
  * Note that a root Meta$ won't have a parent type.
  */
-export const root$ = (v: any, $?: Meta$<any>) => {
+export const root$: MetaFn<any> = (v, $) => {
   let result = $
   while (result.parent$) {
     result = result.parent$
