@@ -26,7 +26,23 @@ type BaseOptions = {
 
 type BuildOptions = BaseOptions
 
-type RunOptions = BaseOptions
+type RunOptions = BaseOptions & {
+  /**
+   * Additional watch layer to completely restart the runner.
+   *
+   * This is not necessary for publication targets such as web-page-app,
+   * where the dev server takes care of reloading the browser tab on file changes,
+   * but is useful for node-based targets such as graphql-server
+   * to enable rapid iteration on resolvers etc. However...
+   *
+   * NOTE: this is a memory-leaking implementation at this time due to
+   * node not giving access to mutable import cache.
+   * See https://github.com/nodejs/help/issues/2806 for more.
+   *
+   * USE AT YOUR OWN RISK, IN DEVELOPMENT ONLY!
+   */
+  watch?: boolean
+}
 
 type ServeOptions = {
   port?: string
@@ -41,6 +57,7 @@ program
 program
   .command("run [modelName]")
   .option("-f --file <file>", "MetaModel file location within source dir, with or without .ts extension", "models")
+  .option("-w --watch", "Complete restart on file change - useful for node-based services such as graphql-server")
   .description("Start the MetaliQ development server for the given path/model (defaults to appModel)")
   .action(run)
 
@@ -84,6 +101,10 @@ async function run (modelName: string = "appModel", options: RunOptions = {}) {
           resolve(true)
         } else {
           console.log("Recompiled project code")
+          if (options.watch) {
+            console.log(`Restarting publication target runner for model ${modelName} after compilation`)
+            loadAndStartModel().catch(e => { throw e })
+          }
         }
       } else if (msg.toString().match(/Starting compilation/)) {
         console.log("Starting file watching compiler")
@@ -103,21 +124,24 @@ async function run (modelName: string = "appModel", options: RunOptions = {}) {
     })
   })
 
-  const simplePath = optionsSimplePath(options)
-  const model = await importModel(modelName, simplePath)
-  if (!model) {
-    console.error(`Model not found: ${simplePath}.ts > ${modelName}`)
-    return
+  const loadAndStartModel = async () => {
+    const simplePath = optionsSimplePath(options)
+    const model = await importModel(modelName, simplePath, options.watch)
+    if (!model) {
+      console.error(`Model not found: ${simplePath}.ts > ${modelName}`)
+      return
+    }
+
+    model.publicationTarget = model.publicationTarget || webPageApp()
+
+    if (!model.publicationTarget?.runner) {
+      console.log("Specified publication target has no runner")
+    }
+
+    console.log(`Running MetaModel ${modelName} with publication target ${model.publicationTarget.name}`)
+    await model.publicationTarget.runner({ modelName, simplePath, model })
   }
-
-  model.publicationTarget = model.publicationTarget || webPageApp()
-
-  if (!model.publicationTarget?.runner) {
-    console.log("Specified publication target has no runner")
-  }
-
-  console.log(`Running MetaModel ${modelName} with publication target ${model.publicationTarget.name}`)
-  await model.publicationTarget.runner({ modelName, simplePath, model })
+  await loadAndStartModel()
 }
 
 async function build (modelNames: string[], options: BuildOptions = {}) {
@@ -186,10 +210,14 @@ async function serve (location: string = "", options: ServeOptions = {}) {
   })
 }
 
-async function importModel (name: string = "appModel", path: string = "models") {
+async function importModel (name: string = "appModel", path: string = "models", bustCache: boolean = false) {
   console.log(`Loading MetaliQ MetaModel ${path} > ${name}`)
   try {
-    const module = await import ("file://" + join(process.cwd(), "bin", path))
+    const module = await import (
+      "file://" +
+      join(process.cwd(), "bin", path) +
+      (bustCache ? `.js?update=${Date.now()}` : "")
+    )
     const model: MetaModel<any> = module[name]
     return model
   } catch (e) {
