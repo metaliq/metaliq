@@ -10,6 +10,7 @@ import { page } from "@metaliq/publication/lib/page"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
+import { importMapsPlugin } from "@web/dev-server-import-maps"
 
 export { TerminologyTerms } from "@metaliq/terminology"
 
@@ -43,6 +44,7 @@ export const webPageAppRunner = (
     },
     open: true,
     watch: true,
+    plugins: [importMapsPlugin()],
     middleware: [
       (ctx, next) => {
         // Manually adding local version of @web/dev-server-core/dist/middleware/historyApiFallbackMiddleware

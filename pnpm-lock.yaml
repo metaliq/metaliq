@@ -525,6 +525,9 @@ importers:
       '@web/dev-server':
         specifier: 0.4.1
         version: 0.4.1
+      '@web/dev-server-import-maps':
+        specifier: 0.2.0
+        version: 0.2.0
       clean-css:
         specifier: ^5.3.3
         version: 5.3.3
@@ -2923,6 +2926,10 @@ packages:
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
     dev: true
 
+  /@import-maps/resolve@1.0.1:
+    resolution: {integrity: sha512-tWZNBIS1CoekcwlMuyG2mr0a1Wo5lb5lEHwwWvZo+5GLgr3e9LLDTtmgtCWEwBpXMkxn9D+2W9j2FY6eZQq0tA==}
+    dev: false
+
   /@josephg/resolvable@1.0.1:
     resolution: {integrity: sha512-CtzORUwWTTOTqfVtHaKRJ0I1kNQd1bpn3sUh8I3nJDVY+5/M/Oe1DnEWzPQvqq/xPIIkzzzIP7mfCoAjFRvDhg==}
     dev: false
@@ -3809,6 +3816,22 @@ packages:
       parse5: 6.0.1
       picomatch: 2.3.1
       ws: 7.5.9
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: false
+
+  /@web/dev-server-import-maps@0.2.0:
+    resolution: {integrity: sha512-+Z4mNGJqHo370ZFmPl83O4BqpPzQDjprfLO3AwsOZck9x94LcAVmVsC7fnet1DQRR11x9M7FNliS6mmkZv26TQ==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@import-maps/resolve': 1.0.1
+      '@types/parse5': 6.0.3
+      '@web/dev-server-core': 0.7.0
+      '@web/parse5-utils': 2.1.0
+      parse5: 6.0.1
+      picomatch: 2.3.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
