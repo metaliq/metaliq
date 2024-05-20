@@ -1,8 +1,7 @@
-import { dirname, join, extname } from "path"
+import { join, extname } from "path"
 import { DevServerConfig, startDevServer } from "@web/dev-server"
 import mime from "mime-types"
 import { copy, pathExists, remove } from "fs-extra"
-import CleanCSS from "clean-css"
 import findFreePorts from "find-free-ports"
 import { Builder, Cleaner, Runner } from "@metaliq/publication"
 import { WebPageAppConfig } from "./web-page-app"
@@ -11,6 +10,8 @@ import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
 import { importMapsPlugin } from "@web/dev-server-import-maps"
+import { bundle } from "lightningcss"
+import { TextDecoder } from "util"
 
 export { TerminologyTerms } from "@metaliq/terminology"
 
@@ -145,13 +146,12 @@ export const webPageAppBuilder = (
 
   // Produce CSS
   if (cssSrc) {
-    const css = new CleanCSS({
-      // Stick to level 0 as other optimization levels produce strange results with nested CSS and some keyframes.
-      // TODO: Still an issue with nested pseudo selectors like &::before not working properly.
-      level: 0,
-      rebaseTo: dirname(cssDest)
-    }).minify([cssSrc])
-    await ensureAndWriteFile(join(destDir, cssDest), css.styles)
+    const { code } = bundle({
+      filename: cssSrc,
+      minify: true
+    })
+    const css = new TextDecoder().decode(code)
+    await ensureAndWriteFile(join(destDir, cssDest), css)
   }
 
   // Copy additional files
