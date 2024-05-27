@@ -35,8 +35,12 @@ const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (
   const disabled = $.fn(isDisabled)
   const fl = $.fn(getViewState(flatpickrInstance)) as Instance
 
-  if (fl && $.value && new Date(fl.selectedDates[0]) !== new Date($.value)) {
-    fl.setDate(new Date($.value))
+  if (fl) {
+    if ($.value && new Date(fl.selectedDates[0]) !== new Date($.value)) {
+      fl.setDate(new Date($.value))
+    } else if (!$.value) {
+      fl.clear()
+    }
   }
 
   const clearDate = ($: Meta$<string>) => {
