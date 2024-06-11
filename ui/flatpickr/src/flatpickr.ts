@@ -9,6 +9,7 @@ import { hasValue, validate } from "@metaliq/validation"
 import { fieldContainer, isDisabled } from "@metaliq/forms"
 import { Meta$ } from "metaliq"
 import Instance = flatpickr.Instance
+import FPOptions = flatpickr.Options.Options
 import { TERMINOLOGY } from "@metaliq/terminology"
 
 TERMINOLOGY()
@@ -27,6 +28,11 @@ export type DatePickerOptions = {
    * Value storage format, using flatpickr formatting as per https://flatpickr.js.org/formatting/
    */
   valueFormat?: string
+
+  /**
+   * Native FlatPickr Options
+   */
+  fpOptions?: FPOptions
 }
 
 const flatpickrInstance = "flatpickr-instance"
@@ -66,7 +72,12 @@ const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (
             defaultDate: flatpickr.parseDate(value || "", options.valueFormat),
             disable: options.disable || [],
             dateFormat: options.displayFormat || "Y-m-d",
-            disableMobile: true
+            disableMobile: true,
+            locale: {
+              // Default to start week on Monday, can be overriden in fpOptions
+              firstDayOfWeek: 1
+            },
+            ...options.fpOptions
           }) as Instance
           $.fn(setViewState(flatpickrInstance, fl))
         }
