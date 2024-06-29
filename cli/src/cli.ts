@@ -15,6 +15,7 @@ export { ApplicationTerms } from "@metaliq/application"
 
 const pExec = promisify(exec)
 installWindowOnGlobal() // Shim to prevent import error in lit
+Object.assign(global, { window: global })
 Object.assign(window, { navigator: { userAgent: "", platform: [] } })
 Object.assign(document, { documentElement: { style: {} } })
 
