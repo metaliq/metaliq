@@ -34,7 +34,7 @@
     "prepare": "pnpm clean && tsc -b",
     "publish-master": "pnpm publish -r --access public && pnpm test-create",
     "publish-beta": "pnpm publish -r --tag beta --access public",
-    "reinstall": "pnpm clean-node-modules && pnpm install -r --prefer-offline",
+    "reinstall": "pnpm clean-node-modules && pnpm clean && pnpm install -r --prefer-offline",
     "test": "mocha --import=extensionless/register -r source-map-support/register './!(node_modules)/*/lib/test/**/*.js'",
     "test-create": "cd ~/dev && rm -rf test-metaliq-create && pnpm create @metaliq test-metaliq-create"
   },
