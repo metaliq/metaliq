@@ -87,7 +87,7 @@ program
 
 program.parse()
 
-async function run (modelName: string = "appModel", options: RunOptions = {}) {
+export async function run (modelName: string = "appModel", options: RunOptions = {}) {
   // Initial project compilation with watch
   // Compile first in order to be able to import from bin
   await new Promise((resolve, reject) => {
@@ -145,7 +145,7 @@ async function run (modelName: string = "appModel", options: RunOptions = {}) {
   await loadAndStartModel()
 }
 
-async function build (modelNames: string[], options: BuildOptions = {}) {
+export async function build (modelNames: string[], options: BuildOptions = {}) {
   if (modelNames.length === 0) modelNames.push("appModel")
   console.log(`Starting MetaliQ build for ${modelNames.join(", ")}`)
 
@@ -194,7 +194,7 @@ async function build (modelNames: string[], options: BuildOptions = {}) {
   console.log("Build completed")
 }
 
-async function serve (location: string = "", options: ServeOptions = {}) {
+export async function serve (location: string = "", options: ServeOptions = {}) {
   console.log(`Starting MetaliQ static file server for location ${location || "/"}`)
   const devServerConfig: DevServerConfig = {
     rootDir: join(process.cwd(), location),
