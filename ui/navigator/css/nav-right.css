@@ -1,3 +1,5 @@
+/* Progressive mods for a right-hand version of the default navigator view. */
+
 .mq-navigator {
 	& header {
 		grid-template: "logo menu" / 1fr 50px;

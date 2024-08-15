@@ -1,5 +1,5 @@
 import { html, literal } from "lit/static-html.js"
-import { ContainerMetaView, MetaView, MetaViewTerm } from "./presentation"
+import { MetaView, MetaViewTerm } from "./presentation"
 import { nothing } from "lit"
 import { isMetaFn, MaybeFn, MetaFn } from "metaliq"
 
@@ -112,30 +112,6 @@ export const tagFactory = <T = any, P = any>(
   }
 
 /**
- * Convenience function for passing type information to configurable containers in views.
- *
- * Note that you still don't get type information on the container config.
- *
- * To get full typing, explicity type the configurable container, like:
- * ```
- *  tag<MyType>(myTypeSpecificTagConfig)(myTypeSpecificTagBody)
- * ```
- *
- * However, a common case is to use tags with generic config and specific content,
- * and it gets frustrating to keep having to provide these.
- * You can choose to use `t` instead.
- * ```
- *  t(tag(".my-class")(v => v.propertyWillBeTypeChecked))
- * ```
- *
- * @experimental
- */
-export const t = <T, P>(
-  container: ContainerMetaView<any, any>,
-  body: MetaViewTerm<T, P>
-): MetaView<T, P> => container(body)
-
-/**
  * A non-exhaustive map of standard HTML tag names to tag literals.
  *
  * Using an exported tag literal map avoids having to use `unsafeStatic`,
@@ -182,4 +158,4 @@ export const tagLiterals = {
 /**
  * An example of a super-simple tag to display a field value in a span.
  */
-export const span = tagFactory<any>("span")(v => v ? v.toString() : "")
+export const span = tagFactory("span")(v => v ? v.toString() : "")

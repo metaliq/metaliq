@@ -1,4 +1,5 @@
-/* PROGRESSIVE MODS FOR DEKSTOP */
+/* Progressive mods for a right-hand sidebar layout on desktop. */
+
 @media (min-width: 940px) {
 	.mq-navigator {
 		right: 0;

@@ -1,13 +1,21 @@
-/* PROGRESSIVE MODS FOR DESKTOP */
+/* Progressive mods for a super-sub layout on desktop. */
+
+:root {
+	--mq-nav-selected-background: var(--mq-nav-background);
+}
+
 @media (min-width: 940px) {
 	.mq-navigator {
 		height: var(--mq-nav-desktop-header-height);
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		padding: 0 calc((100% - 900px) / 2);
 
 		/** Header bar with logo */
+
 		& header {
 			height: var(--mq-nav-desktop-header-height);
 			max-width: var(--mq-nav-header-width);
-			margin: 0 auto;
 			grid-template-columns: auto 1fr;
 			justify-items: left;
 
@@ -17,16 +25,17 @@
 			}
 
 			/* Logo */
+
 			& img {
 				padding: 0 0 0 10px;
 			}
 		}
 
 		/* Main nav */
+
 		& nav {
 			position: relative;
-			right: 0;
-			top: -10px;
+			top: auto;
 			width: auto;
 			justify-self: right;
 			opacity: 1;
@@ -34,71 +43,63 @@
 			padding: 0;
 			border: none;
 			overflow: visible;
-		}
+			left: auto;
+			padding-top: 13px;
 
-		/* Nav items */
-		& ul li {
-			display: inline-block;
-		}
+			/* Nav items */
 
-		/* Top level nav item */
-		& ul.mq-level-0 {
-			& > li > span {
-				border: 0 solid rgba(1, 1, 1, 0);
-				border-bottom-width: 2px;
-				padding: 5px 10px 2px;
+			& ul {
+				& li {
+					display: inline-block;
+
+					&.mq-nav-selected-item > * {
+						color: var(--mq-nav-color)
+					}
+				}
+
+				/* Top level nav item */
+				&.mq-level-0 {
+					& > li > span {
+						border: 0 solid rgba(1, 1, 1, 0);
+						border-bottom-width: 2px;
+						padding: 5px 10px 2px;
+					}
+
+					/* Top level selected item */
+
+					& > li.mq-nav-selected > span {
+						background: none;
+						border-color: #6489de;
+					}
+				}
+
+				/* Second level nav (hidden by default) */
+				&.mq-level-1 {
+					position: absolute;
+					top: 51px;
+					right: 0;
+					opacity: 0;
+					background: none;
+					width: 100%;
+					display: grid;
+					grid-auto-flow: column;
+					justify-content: right;
+					grid-gap: 10px;
+
+					/* Second level nav item */
+					& > li > span {
+						padding: 5px 10px;
+						font-size: 15px;
+					}
+				}
+
+				/* Displayed second level nav */
+
+				.mq-nav-selected > ul.mq-level-1 {
+					opacity: 1;
+					z-index: 8;
+				}
 			}
-
-			/* Top level selected item */
-			& > li.mq-nav-selected > span {
-			background: none;
-			border-color: #6489de;
 		}
 	}
-
-	/* Second level nav (hidden by default) */
-	& ul.mq-level-1 {
-		position: absolute;
-		top: 38px;
-		right: 0;
-		opacity: 0;
-		background: none;
-		width: 100%;
-		display: grid;
-		grid-auto-flow: column;
-		justify-content: right;
-		grid-gap: 10px;
-
-		/* Second level nav item */
-		& > li > span {
-			padding: 5px 10px;
-		}
-	}
-
-	/* Displayed second level nav */
-	& li.mq-nav-selected > ul.mq-level-1 {
-		opacity: 1;
-		z-index: 8;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
