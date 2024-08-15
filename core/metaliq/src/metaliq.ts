@@ -434,21 +434,6 @@ export const relink = <T>($: Meta$<T>) => {
 }
 
 /**
- * Apply a given MetaModel to an existing Meta$ object.
- */
-export function applyModel<T> ($: Meta$<T>, model: MetaModel<T>) {
-  $.model = model
-  setupMeta($)
-  if (isMeta($.meta)) {
-    for (const key of $.fieldKeys()) {
-      const fieldModel = <unknown>model.fields[key] as MetaModel<T[FieldKey<T>]>
-      const fieldMeta = <unknown>$.meta[key] as Meta<T[FieldKey<T>]>
-      applyModel(fieldMeta.$, fieldModel)
-    }
-  }
-}
-
-/**
  * Obtain the meta value ($) object from either its associated data value object or itself.
  */
 export const meta$ = <T>(v$: T | Meta$<T>): Meta$<T> => {

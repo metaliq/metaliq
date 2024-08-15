@@ -1,5 +1,5 @@
 import { parse as flat_parse, stringify as flat_stringify } from "flatted"
-import { applyModel, Meta, Meta$, MetaModel } from "metaliq"
+import { Meta, Meta$, metafy, MetaModel, modelKeys } from "metaliq"
 import { filterObject } from "@metaliq/util"
 
 /**
@@ -39,9 +39,25 @@ export function stringify (meta: Meta<any>, statePredicate = defaultStatePredica
 /**
  * Deserialise a serialisation into a Meta object.
  */
-export function parse<T> (serialisation: string, model?: MetaModel<T>): Meta<T> {
-  const meta: Meta<T> = flat_parse(serialisation)
-  if (model) applyModel(meta.$, model)
+export function parse<T> (serialisation: string, model: MetaModel<T>): Meta<T> {
+  if (!serialisation) return null
+  const parsed: Meta<T> = flat_parse(serialisation)
+  const meta = metafy(model, parsed.$.value)
+
+  const assignState = <T>(meta: Meta<T>, parsed: Meta<T>, model: MetaModel<T>) => {
+    Object.assign(meta.$.state, parsed?.$?.state)
+    const keys = modelKeys(model)
+    for (const key of keys) {
+      const childMeta = meta[key]
+      const parsedChildMeta = parsed[key]
+      if (childMeta && parsedChildMeta) {
+        const childModel = meta[key].$.model
+        assignState(childMeta as Meta<unknown>, parsedChildMeta as Meta<unknown>, <unknown>childModel as MetaModel<unknown>)
+      }
+    }
+  }
+  assignState(meta, parsed, model)
+
   return meta
 }
 
