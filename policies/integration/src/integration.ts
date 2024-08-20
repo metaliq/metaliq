@@ -16,23 +16,19 @@ export interface Integration$ <T, P> {
   this?: Meta$<T, P>
 
   /**
-   * Create an event handler that performs the given operation
-   * (typically an integration query or mutation)
-   * directly, without needing to wrap in a MetaFn or Update.
+   * A convenience method that provides a shorthand for
+   * calling `op` within broader update processes.
    *
-   * The operation will be passed either:
-   * (a) any provided parameters object (e.g. query params) or
-   * (b) the associated data value itself (e.g. a mutation)
-   * and in either case will apply the returned value back into
-   * the associated data value.
+   * `$.op(operationFunction)`
    *
-   * The resulting event handling is wrapped in an Update and performed with `up`
-   * so that it is "wrapped" into the application cycle.
+   * is the equivalent of
+   *
+   * `$.fn(op(operationFunction))`
    */
   op?: <I> (
     operation: Operation<I, T>,
     options?: UpOptions & OperationOptions<T, I>
-  ) => (event?: any) => any
+  ) => any
 }
 
 export type Operation<I, O> = (input?: I) => Promise<GraphQLResponse<O>>
@@ -107,6 +103,34 @@ let showMessage: (msg: string, title?: string) => any = () => {}
  */
 let showProgress: (msg: string, title?: string) => any = () => {}
 
+/**
+ * Perform the given GraphQL operation function.
+ *
+ * The operation will be passed either:
+ * (a) the value provided in the `options.input` if specified, otherwise
+ * (b) the associated data value itself (e.g. for a mutation)
+ * and in either case will apply the returned value back into
+ * the associated data value.
+ *
+ * This function should typically be performed within `up`
+ * so that it is "wrapped" into the application cycle,
+ * either within a function term that already manages this,
+ * such as a navigation `onEnter` handler, like:
+ *
+ * `onEnter: op(operation, options)`
+ *
+ * or directly within a plain event handler, like:
+ *
+ * `@click=${$.up(op(operation, options))}`
+ *
+ * or within a broader update process, like:
+ *
+ * `$.fn(op(operation, options))`
+ *
+ * A shorthand exists for the above case:
+ *
+ * `$.op(operation, options)`
+ */
 export const op = <I, O> (
   operation: Operation<I, O>, options: OperationOptions<O, I> = {}
 ): MetaFn<O> => async (v, $) => {
