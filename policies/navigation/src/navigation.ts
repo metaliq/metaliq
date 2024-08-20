@@ -1,7 +1,7 @@
 import { Route, RouteParams, Router } from "./router"
-import { FieldKey, modelKeys, Meta$, meta$, MetaFn, MetaModel, metaSetups, onDescendants, root$ } from "metaliq"
+import { FieldKey, Meta$, meta$, MetaFn, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
-import { APPLICATION, bootstrapComplete } from "@metaliq/application"
+import { APPLICATION, bootstrapComplete, MetaFnTerm } from "@metaliq/application"
 
 export * from "./router"
 
@@ -23,7 +23,7 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    * Alternative behaviours such as step-by-step wizard navigation
    * can be provided by other policies.
    */
-  onNavigate?: MetaFn<any>
+  onNavigate?: MetaFnTerm<any>
 
   /**
    * Define a route term for each "leaf" node in the navigation structure,
@@ -91,7 +91,7 @@ declare module "metaliq" {
 }
 
 export type MetaRouteHandler<T, P = any, RP = any, RQ = any> =
-  (params?: RouteParams<RP, RQ>) => MetaFn<T, P>
+  (params?: RouteParams<RP, RQ>) => MetaFnTerm<T, P>
 
 /**
  * Policy-level state store.
@@ -123,34 +123,25 @@ const policy: NavigationPolicy = {
  */
 export const route$ = (route: Route<object>) => policy.route$s.get(route)
 
-// Handle async updates within route handler that is NOT wrapped in `up`
-const handleRouteResult = async (result: any) => {
-  if (result instanceof Promise) {
-    catchUp()
-    result = await result
-  }
-  return result
-}
-
 metaSetups.push($ => {
   const model = $.model
   // If this model has a route, initialise any route handling functions
   if (model?.route) {
     policy.route$s.set(model.route, $)
-    if (typeof model.onLeave === "function") {
-      model.route.onLeave = async () => {
-        const result = await handleRouteResult(model.onLeave()($.value, $))
+    if (model.onLeave) {
+      model.route.onLeave = async (params) => {
+        const result = await $.up(model.onLeave(params))()
         return result
       }
     }
     model.route.onEnter = async (params) => {
-      if (typeof model.onEnter === "function") {
-        const result = await handleRouteResult(model.onEnter(params)($.value, $))
+      if (model.onEnter) {
+        const result = await $.up(model.onEnter(params))()
         if (result === false) return false
       }
       const onNavigate = $.raw("onNavigate", true)
-      if (typeof onNavigate === "function") {
-        const navTypeResult = onNavigate($.value, $)
+      if (onNavigate) {
+        const navTypeResult = await $.up(onNavigate)()
         if (navTypeResult === false) return false
       }
     }
@@ -364,39 +355,6 @@ export const redirect = (route: Route<any>, params?: any): MetaFn<any> => () => 
   route.go(params)
   return false // Prevents further handling on the original route
 }
-
-/**
- * Make a route handler that calls the given handler, passing the child
- * of the current meta node with the given key.
- *
- * Useful where parent and child navigation items share a similar
- * behaviour for e.g. onEnter.
- *
- * For example, given a nav structure for contacts with a parent item
- * that displays a summary view and child item that displays a detail view
- * of the same contact data object:
- *
- * ```
- *   contact: {
- *     label: v => `Summary for ${v.detail.fullName}`
- *     route: route("/contacts/:contactId"),
- *     onEnter: onChild(loadContact, "detail"),
- *     view: field("detail", contactSummary)
- *     fields: {
- *       detail: {
- *         label: v => `Detail for ${v.fullName}`
- *         route: ("contacts/:contactId/detail"),
- *         onEnter: loadContact,
- *         view: contactDetail
- *       }
- *     }
- *   }
- * ```
- */
-export const onChild = <T, P, RP, RQ, K extends FieldKey<T>> (
-  handler: MetaRouteHandler<T[K], T, RP, RQ>,
-  key: K
-) => (p: RouteParams<RP, RQ>): MetaFn<T, P> => (v, $) => handler(p)(v[key], $.field$(key))
 
 export const disableNav = () => {
   policy.router?.stop()
