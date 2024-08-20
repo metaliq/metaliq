@@ -4,32 +4,28 @@ import { Meta, Meta$ } from "metaliq"
 
 import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "@metaliq/forms"
-import { MetaView } from "@metaliq/presentation"
+import { fields, MetaView, tag } from "@metaliq/presentation"
 
 export const wizardView: MetaView<any> = (value, $) => [
   wizardTramline(value, $),
   wizardStep(value, $)
 ]
 
-export const wizardTramline: MetaView<any> = (value, $) => {
-  return html`
-    <div class="mq-wizard-nav">
-      ${$.fieldKeys().map((stepName) => html`
-        <div class="mq-wizard-nav-item ${classMap({
-          current: $.state.step === stepName,
-          visited: $.field$(stepName).state.validated,
-          enabled: false
-        })}" @click=${$.up(changeStep({ stepName }))}>
-          <div class="mq-wizard-nav-pre"></div>
-          <div class="mq-wizard-nav-anchor"></div>
-          <div class="mq-wizard-nav-highlight"></div>
-          <div class="mq-wizard-nav-post"></div>
-          <span class="mq-wizard-nav-label">${$.field$(stepName).term("label")}</span>
-        </div>
-      `)}
-    </div>
-  `
-}
+const tramStop: MetaView<any> = (v, $) => html`
+  <div class="mq-wizard-nav-item ${classMap({
+    current: $.key === $.parent$.state.step,
+    visited: $.state.validated,
+    enabled: false
+  })}" @click=${$.parent$.up(changeStep({ stepName: $.key }))}>
+    <div class="mq-wizard-nav-pre"></div>
+    <div class="mq-wizard-nav-anchor"></div>
+    <div class="mq-wizard-nav-highlight"></div>
+    <div class="mq-wizard-nav-post"></div>
+    <span class="mq-wizard-nav-label">${$.term("label")}</span>
+  </div>
+`
+
+export const wizardTramline: MetaView<any> = tag(".mq-wizard-nav", fields({ view: tramStop }))
 
 export const wizardStep: MetaView<any> = (value, wizard$) => {
   const currentStep$ = (wizard$.meta as Meta<any>)[wizard$.state.step].$ as Meta$<any>
