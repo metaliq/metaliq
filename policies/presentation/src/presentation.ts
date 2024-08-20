@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { ConfigurableMetaFn, FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, modelKeys, relink } from "metaliq"
+import { ConfigurableMetaFn, FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, relink } from "metaliq"
 import { PUBLICATION } from "@metaliq/publication"
 import { APPLICATION } from "@metaliq/application"
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -162,7 +162,9 @@ export type ViewOptions = {
 /**
  * Options for the `$.fields` aspect, specifying which fields should be included or excluded.
  */
-export type FieldsOptions<T> = ViewOptions & IncludeExclude<T>
+export type FieldsOptions<T> = ViewOptions & IncludeExclude<T> & {
+  view?: MetaView<any>
+}
 
 Meta$.prototype.view = function (viewTerm?, options?) {
   const $ = this as Meta$<any>
@@ -214,9 +216,9 @@ Meta$.prototype.fields = function (options?) {
  *
  * This functionality is wrapped by the Meta$ function {@link Presentation$.fields}.
  */
-export const fields = <T> (options?: FieldsOptions<T>): MetaView<T> => (v, $ = meta$(v)) => {
+export const fields = <T> (options: FieldsOptions<T> = {}): MetaView<T> => (v, $ = meta$(v)) => {
   return typeof v === "object"
-    ? modelKeys($.model, options).map(key => $.field(key, null, options as ViewOptions))
+    ? $.fieldKeys(options).map(key => $.field(key, options.view, options as ViewOptions))
     : ""
 }
 
