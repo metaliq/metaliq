@@ -31,12 +31,17 @@
  * In any case, the result of the final update (or only update if no chain is returned)
  * is returned as the overall result of the call to `up`, for use in any further processing.
  */
-export type Up<T> = (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => Promise<any>
+export type Up<T> = (update?: Updates<T>, data?: T, options?: UpOptions) => (message?: any) => Promise<any>
 
 /**
  * A function that updates data, optionally accepting a message such as the event that triggered it.
  */
 export type Update<T> = (data?: T, message?: any) => any
+
+/**
+ * Parameter to `up` can be a single Update or a (potentially nested) array of updates.
+ */
+export type Updates<T> = Update<T> | Array<Updates<T>>
 
 /**
  * Options for defining subsequent processing of a browser event after being handled by `up`.
@@ -54,7 +59,7 @@ export type UpOptions = {
   propagate?: boolean
 
   /**
-   * Used internally to flag chained updates.
+   * Used in logging to indicate that this update is defined in the return value from a previous update.
    */
   isChained?: boolean
 }
@@ -112,12 +117,12 @@ export type LogEntry<T> = {
   isChained?: boolean
 
   /**
-   * The update function
+   * The update function(s).
    */
-  update?: Update<T>
+  update?: Updates<T>
 
   /**
-   * Data provided to update
+   * Data provided to update.
    */
   data?: T
 
@@ -165,7 +170,7 @@ export const NO_UPDATE = Symbol("no-update")
  * up(bootstrap, model)()
  * ```
  */
-export let up: <T> (update?: Update<T>, data?: T, options?: UpOptions) => (message?: any) => Promise<any>
+export let up: <T> (update?: Updates<T>, data?: T, options?: UpOptions) => (message?: any) => Promise<any>
 // Note: `up` effectively redefines `Up` type here.
 // Typing it as Up<any> means losing type information on T, and thus type checking between update and data types.
 
@@ -201,67 +206,77 @@ export const startUp = async (context: UpContext): Promise<Up<any>> => {
       : () => {}
 
   const started: Up<any> = (
-    update, data, { doDefault = false, propagate = false, isChained = false } = {}
+    updates, data, { doDefault = false, propagate = false, isChained = false } = {}
   ) => async (message) => {
     doDefault || message?.preventDefault?.()
     propagate || message?.stopPropagation?.()
 
+    const updateName = (u: Updates<any>): string =>
+      Array.isArray(u) ? u.map(updateName).join(", ") : u?.name || ""
+
     const entry: LogEntry<any> = {
-      name: update?.name,
+      name: updateName(updates),
       time: new Date(),
       isPromised: false,
       isChained,
-      update,
+      update: updates,
       data,
       message
     }
 
     let result: any
-    try {
-      // Log and perform update
-      await log(entry)
-      result = update?.(data, message)
-    } catch (e) {
-      // Catch any update error, review (for example to display error state) and rethrow to halt the chain
-      await context.review?.()
-      throw e
-    }
 
-    // Update function has indicated that no update has take place, cancelling further processing.
-    if (result === NO_UPDATE) return
-
-    if (result instanceof Promise) {
-      // Review and log after initial stage, then await the promised result
-      await context.review?.()
-      await log({ ...entry, time: new Date(), isPromised: true })
+    if (Array.isArray(updates)) { // Update array
+      for (const u of updates) {
+        await started(u, data, { isChained })(event)
+      }
+    } else { // Single update function
       try {
-        result = await result
+        // Log and perform update
+        await log(entry)
+        result = updates?.(data, message)
       } catch (e) {
         // Catch any update error, review (for example to display error state) and rethrow to halt the chain
         await context.review?.()
         throw e
       }
-    }
-    // Review after update
-    await context.review?.(data)
 
-    // Handle update chaining
-    if (Array.isArray(result)) {
-      const opts: UpOptions = { isChained: true }
-      for (const chained of result) {
-        if (typeof chained === "function") {
-          // Simple function reference
-          result = await started(chained, data, opts)(message)
-        } else if (Array.isArray(chained) && typeof chained[0] === "function") {
-          // Tuple of the form [update, data?]
-          result = await started(chained[0], chained[1], opts)(message)
-        } else if (typeof chained?.update === "function") {
-          // Object of the form { update, data? }
-          result = await started(chained.update, chained.data, opts)(message)
+      // Update function has indicated that no update has take place, cancelling further processing.
+      if (result === NO_UPDATE) return
+
+      if (result instanceof Promise) {
+        // Review and log after initial stage, then await the promised result
+        await context.review?.()
+        await log({ ...entry, time: new Date(), isPromised: true })
+        try {
+          result = await result
+        } catch (e) {
+          // Catch any update error, review (for example to display error state) and rethrow to halt the chain
+          await context.review?.()
+          throw e
         }
       }
-    }
+      // Review after update
+      await context.review?.(data)
 
+      // Handle update chaining
+      if (Array.isArray(result)) {
+        const opts: UpOptions = { isChained: true }
+        for (const chained of result) {
+          if (typeof chained === "function") {
+            // Simple function reference
+            result = await started(chained, data, opts)(message)
+          } else if (Array.isArray(chained) && typeof chained[0] === "function") {
+            // Tuple of the form [update, data?]
+            result = await started(chained[0], chained[1], opts)(message)
+          } else if (typeof chained?.update === "function") {
+            // Object of the form { update, data? }
+            result = await started(chained.update, chained.data, opts)(message)
+          }
+        }
+      }
+
+    }
     // Pass the final result of the update to the caller of `up` for possible further use
     return result
   }

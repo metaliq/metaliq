@@ -62,7 +62,7 @@ export interface Application$<T, P = any> {
    * The resulting event handling is wrapped in an Update and performed with `up`
    * so that it is "wrapped" into the application cycle.
    */
-  up?: (metaFn?: MetaFn<T, P>, options?: UpOptions) => (message?: any) => Promise<any>
+  up?: (metaFn?: MetaFnTerm<T, P>, options?: UpOptions) => (message?: any) => Promise<any>
 }
 
 declare module "metaliq" {
@@ -76,8 +76,22 @@ declare module "metaliq" {
 export type InitFunction<T> = ((model?: MetaModel<T>) => T) | ((model?: MetaModel<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
 
-Meta$.prototype.up = function (metaFn, options) {
-  return up(($, event) => metaFn($.value, $, event), this, options)
+/**
+ * A single meta function or a (potentially nested) array of meta functions.
+ * This matches the `Updates` parameter structure of `up`,
+ * specialising it to meta functions of a particular type.
+ */
+export type MetaFnTerm<T, P = any> = MetaFn<T, P> | Array<MetaFnTerm<T, P>>
+
+Meta$.prototype.up = function (metaFnTerm, options) {
+  const metaUpdate = (metaFn: MetaFn<any>) =>
+    ($: any, event: any) => metaFn($.value, $, event)
+
+  if (Array.isArray(metaFnTerm)) {
+    return up(metaFnTerm.map(metaUpdate), this, options)
+  } else {
+    return up(metaUpdate(metaFnTerm), this, options)
+  }
 }
 
 /**
