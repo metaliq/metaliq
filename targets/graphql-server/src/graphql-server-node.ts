@@ -22,6 +22,9 @@ import { makeProdJs } from "@metaliq/publication/lib/prod-js"
 import { dedent } from "ts-dedent"
 import "dotenv/config"
 import findFreePorts from "find-free-ports"
+import sourceMapSupport from "source-map-support"
+
+sourceMapSupport.install()
 
 const { readFile, remove } = fsExtra
 

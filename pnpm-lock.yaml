@@ -485,6 +485,9 @@ importers:
       metaliq:
         specifier: workspace:*
         version: link:../../core/metaliq
+      source-map-support:
+        specifier: ^0.5.21
+        version: 0.5.21
       ts-dedent:
         specifier: 2.2.0
         version: 2.2.0
@@ -501,6 +504,9 @@ importers:
       '@types/node':
         specifier: ^20.6.5
         version: 20.6.5
+      '@types/source-map-support':
+        specifier: 0.5.10
+        version: 0.5.10
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -3696,6 +3702,12 @@ packages:
       '@types/http-errors': 2.0.4
       '@types/node': 20.6.5
       '@types/send': 0.17.4
+
+  /@types/source-map-support@0.5.10:
+    resolution: {integrity: sha512-tgVP2H469x9zq34Z0m/fgPewGhg/MLClalNOiPIzQlXrSS2YrKu/xCdSCKnEDwkFha51VKEKB6A9wW26/ZNwzA==}
+    dependencies:
+      source-map: 0.6.1
+    dev: true
 
   /@types/trusted-types@2.0.7:
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
