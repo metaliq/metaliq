@@ -1,5 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { ConfigurableMetaFn, FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, relink } from "metaliq"
+import { FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, relink } from "metaliq"
 import { PUBLICATION } from "@metaliq/publication"
 import { APPLICATION } from "@metaliq/application"
 import { TERMINOLOGY } from "@metaliq/terminology"
@@ -108,18 +108,6 @@ declare module "metaliq" {
  * A view is a meta function for a data type that returns a view result for rendering.
  */
 export type MetaView<T, P = any> = MetaFn<T, P, ViewResult>
-
-/**
- * A MetaView that can be configured with various options.
- */
-export type ConfigurableMetaView<C, T, P> = ConfigurableMetaFn<C, T, P, ViewResult>
-
-/**
- * A container for other metaviews.
- */
-export type ContainerMetaView<T, P> = ConfigurableMetaFn<MetaViewTerm<T, P>, T, P, ViewResult>
-
-export type ConfigurableContainerMetaView<C, T, P> = (config: C) => ContainerMetaView<T, P>
 
 /**
  * A view result can be either singular or plural
