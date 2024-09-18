@@ -1,4 +1,4 @@
-import { up, UpOptions } from "@metaliq/up"
+import { up } from "@metaliq/up"
 import { FieldKey, Meta$, MetaFn } from "metaliq"
 import { as } from "@metaliq/util"
 import { GraphQLResponse, GraphQLResponseCondition } from "graphqlex"
@@ -27,7 +27,7 @@ export interface Integration$ <T, P> {
    */
   op?: <I> (
     operation: Operation<I, T>,
-    options?: UpOptions & OperationOptions<T, I>
+    options?: OperationOptions<T, I>
   ) => any
 }
 
@@ -86,9 +86,7 @@ declare module "metaliq" {
 }
 
 Meta$.prototype.op = function (operation, options) {
-  return up(async ($, event) => {
-    await $.fn(op(operation, options))
-  }, this, options)
+  return this.fn(op(operation, options))
 }
 
 /**
