@@ -138,7 +138,7 @@ input[type="checkbox"]:disabled {
 	grid-area: error;
 }
 
-.mq-checkbox-field .mq-input {
+.mq-input[type="checkbox"] {
 	-webkit-appearance: none;
 	appearance: none;
 	background-color: #fff;
@@ -151,7 +151,7 @@ input[type="checkbox"]:disabled {
 	margin: 20px 10px 20px 5px;
 }
 
-.mq-checkbox-field .mq-input::before {
+.mq-input[type="checkbox"]::before {
 	display: grid;
 	content: "";
 	width: 100%;
@@ -162,7 +162,7 @@ input[type="checkbox"]:disabled {
 	clip-path: polygon(20% 44%, 10% 55%, 40% 85%, 90% 20%, 80% 10%, 39% 62%);
 }
 
-.mq-checkbox-field .mq-input:disabled::before {
+.mq-input[type="checkbox"]:disabled::before {
 	box-shadow: inset 1em 1em #888;
 }
 
