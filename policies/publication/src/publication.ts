@@ -13,7 +13,6 @@ declare module "metaliq" {
   namespace Policy {
     interface Terms<T, P> extends PublicationTerms {
       this?: Terms<T, P>
-      publicationTarget?: PublicationTarget
     }
   }
 }
