@@ -20,8 +20,8 @@
   "author": "",
   "license": "",
   "engines": {
-    "node": "20",
-    "pnpm": "8"
+    "node": ">=20",
+    "pnpm": ">=8"
   },
   "dependencies": {
     "@metaliq/application": "workspace:*",
