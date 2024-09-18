@@ -1,6 +1,6 @@
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
-export type GraphQLServerTerms<T> = {
+export interface GraphQLServerTerms<T> {
   /**
    * Service resolvers.
    */
