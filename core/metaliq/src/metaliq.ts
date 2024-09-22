@@ -532,14 +532,13 @@ export const root$: MetaFn<any> = (v, $) => {
 export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => (v, $) => {
   const recurse = ($: Meta$<any>, onBase: boolean = true) => {
     if (!$) return
-    if (onBase) fn(v, $)
+    if (onBase) $.fn(fn)
+    const v = $.value
     if (v && typeof v === "object") {
-      if (Array.isArray(v)) {
-        v.forEach((cv: HasMeta$<any>) => { recurse(cv.$) })
+      if (isMetaArray($.meta)) {
+        $.fn(items$).forEach(recurse)
       } else {
-        for (const key of $.fieldKeys()) {
-          recurse(($.field$(key)))
-        }
+        $.fn(fields$).forEach(recurse)
       }
     }
   }
@@ -551,7 +550,7 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
  * Return a collection of Meta$ values for each field of the given parent Meta$ value.
  */
 export const fields$: MetaFn<any> = (v, $) =>
-  $.fieldKeys().map($.field$)
+  $.fieldKeys().map(k => $.field$(k))
 
 /**
  * Return the Meta$ values for each item in a Meta$ of an array type.
