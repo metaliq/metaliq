@@ -535,10 +535,9 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
     if (onBase) $.fn(fn)
     const v = $.value
     if (v && typeof v === "object") {
-      if (isMetaArray($.meta)) {
-        $.fn(items$).forEach(recurse)
-      } else {
-        $.fn(fields$).forEach(recurse)
+      const children$ = isMetaArray($.meta) ? items$(v, $) : fields$(v, $)
+      for (const child$ of children$) {
+        recurse(child$)
       }
     }
   }
