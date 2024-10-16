@@ -382,6 +382,10 @@ export function metafy <T, P = any> (
       metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex)
     }
   } else {
+    // TODO: This currently only accounts for modelled field keys
+    // Sometimes, child Meta$ values are created automatically with blank models
+    // such as when an unmodelled field is viewed.
+    // These keys should also be (re-)metafied here, otherwise values can get out of sync
     for (const fieldKey of result.$.fieldKeys()) {
       const fieldValue = value?.[fieldKey]
       const fieldModel = result.$.model.fields[fieldKey]
@@ -403,7 +407,7 @@ export function metafy <T, P = any> (
  * during continuation of a synchronous process.
  *
  * This can also be called at a policy level to restore parts or the whole of the meta-graph,
- * such as in the review process established by the `@metaliq/applivation` policy.
+ * such as in the review process established by the `@metaliq/application` policy.
  */
 export function reset<T> (valueOr$: T | Meta$<T>, value?: T) {
   const $ = (meta$(valueOr$) || valueOr$) as Meta$<T>
