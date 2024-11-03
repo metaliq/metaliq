@@ -46,7 +46,7 @@ export function labelPath (from: Meta$<any>, to: Meta$<any>) {
  * Can accept the meta info $ object (recommended)
  * or its associated data value (not a primitive).
  */
-export const labelOrKey = <T, P>(v$: T | Meta$<T, P>) => {
-  const $ = (meta$(v$) || v$) as Meta$<T, P>
+export const labelOrKey = <T, P>(v$: T | Meta$<T, P>, $?: Meta$<T, P>) => {
+  $ = ($ || meta$(v$) || v$) as Meta$<T, P>
   return $.term("label") ?? $.key
 }
