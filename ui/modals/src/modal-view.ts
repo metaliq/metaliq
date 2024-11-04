@@ -1,15 +1,16 @@
 import { html } from "lit"
 import { up } from "@metaliq/up"
 import { ModalInfo } from "./modal-model"
+import { MetaView } from "@metaliq/presentation"
 
-export const modal = (info: ModalInfo) => info?.body ? html`
+export const modal: MetaView<ModalInfo> = (info, $) => info?.body ? html`
   <div class="mq-modal-mask">
     <div class="mq-modal ${info.classes}">
       <div class="mq-modal-header">
         ${info.title}
       </div>
       <div class="mq-modal-body">
-        ${typeof info.body === "function" ? info.body({}) : info.body}
+        ${$.view(info.body)}
       </div>
       ${info.iconClasses ? html`
         <div class="mq-modal-icon-container">
