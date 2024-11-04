@@ -229,13 +229,16 @@ const onBlur = <T>(options: InputOptions<T>) => ($: Meta$<T>, event: Event) => {
 const onInput = <T>({ unvalidated, type, onChange }: InputOptions<T>) =>
   ($: Meta$<T>, event: Event) => {
     const target = <HTMLInputElement>event.target
-    $.value = <unknown>(target.type === "checkbox"
+    const newValue = <unknown>(target.type === "checkbox"
       ? target.checked
       : type === "number"
         ? parseFloat(target.value)
         : target.value) as T
-    if (typeof onChange === "function") {
-      $.fn(onChange)
+    if (newValue !== $.value) {
+      $.value = newValue
+      if (typeof onChange === "function") {
+        $.fn(onChange)
+      }
     }
     if (!unvalidated) validate($)
   }
