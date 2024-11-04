@@ -1,4 +1,4 @@
-import { modelKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset } from "metaliq"
+import { modelKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset, MetaFnTerm } from "metaliq"
 import { LogFunction, startUp, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -75,13 +75,6 @@ declare module "metaliq" {
 
 export type InitFunction<T> = ((model?: MetaModel<T>) => T) | ((model?: MetaModel<T>) => Promise<T>)
 export type Init<T> = T | InitFunction<T>
-
-/**
- * A single meta function or a (potentially nested) array of meta functions.
- * This matches the `Updates` parameter structure of `up`,
- * specialising it to meta functions of a particular type.
- */
-export type MetaFnTerm<T, P = any> = MetaFn<T, P> | Array<MetaFnTerm<T, P>>
 
 Meta$.prototype.up = function (metaFnTerm, options) {
   const metaUpdate = (metaFn: MetaFn<any>) =>

@@ -1,7 +1,7 @@
 import { Route, RouteParams, Router } from "./router"
-import { FieldKey, Meta$, meta$, MetaFn, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
+import { FieldKey, Meta$, meta$, MetaFn, MetaFnTerm, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
-import { APPLICATION, bootstrapComplete, MetaFnTerm } from "@metaliq/application"
+import { APPLICATION, bootstrapComplete } from "@metaliq/application"
 
 export * from "./router"
 
@@ -91,7 +91,7 @@ declare module "metaliq" {
 }
 
 export type MetaRouteHandler<T, P = any, RP = any, RQ = any> =
-  (params?: RouteParams<RP, RQ>) => MetaFnTerm<T, P>
+  MetaFnTerm<T, P, any, CustomEvent<RouteParams<RP, RQ>>>
 
 /**
  * Policy-level state store.
@@ -130,13 +130,13 @@ metaSetups.push($ => {
     policy.route$s.set(model.route, $)
     if (model.onLeave) {
       model.route.onLeave = async (params) => {
-        const result = await $.up(model.onLeave(params))()
+        const result = await $.up(model.onLeave)(params)
         return result
       }
     }
     model.route.onEnter = async (params) => {
       if (model.onEnter) {
-        const result = await $.up(model.onEnter(params))()
+        const result = await $.up(model.onEnter)(params)
         if (result === false) return false
       }
       const onNavigate = $.raw("onNavigate", true)
@@ -363,3 +363,45 @@ export const disableNav = () => {
 export const enableNav = () => {
   policy.router?.start().catch(e => { throw e })
 }
+
+/**
+ * Make a route handler that calls the given handler, passing the child
+ * of the current meta node with the given key.
+ *
+ * Useful where parent and child navigation items share a similar
+ * behaviour for e.g. onEnter.
+ *
+ * For example, given a nav structure for contacts with a parent item
+ * that displays a summary view and child item that displays a detail view
+ * of the same contact data object:
+ *
+ * ```
+ *   contact: {
+ *     label: v => `Summary for ${v.detail.fullName}`
+ *     route: route("/contacts/:contactId"),
+ *     onEnter: onChild(loadContact, "detail"),
+ *     view: field("detail", contactSummary)
+ *     fields: {
+ *       detail: {
+ *         label: v => `Detail for ${v.fullName}`
+ *         route: ("contacts/:contactId/detail"),
+ *         onEnter: loadContact,
+ *         view: contactDetail
+ *       }
+ *     }
+ *   }
+ * ```
+ */
+// export const onChild = <T, P, RP, RQ, K extends FieldKey<T>> (
+//   handler: MetaRouteHandler<T[K], T, RP, RQ>,
+//   key: K
+// ) => (p: RouteParams<RP, RQ>): MetaFn<T, P> => (v, $) => {
+//   if (Array.isArray(handler)) {
+//     return handler.map()
+//   } else {
+//     return $.field$(key).fn(handler)
+//   }
+// }
+//
+//
+//   handler(p)(v[key], $.field$(key))
