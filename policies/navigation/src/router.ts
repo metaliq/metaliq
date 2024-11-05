@@ -138,7 +138,7 @@ export class Router {
 
   async onPathChange () {
     for (const route of this.routes) {
-      if (route.router.enabled || true) {
+      if (route.router.enabled) {
         const urlMatch = route.match(location.pathname)
         if (urlMatch) {
           const pathParams = urlMatch.params

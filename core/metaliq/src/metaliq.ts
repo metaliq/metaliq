@@ -185,10 +185,15 @@ export class Meta$<T, P = any> {
   }
 
   /**
-   * Run the given MetaFn for this node in the meta graph.
+   * Run the result of the given MetaFn for this node in the meta graph.
    */
   fn <R = any>(metaFn: MetaFn<T, P, R>, event?: Event): R {
     return metaFn?.(this.value, this, event)
+  }
+
+  on <K extends FieldKey<T>, R = any>(key: FieldKey<T>, fn: MetaFn<T[K], T, R>, event?: Event): R {
+    const f$ = this.field$<K>(key as K)
+    return f$.fn(fn, event)
   }
 
   /**
@@ -228,7 +233,7 @@ export class Meta$<T, P = any> {
   /**
    * Return the nested meta value for the field with the given key.
    */
-  field$ <K extends FieldKey<T>>(key: K): Meta$<T[K]> {
+  field$ <K extends FieldKey<T>>(key: K): Meta$<T[K], T> {
     const meta = this.meta
     if (isMeta(meta)) {
       const fieldMeta = <unknown>meta[key] as Meta<T[K], T>
@@ -262,17 +267,18 @@ export class Meta$<T, P = any> {
  * Although named MetaFn for brevity in code,
  * will often be referred in text as a meta function or MetaFunction.
  */
-export type MetaFn<Type, Parent = any, Result = any> =
+export type MetaFn<Type, Parent = any, Result = any, E extends Event = Event> =
   (
     value: Type,
     $?: Meta$<Type, Parent>,
-    event?: Event
+    event?: E
   ) => Result
 
 /**
- * An array of MetaFns of a particular type.
+ * A single meta function or a (potentially nested) array of meta functions.
  */
-export type MetaFns<Type, Parent = any, Result = any> = Array<MetaFn<Type, Parent, Result>>
+export type MetaFnTerm<T, P = any, R = any, E extends Event = Event> =
+  MetaFn<T, P, R, E> | Array<MetaFnTerm<T, P, R, E>>
 
 /**
  * A Configurable MetaFunction takes a set of configuration options
@@ -547,6 +553,13 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
   }
 
   recurse($, onBase)
+}
+
+/**
+ * Return the result of the given function on the given child field.
+ */
+export function on <T, K extends FieldKey<T>> (key: K, fn: MetaFn<T[K]>): MetaFn<T> {
+  return (v, $) => $.on(key, fn)
 }
 
 /**

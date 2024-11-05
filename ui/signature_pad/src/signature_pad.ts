@@ -91,6 +91,19 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
           backgroundColor: options.backgroundColor
         })
 
+        // Monkey-patch SignaturePad to NOT prevent default on touchdown events - which prevents previous blur
+        Object.assign(sigPad, {
+          fixBlur () {
+            this.canvas.removeEventListener("pointerdown", this._handlePointerStart)
+            this.canvas.addEventListener("pointerdown", (event: PointerEvent) => {
+              this._drawningStroke = true
+              this._strokeBegin(event)
+            })
+          }
+        })
+        const sigPadWithFix = <any>sigPad
+        sigPadWithFix.fixBlur()
+
         sigPad.addEventListener("endStroke", () => {
           up(() => {
             if (options.format === "RAW") {

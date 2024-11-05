@@ -83,7 +83,7 @@ export const packageInfoModel: MetaModel<Package> = {
     fields(),
     savePackageButton
   ]),
-  onEnter: () => op(
+  onEnter: op(
     fetchPackageQuery,
     { message: "Fetching project information" }
   )
@@ -108,7 +108,7 @@ export const packageDependenciesModel: MetaModel<Package> = {
     fields(),
     savePackageButton
   ]),
-  onEnter: () => op(
+  onEnter: op(
     fetchPackageQuery,
     { message: "Fetching dependencies" }
   )
