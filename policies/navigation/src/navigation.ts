@@ -1,4 +1,4 @@
-import { Route, RouteParams, Router } from "./router"
+import { Route, Router } from "./router"
 import { FieldKey, Meta$, meta$, MetaFn, MetaFnTerm, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
 import { APPLICATION, bootstrapComplete } from "@metaliq/application"
@@ -36,14 +36,14 @@ export interface NavigationTerms<T, P = any, RP extends object = any, RQ = any> 
    * in order to perform any pre-processing, such as remote data loading.
    * If the function returns the boolean value `false` navigation will be cancelled.
    */
-  onEnter?: MetaRouteHandler<T, P, RP, RQ>
+  onEnter?: MetaRouteHandlerTerm<T, P, RP>
 
   /**
    * Set this term on a leaf node within the navigation structure
    * in order to perform any post-processing, such as remote data persistence.
    * If the function returns the boolean value `false` navigation will be cancelled.
    */
-  onLeave?: MetaRouteHandler<T, P, RP, RQ>
+  onLeave?: MetaRouteHandlerTerm<T, P, RP>
 
   /**
    * Initial path for a top level MetaModel,
@@ -90,8 +90,15 @@ declare module "metaliq" {
   }
 }
 
-export type MetaRouteHandler<T, P = any, RP = any, RQ = any> =
-  MetaFnTerm<T, P, any, CustomEvent<RouteParams<RP, RQ>>>
+/**
+ * A route handler for a particular page data type and parent type
+ * with optional route parameters type.
+ */
+export type MetaRouteHandler<T, Parent = any, Params = any, > =
+  MetaFn<T, Parent, any, CustomEvent<Params>>
+
+export type MetaRouteHandlerTerm<T, Parent = any, Params = any> =
+  MetaRouteHandler<T, Parent, Params> | Array<MetaRouteHandlerTerm<T, Parent, Params>>
 
 /**
  * Policy-level state store.
