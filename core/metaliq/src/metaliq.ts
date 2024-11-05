@@ -558,7 +558,7 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
 /**
  * Return the result of the given function on the given child field.
  */
-export function on <T, K extends FieldKey<T>> (key: K, fn: MetaFn<T[K], T>): MetaFn<T> {
+export function on <T, K extends FieldKey<T>> (key: K, fn: MetaFn<T[K]>): MetaFn<T> {
   return (v, $) => $.on(key, fn)
 }
 
