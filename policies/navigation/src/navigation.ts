@@ -137,13 +137,19 @@ metaSetups.push($ => {
     policy.route$s.set(model.route, $)
     if (model.onLeave) {
       model.route.onLeave = async (params) => {
-        const result = await $.up(model.onLeave)(params)
+        const result = await $.up(model.onLeave)(new CustomEvent(
+          "leave",
+          { detail: params }
+        ))
         return result
       }
     }
     model.route.onEnter = async (params) => {
       if (model.onEnter) {
-        const result = await $.up(model.onEnter)(params)
+        const result = await $.up(model.onEnter)(new CustomEvent(
+          "enter",
+          { detail: params }
+        ))
         if (result === false) return false
       }
       const onNavigate = $.raw("onNavigate", true)
