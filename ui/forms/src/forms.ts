@@ -185,14 +185,14 @@ export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): MetaVi
  * Value for the data-mq-field-key attribute of MetaliQ form fields.
  */
 export const fieldKey: MetaFn<any> = (v, $) =>
-  $.key + (typeof $.index === "number" ? `[${$.index}]` : "")
+  ($.key ?? "") + (typeof $.index === "number" ? `[${$.index}]` : "")
 
 /**
  * Value for the data-mq-field-path property of MetaliQ form fields.
  */
 export const fieldPath: MetaFn<any> = (v, $) => {
   const key = fieldKey(v, $)
-  return $.parent$?.parent$ ? [fieldPath($.parent$.value, $.parent$), key].join(".") : key
+  return [$.parent$?.fn(fieldPath), key].filter(Boolean).join(".")
 }
 
 /**
