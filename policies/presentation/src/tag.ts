@@ -158,4 +158,4 @@ export const tagLiterals = {
 /**
  * An example of a super-simple tag to display a field value in a span.
  */
-export const span = tagFactory("span")(v => v ? v.toString() : "")
+export const span = tagFactory("span")(v => (v ?? "").toString())

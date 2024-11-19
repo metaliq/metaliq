@@ -16,4 +16,6 @@ const text = (body: MetaViewTerm<any>) =>
 /**
  * A default view resolver for the value of the field in a span.
  */
-const spanResolver: MetaViewResolver = (v, $) => $.model.view || span
+export const spanResolver: MetaViewResolver = (v, $) => $.model.view || span
+
+export const spanFields = <T = any, P = any>() => fields<T, P>({ resolver: spanResolver })
