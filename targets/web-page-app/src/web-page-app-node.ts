@@ -168,10 +168,9 @@ export const webPageAppBuilder = (
   return true
 }
 
-const indexJs = (modelName: string, modelPath: string) => dedent`
+export const indexJs = (modelName: string, modelPath: string) => dedent`
   import { run } from "@metaliq/application"
   import { renderPage } from "@metaliq/presentation"
-  import { metaForm } from "@metaliq/forms"
   import { ${modelName} } from "./${modelPath}.js"
   
   async function main () {
@@ -182,7 +181,12 @@ const indexJs = (modelName: string, modelPath: string) => dedent`
   main()
 `
 
-const indexHtml = (spaConfig: WebPageAppConfig, jsPath: string, cssPath?: string, title?: string) => {
+export const indexHtml = (
+  spaConfig: WebPageAppConfig,
+  jsPath: string = "bin/index.js",
+  cssPath: string = "css/index.css",
+  title?: string
+) => {
   // Add in the default js and css index files from the build
   const scripts = [
     ...(spaConfig?.pageInfo?.scripts || []),
