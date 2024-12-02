@@ -31,7 +31,7 @@ describe("Field Presentation", () => {
       mm.should.be.an("object")
     })
 
-    it("Infers type when used within a tag array body", () => {
+    it("Infers type when used within a tag array body parameter", () => {
       const mm: MetaModel<Thing> = {
         view: tag(".my-class", [field("name", v => v.toLowerCase())])
       }
@@ -39,7 +39,7 @@ describe("Field Presentation", () => {
       mm.should.be.an("object")
     })
 
-    it("Infers type when used within a tag in a tag array body", () => {
+    it("Infers type when used within a tag in a tag array parameter", () => {
       const mm: MetaModel<Thing> = {
         view: tag(".my-class", [field("name", [
           tag(".inner-class", v => v.toLowerCase())
@@ -49,5 +49,28 @@ describe("Field Presentation", () => {
       mm.should.be.an("object")
     })
 
+  })
+
+  describe("Type inference with tag body property", () => {
+    it("Infers type when used within a tag", () => {
+      const mm: MetaModel<Thing> = {
+        view: tag([
+          ".my-class",
+          { body: field("name", v => v.toLowerCase()) }
+        ])
+      }
+
+      mm.should.be.an("object")
+    })
+
+    it("Infers type when used within a tag in a tag array body property", () => {
+      const mm: MetaModel<Thing> = {
+        view: tag(".my-class", [field("name", [
+          tag(".inner-class", v => v.toLowerCase())
+        ])])
+      }
+
+      mm.should.be.an("object")
+    })
   })
 })
