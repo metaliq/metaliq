@@ -133,28 +133,30 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
       setTimeout(
         () => {
           const el = document.querySelector(`#${id}`)
-          // eslint-disable-next-line no-new -- No need to hold reference to Choices
-          $.state.choicesJs = new Choices(el, {
-            searchPlaceholderValue: options.searchText ?? "",
-            allowHTML: true,
-            removeItems: true,
-            removeItemButton: true,
-            shouldSort: !!options.sort,
-            callbackOnInit: function () {
-              v = $.value // Refresh value in closure as this call is out-of-band
-              resetChoices(<unknown> this as ChoicesJs)
-            }
-          })
 
-          if (typeof options.searchFn === "function") {
-            const asyncListener = async (e: any) => {
-              // TODO: Debounce
-              const searchText = e.detail.value
-              $.state.choices = await options.searchFn(searchText, $.parent$)
-              resetChoices()
-            }
+          if (el) {
+            $.state.choicesJs = new Choices(el, {
+              searchPlaceholderValue: options.searchText ?? "",
+              allowHTML: true,
+              removeItems: true,
+              removeItemButton: true,
+              shouldSort: !!options.sort,
+              callbackOnInit: function () {
+                v = $.value // Refresh value in closure as this call is out-of-band
+                resetChoices(<unknown> this as ChoicesJs)
+              }
+            })
 
-            el.addEventListener("search", e => { asyncListener(e).catch(console.error) })
+            if (typeof options.searchFn === "function") {
+              const asyncListener = async (e: any) => {
+                // TODO: Debounce
+                const searchText = e.detail.value
+                $.state.choices = await options.searchFn(searchText, $.parent$)
+                resetChoices()
+              }
+
+              el.addEventListener("search", e => { asyncListener(e).catch(console.error) })
+            }
           }
         }
       )

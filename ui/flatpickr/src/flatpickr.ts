@@ -79,7 +79,7 @@ const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (
             },
             ...options.fpOptions
           }) as Instance
-          $.fn(setViewState(flatpickrInstance, fl))
+          $.fn(setViewState(flatpickrInstance, !Array.isArray(fl) && fl))
         }
       )
       return html`
