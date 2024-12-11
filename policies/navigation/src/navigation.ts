@@ -192,7 +192,6 @@ metaSetups.push($ => {
  * to the same underlying data object.
  */
 export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
-  navModel = navModel || this as MetaModel<N>
   const navData = {} as N
   const keys = modelKeys(navModel)
   for (const key of keys) {

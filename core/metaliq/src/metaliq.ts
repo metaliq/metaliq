@@ -470,7 +470,7 @@ export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> =>
 /**
  * A type guard to narrow a MetaField to a MetaArray.
  */
-export const isMetaArray = <T, P = any>(m: HasMeta$<T[], P>): m is MetaArray<T, P> =>
+export const isMetaArray = <T, P = any>(m: HasMeta$<T, P>): m is MetaArray<T extends Array<infer I> ? I : never, P> =>
   Array.isArray(m)
 
 /**

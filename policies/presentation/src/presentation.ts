@@ -175,7 +175,7 @@ Meta$.prototype.view = function (viewTerm?, options?) {
 }
 
 Meta$.prototype.field = function <T, K extends FieldKey<T>> (
-  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions
+  key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
 ) {
   return field(key, view, options)(this.value, this)
 }
@@ -186,9 +186,9 @@ Meta$.prototype.field = function <T, K extends FieldKey<T>> (
  *
  * This functionality is wrapped by the Meta$ function {@link Presentation$.field}.
  */
-export const field = <T, K extends FieldKey<T>> (
-  key: K, view?: MetaViewTerm<T[K]>, options?: ViewOptions
-): MetaView<T> => (v, $) => {
+export const field = <T, P, K extends FieldKey<T>> (
+  key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
+): MetaView<T, P> => (v, $) => {
     const field$ = $.field$(key)
     if (!field$) console.warn(`No field() key '${key}'`)
     return field$?.view(view, options)
