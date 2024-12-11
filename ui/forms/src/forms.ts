@@ -92,6 +92,7 @@ export type InputOptions<T, P = any> = FieldOptions<T> & {
   unvalidated?: boolean // don't perform validation
   autocomplete?: string
   onChange?: MetaFn<T, P>
+  formatter?: MetaFn<T, P>
 }
 
 /**
@@ -107,7 +108,7 @@ export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T>
         "mq-error-field": $.state.error,
         "mq-disabled": disabled
       })}"
-      .value=${live($.value ?? "")}
+      .value=${live(options.formatter?.($.value) ?? $.value ?? "")}
       @focus=${up(onFocus, $)}
       @blur=${up(onBlur(options), $)}
       @click=${options.type === "checkbox" ? up(onInput(options), $, { doDefault: true }) : () => {}}
