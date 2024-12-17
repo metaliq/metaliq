@@ -25,8 +25,8 @@ export const transform = <T> (fn: MetaFn<T, any, T>): Validator<T> => (value, $ 
 export const minLength = (min: number, msg?: string): Validator<string> => value =>
   value?.length >= min || msg || `Should be at least ${min} characters`
 
-export const maxLength = (min: number, msg?: string): Validator<string> => value =>
-  value?.length <= min || msg || `Should not be more than ${min} characters`
+export const maxLength = (max: number, msg?: string): Validator<string> => value =>
+  value?.length <= max || msg || `Should not be more than ${min} characters`
 
 export const hasLength = (length: number, msg?: string): Validator<string> => value =>
   value?.length === length || msg || `Should be exactly ${length} characters`
