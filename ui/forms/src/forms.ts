@@ -99,7 +99,7 @@ export type InputOptions<T, P = any> = FieldOptions<T> & {
  * Basic input element that uses some InputOptions.
  * To get full use of all options use `inputField`.
  */
-export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> => (v, $) => {
+export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
   const disabled = $.fn(isDisabled)
   return html`
     <input type=${options.type || "text"}
@@ -148,7 +148,7 @@ export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
  * Configurable input field.
  * Leave options blank for a default text input field with validation.
  */
-export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T> => {
+export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T, P> => {
   options.type = options.type || "text"
   return fieldContainer(options)(input({ type: "text", ...options }))
 }
@@ -156,7 +156,7 @@ export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaVi
 /**
  * Label element for input field.
  */
-export const fieldLabel = <T>(options?: FieldOptions<T>): MetaView<T> => (value, $) =>
+export const fieldLabel = <T, P = any>(options?: FieldOptions<T, P>): MetaView<T, P> => (value, $) =>
   typeof options?.label === "function"
     ? options.label(value, $)
     : typeof options?.label === "object"
@@ -199,7 +199,7 @@ export const fieldPath: MetaFn<any> = (v, $) => {
 /**
  * Input field with default options for a validated checkbox
  */
-export const checkboxField = <T> (options: InputOptions<T> = {}): MetaView<T> =>
+export const checkboxField = <T, P = any> (options: InputOptions<T, P> = {}): MetaView<T, P> =>
   inputField({
     type: "checkbox",
     ...options
