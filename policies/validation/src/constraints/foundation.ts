@@ -1,4 +1,4 @@
-import { Constraint, Validator } from "../validation"
+import { Validator } from "../validation"
 import { FieldKey, meta$, MetaFn } from "metaliq"
 
 /**
@@ -22,13 +22,13 @@ export const transform = <T> (fn: MetaFn<T, any, T>): Validator<T> => (value, $ 
 
 // ---- STRINGS ----
 
-export const minLength: Constraint<string> = (min: number, msg?: string) => value =>
+export const minLength = (min: number, msg?: string): Validator<string> => value =>
   value?.length >= min || msg || `Should be at least ${min} characters`
 
-export const maxLength: Constraint<string> = (min: number, msg?: string) => value =>
+export const maxLength = (min: number, msg?: string): Validator<string> => value =>
   value?.length <= min || msg || `Should not be more than ${min} characters`
 
-export const hasLength: Constraint<string> = (length: number, msg?: string) => value =>
+export const hasLength = (length: number, msg?: string): Validator<string> => value =>
   value?.length === length || msg || `Should be exactly ${length} characters`
 
 export const notBlank = (msg?: string): Validator<string> => value =>
@@ -45,10 +45,10 @@ export const matchRegex = (regex: RegExp, msg?: string): Validator<string> => va
 
 // ---- NUMBERS ----
 
-export const min: Constraint<number> = (minVal: number, msg?: string) => value =>
+export const min = (minVal: number, msg?: string): Validator<number> => value =>
   value >= minVal || msg || `Should be at least ${minVal}`
 
-export const max: Constraint<number> = (maxVal: number, msg?: string) => value =>
+export const max = (maxVal: number, msg?: string): Validator<number> => value =>
   value <= maxVal || msg || `Should be no more than ${maxVal}`
 
 // ---- COMBINATIONS ----

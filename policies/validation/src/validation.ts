@@ -45,11 +45,6 @@ declare module "metaliq" {
 export type Validator<T, P = any> = MetaFn<T, P, ValidationResult>
 export type ValidationResult = string | boolean
 
-/**
- * A constraint takes any type of configuration parameter(s) and returns a validator function.
- */
-export type Constraint<T, P = any> = (...params: any[]) => Validator<T, P>
-
 metaSetups.push(<T>($: Meta$<T>) => {
   if ($.model.validator) {
     $.state.error = false
