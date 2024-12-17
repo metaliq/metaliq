@@ -31,10 +31,16 @@ export const getModuleDefault = <T>(module: T, windowName?: string): T => {
 export const addScript = (src: string): Promise<HTMLScriptElement> =>
   new Promise((resolve, reject) => {
     if (document?.head?.appendChild) {
-      const scriptEl = document.createElement("script")
-      scriptEl.src = src
-      scriptEl.onload = () => { resolve(scriptEl) }
-      document.head.appendChild(scriptEl)
+      try {
+        const scriptEl = document.createElement("script")
+        scriptEl.src = src
+        scriptEl.onload = () => { resolve(scriptEl) }
+        document.head.appendChild(scriptEl).onerror = (e: Event) => {
+          reject(new Error(`Error loading script ${src}`))
+        }
+      } catch {
+        reject(new Error(`Error adding script ${src}`))
+      }
     } else {
       // When loaded in e.g. Node
       resolve(null)
