@@ -63,6 +63,7 @@ export function parse<T> (serialisation: string, model: MetaModel<T>): Meta<T> {
 
 /**
  * The default predicate for meta-state property inclusion in the serialisation.
- * Values of type string, boolean and number will pass.
+ * Prevents attempted serialisation of functions.
  */
-export const defaultStatePredicate = (key: string, value: any) => ["boolean", "number", "string"].includes(typeof value)
+export const defaultStatePredicate = (key: string, value: any) =>
+  ["boolean", "number", "string", "object"].includes(typeof value)
