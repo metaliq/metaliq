@@ -114,6 +114,7 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
   if (typeof (<any>modelOrMeta).$ === "object") {
     meta = modelOrMeta as Meta<T>
     model = meta.$.model
+    init(model)
   } else {
     model = modelOrMeta as MetaModel<T>
     const value = init(model)
