@@ -231,6 +231,17 @@ export class Meta$<T, P = any> {
   }
 
   /**
+   * Find the value for the given key in this meta value's state or an ancestor.
+   */
+  stateValue <K extends StateKey>(key: K, ancestor?: boolean): StateValue<K> {
+    let t$: Meta$<any> = this
+    if (ancestor) {
+      while (t$ && typeof t$.state[key] === "undefined") t$ = t$.parent$
+    }
+    return t$?.state[key]
+  }
+
+  /**
    * Return the nested meta value for the field with the given key.
    */
   field$ <K extends FieldKey<T>>(key: K): Meta$<T[K], T> {
@@ -306,6 +317,16 @@ export type TermValue<K extends TermKey> = Policy.Terms<any>[K]
  * The value type for an optionally dynamic Policy term key.
  */
 export type DerivedTermValue<K extends TermKey> = Exclude<TermValue<K>, MetaFn<any>>
+
+/**
+ * A valid key for a policy-defined meta-state value.
+ */
+export type StateKey = keyof Policy.State<any>
+
+/**
+ * The value type for a given Policy state key.
+ */
+export type StateValue<K extends StateKey> = Policy.State<any>[K]
 
 /**
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
