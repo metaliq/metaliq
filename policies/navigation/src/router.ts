@@ -80,7 +80,6 @@ export function route<P extends object, Q extends object = any> (pattern: string
   return {
     pattern,
     async go (pathParams?, queryParams?) {
-      if (!this.router.enabled) return
       const leave = await this.router.canLeave()
       if (leave === false) {
         if (this.router.onHandled) this.router.onHandled()
@@ -102,8 +101,6 @@ export function route<P extends object, Q extends object = any> (pattern: string
 }
 
 export class Router {
-
-  enabled = false
 
   routes: Array<Route<any>>
 
@@ -138,22 +135,20 @@ export class Router {
 
   async onPathChange () {
     for (const route of this.routes) {
-      if (route.router.enabled) {
-        const urlMatch = route.match(location.pathname)
-        if (urlMatch) {
-          const pathParams = urlMatch.params
-          const queryParams = queryToObject()
-          if (typeof route.onEnter === "function") {
-            const enter = await route.onEnter({
-              ...pathParams, ...queryParams
-            })
-            if (enter === false) return
-          }
-          if (this.onHandled) await this.onHandled()
-          this.oldLocation = { pathParams, queryParams }
-          this.currentRoute = route
-          return
+      const urlMatch = route.match(location.pathname)
+      if (urlMatch) {
+        const pathParams = urlMatch.params
+        const queryParams = queryToObject()
+        if (typeof route.onEnter === "function") {
+          const enter = await route.onEnter({
+            ...pathParams, ...queryParams
+          })
+          if (enter === false) return
         }
+        if (this.onHandled) await this.onHandled()
+        this.oldLocation = { pathParams, queryParams }
+        this.currentRoute = route
+        return
       }
     }
     console.warn(`Unrecognised route: ${location.pathname}`)
@@ -165,14 +160,12 @@ export class Router {
   }
 
   async start () {
-    this.enabled = true
     window.addEventListener("popstate", this.handler)
     await this.onPathChange()
     return this // Enable `router = await new Router().start()`
   }
 
   stop () {
-    this.enabled = false
     window.removeEventListener("popstate", this.handler)
     return this // Consistent with start()
   }

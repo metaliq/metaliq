@@ -178,8 +178,8 @@ metaSetups.push($ => {
     }
     if (policy.route$s.size) {
       bootstrapComplete.then(() => {
-        policy.router = new Router(Array.from(policy.route$s.keys()), catchUp)
-        policy.router.start().catch(console.error)
+        new Router(Array.from(policy.route$s.keys()), catchUp)
+          .start().catch(console.error)
       }).catch(e => { throw e })
     }
   }
@@ -323,11 +323,9 @@ export const goNavRoute: MetaFn<any> = (v, item$, event) => {
     const firstChildKey = item$.fieldKeys()[0]
     item$ = item$.field$(firstChildKey)
   }
-  if (item$.model.route?.router?.enabled) {
-    event?.preventDefault()
-    event?.stopPropagation()
-    item$?.model.route?.go()
-  }
+  event?.preventDefault()
+  event?.stopPropagation()
+  item$?.model.route?.go()
 }
 
 export const toggleMenu: MetaFn<any> = (v, $) => {
@@ -364,12 +362,4 @@ export const isMenuShown: MetaFn<any> = (_, item$: Meta$<any>) => {
 export const redirect = (route: Route<any>, params?: any): MetaFn<any> => () => {
   route.go(params)
   return false // Prevents further handling on the original route
-}
-
-export const disableNav = () => {
-  policy.router?.stop()
-}
-
-export const enableNav = () => {
-  policy.router?.start().catch(e => { throw e })
 }
