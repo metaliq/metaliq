@@ -1,4 +1,4 @@
-import { modelKeys, IncludeExclude, Meta, Meta$, MetaFn, metafy, MetaModel, reset, MetaFnTerm } from "metaliq"
+import { IncludeExclude, Meta, Meta$, MetaFn, MetaFnTerm, metafy, MetaModel, modelKeys, reset } from "metaliq"
 import { LogFunction, startUp, up, UpOptions } from "@metaliq/up"
 
 /**
@@ -14,7 +14,7 @@ export const APPLICATION = () => {}
 export interface ApplicationTerms<T, P = any> {
   /**
    * Data initialisation term, containing
-   * initial value or a function (sync/async) to return the initial value.
+   * initial value or a (synchronous) function to return the initial value.
    *
    * If no init term is present, the value is composed by
    * recursing through inner models' init terms until a value is returned,
@@ -23,7 +23,6 @@ export interface ApplicationTerms<T, P = any> {
   init?: Init<T>
 
   /**
-   * A place to define any necessary setup processing.
    * Runs after data initialisation and metafication.
    * Typically used for loading further initial data via
    * asynchronous service interactions, and is different from `init` in that
@@ -65,15 +64,32 @@ export interface Application$<T, P = any> {
   up?: (metaFn?: MetaFnTerm<T, P>, options?: UpOptions) => (message?: any) => Promise<any>
 }
 
+export interface ApplicationState {
+
+  /**
+   * Setting this to true prevents calls to asynchronous load processes.
+   * This includes the `bootstrap` term provided by this policy.
+   * Other policies may leverage this term to also avoid asynchronous loading.
+   */
+  disableAsyncLoad: boolean
+}
+
 declare module "metaliq" {
   namespace Policy {
     interface Terms<T, P> extends ApplicationTerms<T, P> {}
+
+    interface State<T, P> extends ApplicationState {
+      this?: State<T, P>
+    }
   }
 
   interface Meta$<T, P> extends Application$<T, P> {}
 }
 
-export type InitFunction<T> = ((model?: MetaModel<T>) => T) | ((model?: MetaModel<T>) => Promise<T>)
+/**
+ * A synchronous initialisation function.
+ */
+export type InitFunction<T> = ((model?: MetaModel<T>) => T)
 export type Init<T> = T | InitFunction<T>
 
 Meta$.prototype.up = function (metaFnTerm, options) {
@@ -100,7 +116,7 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     model = meta.$.model
   } else {
     model = modelOrMeta as MetaModel<T>
-    const value = await init(model)
+    const value = init(model)
     meta = metafy(model, value)
   }
 
@@ -116,7 +132,9 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     log,
     local
   })
-  await bootstrap(meta.$.value, meta.$)
+  if (!meta.$.stateValue("disableAsyncLoad", true)) {
+    await bootstrap(meta.$.value, meta.$)
+  }
   bootstrapPromiseResolve(true)
 
   return meta
@@ -125,13 +143,13 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
 /**
  * Get the initial value from the MetaModel's `init` provider.
  */
-export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): Promise<T> {
+export function init<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): T {
   if (typeof model.init === "function") {
-    return await (model.init as InitFunction<T>)(model)
+    return (model.init as InitFunction<T>)(model)
   } else if (typeof model.init !== "undefined") {
     return model.init
   } else {
-    return await initFields(model, options)
+    return initFields(model, options)
   }
 }
 
@@ -144,7 +162,7 @@ export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> =
  * ```ts
  *  init: model => {
  *    const sharedList = []
- *    const data = await initFields(model)
+ *    const data = initFields(model)
  *    data.someValue = "hello"
  *    data.someChild.list = sharedList
  *    data.otherChild.list = sharedList
@@ -152,12 +170,12 @@ export async function init<T> (model: MetaModel<T>, options: IncludeExclude<T> =
  *  }
  * ```
  */
-export async function initFields<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): Promise<T> {
+export function initFields<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): T {
   const keys = modelKeys(model, options)
   if (keys?.length) {
     const data = {} as any
     for (const key of keys) {
-      const fieldData = await init(model.fields[key])
+      const fieldData = init(model.fields[key])
       if (typeof fieldData !== "undefined") {
         data[key] = fieldData
       }
