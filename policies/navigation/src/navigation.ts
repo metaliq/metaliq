@@ -147,7 +147,7 @@ metaSetups.push($ => {
       }
     }
     model.route.onEnter = async (params) => {
-      if (!$.stateValue("disableAsyncLoad")) {
+      if (!$.stateValue("disableAsyncLoad", true)) {
         if (model.onEnter) {
           const result = await $.up(model.onEnter)(new CustomEvent(
             "enter",
@@ -177,16 +177,10 @@ metaSetups.push($ => {
       history.pushState(null, null, model.urlPath)
     }
     if (policy.route$s.size) {
-      // Extend any existing bootstrap to initialise the Router
-      const origBootstrap = $.model.bootstrap
-      $.model.bootstrap = async (v, $) => {
-        const origResult = await $.fn(origBootstrap)
-        bootstrapComplete.then(() => {
-          policy.router = new Router(Array.from(policy.route$s.keys()), catchUp)
-          policy.router.start().catch(console.error)
-        }).catch(e => { throw e })
-        return origResult
-      }
+      bootstrapComplete.then(() => {
+        policy.router = new Router(Array.from(policy.route$s.keys()), catchUp)
+        policy.router.start().catch(console.error)
+      }).catch(e => { throw e })
     }
   }
 })
