@@ -132,6 +132,12 @@ export class Meta$<T, P = any> {
   key?: FieldKey<P>
 
   /**
+   * Holds the full dotted path to this meta node
+   * from the root node in the current runtime context meta graph.
+   */
+  path?: string
+
+  /**
    * Index of parent within meta graph array (if applicable).
    */
   index?: number
@@ -352,6 +358,7 @@ export function metafy <T, P = any> (
   const hasProto = !!proto
   const isArray = Array.isArray(value) || (model.items && !model.fields)
   const isArrayMember = typeof index === "number"
+  const path = [parent$?.path, key].filter(Boolean).join(".")
 
   // Establish the correct form of prototype for this meta
   proto = isArray
@@ -368,6 +375,7 @@ export function metafy <T, P = any> (
     model,
     parent$,
     key,
+    path,
     state: proto?.$?.state || {},
     _value: value
   })
