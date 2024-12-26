@@ -145,13 +145,16 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
  * Get the initial value from the MetaModel's `init` provider.
  */
 export function init<T> (model: MetaModel<T>, options: IncludeExclude<T> = {}): T {
+  let value: T
   if (typeof model.init === "function") {
-    return (model.init as InitFunction<T>)(model)
+    value = (model.init as InitFunction<T>)(model)
   } else if (typeof model.init !== "undefined") {
-    return model.init
-  } else {
-    return initFields(model, options)
+    value = model.init
   }
+  if (!(value ?? false)) {
+    value = initFields(model, options)
+  }
+  return value
 }
 
 /**
