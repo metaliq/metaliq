@@ -187,7 +187,7 @@ export const filterObject = <T, K extends keyof T>(
   obj: T, predicate: (k: K, v: T[K]) => boolean
 ): Partial<T> => {
   if (Array.isArray(obj)) return obj.map(el => filterObject(el, predicate)) as T
-  if (typeof obj !== "object") return obj
+  if (!obj || typeof obj !== "object") return obj
   const filteredEntries = Object.entries(obj)
     .map(([k, v]) => predicate(k as K, v) ? { [k]: filterObject(v, predicate) } : false)
     .filter(Boolean)
