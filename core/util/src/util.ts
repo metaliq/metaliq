@@ -179,12 +179,17 @@ export const hasSomeVal = <T extends object>(obj: T, excludeKeys: string[] = [])
 }
 
 /**
- * Filter the object to a subset of values based on a predicate applied to each value.
+ * Filter an object to a subset of values based on a predicate applied to each value.
  * Produces an object with only the keyed values from the original object that match the predicate.
+ * Filtering is recursive throughout an object graph.
  */
-export const filterObject = <T, K extends keyof T>(obj: T, predicate: (k: K, v: T[K]) => boolean) => {
+export const filterObject = <T, K extends keyof T>(
+  obj: T, predicate: (k: K, v: T[K]) => boolean
+): Partial<T> => {
+  if (Array.isArray(obj)) return obj.map(el => filterObject(el, predicate)) as T
+  if (typeof obj !== "object") return obj
   const filteredEntries = Object.entries(obj)
-    .map(([k, v]) => predicate(k as K, v) ? { [k]: v } : false)
+    .map(([k, v]) => predicate(k as K, v) ? { [k]: filterObject(v, predicate) } : false)
     .filter(Boolean)
   const result = <unknown>Object.assign({}, ...filteredEntries) as Partial<T>
   return result
