@@ -64,6 +64,9 @@ export function parse<T> (serialisation: string, model: MetaModel<T>): Meta<T> {
 /**
  * The default predicate for meta-state property inclusion in the serialisation.
  * Prevents attempted serialisation of functions.
+ * Enables indication that certain meta-state properties are not suitable for serialisation
+ * by using the naming prefix `$_`.
  */
 export const defaultStatePredicate = (key: string, value: any) =>
+  !key.match(/^\$_/) &&
   ["boolean", "number", "string", "object"].includes(typeof value)
