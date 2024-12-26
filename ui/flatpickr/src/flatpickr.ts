@@ -35,7 +35,9 @@ export type DatePickerOptions = {
   fpOptions?: FPOptions
 }
 
-const flatpickrInstance = "flatpickr-instance"
+// Instance name for storing in meta-state
+// Prefixed with `$_` to avoid partial serialisation
+const flatpickrInstance = "$_flatpickr-instance"
 
 const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
   const disabled = $.fn(isDisabled)
