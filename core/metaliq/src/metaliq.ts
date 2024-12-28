@@ -253,10 +253,13 @@ export class Meta$<T, P = any> {
   field$ <K extends FieldKey<T>>(key: K): Meta$<T[K], T> {
     const meta = this.meta
     if (isMeta(meta)) {
-      const fieldMeta = <unknown>meta[key] as Meta<T[K], T>
-      const fieldMeta$ = fieldMeta?.$ as Meta$<T[K]> ||
+      if (!meta[key]) {
         // Fallback for accessing undefined child nodes, use default empty model
-        metafy({}, this.value?.[key], this, key).$
+        Object.assign(this.model.fields, { [key]: {} })
+        metafy({}, this.value?.[key], this, key)
+      }
+      const fieldMeta = <unknown>meta[key] as Meta<T[K], T>
+      const fieldMeta$ = fieldMeta?.$ as Meta$<T[K]>
       return fieldMeta$
     } else return null
   }
@@ -358,7 +361,7 @@ export function metafy <T, P = any> (
   const hasProto = !!proto
   const isArray = Array.isArray(value) || (model.items && !model.fields)
   const isArrayMember = typeof index === "number"
-  const path = [parent$?.path, key].filter(Boolean).join(".")
+  const path = [parent$?.path, key, index].filter(v => v === 0 || v).join(".")
 
   // Establish the correct form of prototype for this meta
   proto = isArray
@@ -417,10 +420,6 @@ export function metafy <T, P = any> (
       metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex)
     }
   } else {
-    // TODO: This currently only accounts for modelled field keys
-    // Sometimes, child Meta$ values are created automatically with blank models
-    // such as when an unmodelled field is viewed.
-    // These keys should also be (re-)metafied here, otherwise values can get out of sync
     for (const fieldKey of result.$.fieldKeys()) {
       const fieldValue = value?.[fieldKey]
       const fieldModel = result.$.model.fields[fieldKey]
