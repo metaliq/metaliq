@@ -270,9 +270,15 @@ export class Meta$<T, P = any> {
 
   /**
    * Get an array of keys of all child fields.
+   *
+   * Unlike the modelKeys function, which takes a model and returns modelled keys,
+   * fieldKeys returns keys for unmodelled fields which have been dynamically generated
+   * as a result of a call to {@link field$}.
    */
   fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
-    return modelKeys(this.model, options)
+    const allKeys = Array.from(new Set([...modelKeys(this.model), ...Object.keys(this.meta)]))
+      .filter(k => k !== "$") as Array<FieldKey<T>>
+    return includeExclude(allKeys, options)
   }
 }
 
@@ -417,15 +423,11 @@ export function metafy <T, P = any> (
       metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex)
     }
   } else {
-    // TODO: This currently only accounts for modelled field keys
-    // Sometimes, child Meta$ values are created automatically with blank models
-    // such as when an unmodelled field is viewed.
-    // These keys should also be (re-)metafied here, otherwise values can get out of sync
     for (const fieldKey of result.$.fieldKeys()) {
       const fieldValue = value?.[fieldKey]
-      const fieldModel = result.$.model.fields[fieldKey]
+      const fieldModel = result.$.model.fields?.[fieldKey] || {}
       const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
-      if (fieldModel && value !== undefined) metafy(fieldModel, fieldValue, result.$, fieldKey, fieldMeta)
+      metafy(fieldModel, fieldValue, result.$, fieldKey, fieldMeta)
     }
   }
 
@@ -521,19 +523,27 @@ export type IncludeExclude<T> = {
 }
 
 /**
+ * Return the subset of the given keys that match the given IncludeExclude options.
+ */
+export const includeExclude = <T>(keys: Array<FieldKey<T>>, options?: IncludeExclude<T>) => {
+  if (options?.include) return keys.filter(k => options.include.includes(k))
+  else if (options?.exclude) return keys.filter(k => !options.exclude.includes(k))
+  else return keys
+}
+
+/**
  * Return the field keys of a given MetaModel.
  *
  * Useful for situations where a Meta$ object is not (yet) available,
  * such as application `init`. Otherwise can use the `fieldKeys` method of
- * the Meta$ object, which in turn calls this.
+ * the Meta$ object, which also includes keys for "generated" fields
+ * (i.e. those not included in the model but referenced in solution code).
  *
  * Takes an options object with keys to include / exclude from results.
  */
 export const modelKeys = <T>(model: MetaModel<T>, options: IncludeExclude<T> = {}) => {
   const allKeys = Object.keys(model?.fields || {}) as Array<FieldKey<T>>
-  if (options?.include) return allKeys.filter(k => options.include.includes(k))
-  else if (options?.exclude) return allKeys.filter(k => !options.exclude.includes(k))
-  else return allKeys
+  return includeExclude(allKeys, options)
 }
 
 /**

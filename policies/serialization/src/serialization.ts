@@ -1,5 +1,5 @@
 import { parse as flat_parse, stringify as flat_stringify } from "flatted"
-import { Meta, Meta$, metafy, MetaModel, modelKeys } from "metaliq"
+import { FieldKey, Meta, Meta$, metafy, MetaModel } from "metaliq"
 import { filterObject } from "@metaliq/util"
 
 /**
@@ -44,19 +44,21 @@ export function parse<T> (serialisation: string, model: MetaModel<T>): Meta<T> {
   const parsed: Meta<T> = flat_parse(serialisation)
   const meta = metafy(model, parsed.$.value)
 
-  const assignState = <T>(meta: Meta<T>, parsed: Meta<T>, model: MetaModel<T>) => {
+  const assignState = <T>(meta: Meta<T>, parsed: Meta<T>) => {
     Object.assign(meta.$.state, parsed?.$?.state)
-    const keys = modelKeys(model)
-    for (const key of keys) {
-      const childMeta = meta[key]
-      const parsedChildMeta = parsed[key]
-      if (childMeta && parsedChildMeta) {
-        const childModel = meta[key].$.model
-        assignState(childMeta as Meta<unknown>, parsedChildMeta as Meta<unknown>, <unknown>childModel as MetaModel<unknown>)
+    if (Array.isArray(parsed.$.value)) {
+      // TODO: Reassign meta array item state
+    } else {
+      const keys = Object.keys(parsed).filter(k => !k.match(/^\$/)) as Array<FieldKey<T>>
+      for (const key of keys) {
+        // Create a new childMeta if one does not exist to account for dynamically generated fields
+        const childMeta = meta[key] ??=
+          metafy({}, parsed[key].$.value, meta.$, key) as Meta<T>[FieldKey<T>]
+        assignState(childMeta as Meta<unknown>, parsed[key] as Meta<unknown>)
       }
     }
   }
-  assignState(meta, parsed, model)
+  assignState(meta, parsed)
 
   return meta
 }
