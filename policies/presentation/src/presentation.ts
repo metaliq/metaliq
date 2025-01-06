@@ -271,7 +271,7 @@ let viewResolver: MetaViewResolver = null
 /**
  * Obtain an item of transient view state.
  */
-export const getViewState = (key: string): MetaFn<any> => (v, $) => $.state.view?.[key]
+export const getViewState = <T>(key: string): MetaFn<T> => (v, $) => $.state.view?.[key]
 
 /**
  * Assign an item of transient view state.

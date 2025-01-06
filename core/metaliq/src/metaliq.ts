@@ -364,7 +364,7 @@ export function metafy <T, P = any> (
   const hasProto = !!proto
   const isArray = Array.isArray(value) || (model.items && !model.fields)
   const isArrayMember = typeof index === "number"
-  const path = [parent$?.path, key].filter(Boolean).join(".")
+  const path = [parent$?.path, key, isArrayMember ? `[${index}]` : ""].filter(Boolean).join(".")
 
   // Establish the correct form of prototype for this meta
   proto = isArray
