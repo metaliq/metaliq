@@ -46,7 +46,7 @@ export function parse<T> (serialisation: string, model: MetaModel<T>): Meta<T> {
 
   const assignState = <T>(meta: Meta<T>, parsed: Meta<T>) => {
     Object.assign(meta.$.state, parsed?.$?.state)
-    if (Array.isArray(parsed.$.value)) {
+    if (Array.isArray(parsed)) {
       // TODO: Reassign meta array item state
     } else {
       const keys = Object.keys(parsed).filter(k => !k.match(/^\$/)) as Array<FieldKey<T>>
