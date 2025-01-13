@@ -1,5 +1,5 @@
 import { html, literal } from "lit/static-html.js"
-import { MetaView, MetaViewTerm } from "./presentation"
+import { CssClass, MetaView, MetaViewTerm } from "./presentation"
 import { nothing } from "lit"
 import { isMetaFn, MaybeFn, MetaFn } from "metaliq"
 
@@ -9,7 +9,7 @@ import { isMetaFn, MaybeFn, MetaFn } from "metaliq"
 export type TagOptions<T, P = any> = {
   name?: string
   id?: string
-  classes?: MaybeFn<T, P, string>
+  classes?: MaybeFn<T, P, CssClass[]>
   onClick?: MetaFn<T, P>
 }
 
@@ -29,7 +29,7 @@ export const parseTagConfig = (config: TagConfig<any>) => {
   if (typeof config === "string") {
     const name = config?.match(/^([_a-zA-Z0-9-]*)/)?.[1]
     const id = config?.match(/#([_a-zA-Z0-9-]*)/)?.[1]
-    const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))?.join(" ")
+    const classes = config?.match(/\.[:_a-zA-Z0-9-]*/g)?.map(c => c.slice(1))
     config = {
       ...name && { name },
       ...id && { id },
@@ -81,14 +81,14 @@ export const tagFactory = <T = any, P = any>(
     const allClasses: string[] = []
     for (const eachConf of configArray) {
       const eachOptions = parseTagConfig(eachConf)
-      allClasses.push($.maybeFn(eachOptions.classes) || "")
+      allClasses.push(...$.maybeFn(eachOptions.classes) || "")
       mergedOptions = { ...mergedOptions, ...eachOptions }
     }
 
     const options: TagOptions<T, P> = {
       ...{ name: "div" },
       ...mergedOptions,
-      ...{ classes: allClasses.filter(Boolean).join(" ") }
+      ...{ classes: allClasses.filter(Boolean) }
     }
 
     // Obtain tag name lit
@@ -99,11 +99,12 @@ export const tagFactory = <T = any, P = any>(
     }
 
     const onClick = isMetaFn(options.onClick) ? $.up(options.onClick) : nothing
+    const classes = options.classes as CssClass[]
 
     return html`
       <${tagLiteral} 
         id=${options.id || nothing} 
-        class=${options.classes || nothing}
+        class=${classes.join(" ") || nothing}
         @click=${onClick}
       >
         ${$.view(body)}

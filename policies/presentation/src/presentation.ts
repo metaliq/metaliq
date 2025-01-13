@@ -129,6 +129,8 @@ export type MetaViewTerm<T, P = any> =
   ViewResult |
   Array<MetaViewTerm<T, P>>
 
+export type CssClass = string
+
 /**
  * The options type for the `$.view()` function.
  */
