@@ -29,7 +29,7 @@
   "types": "lib/cli.d.ts",
   "engines": {
     "node": "20",
-    "pnpm": "8"
+    "pnpm": "9"
   },
   "typedocOptions": {
     "entryPoints": ["./src/*.ts"]

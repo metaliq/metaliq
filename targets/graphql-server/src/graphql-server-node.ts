@@ -48,7 +48,13 @@ export const graphQLServerRunner = (
     const ports = await findFreePorts(1, { startPort: 9400, jobCount: 1 })
     port = ports[0]
   }
-  const hostname = config?.run?.hostname || "localhost"
+
+  console.log(process.env.NODE_ENV)
+
+  const response = await fetch("https://api.ipify.org/")
+  const ip = await response.text()
+
+  const hostname = config?.run?.hostname || ip || "localhost"
 
   // Stop any previous running servers
   if (apolloServer) await apolloServer.stop()
@@ -83,7 +89,7 @@ export const graphQLServerRunner = (
   )
 
   await new Promise<void>((resolve) => httpServer.listen(port, hostname, resolve))
-  console.log(`GraphQL server running on http://${hostname}:${port}/graphql`)
+  console.log(`GraphQL 123 server running on http://${hostname}:${port}/graphql`)
 
   return true
 }
