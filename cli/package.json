@@ -28,8 +28,8 @@
   "type": "module",
   "types": "lib/cli.d.ts",
   "engines": {
-    "node": "20",
-    "pnpm": "9"
+    "node": ">=20",
+    "pnpm": ">=8"
   },
   "typedocOptions": {
     "entryPoints": ["./src/*.ts"]

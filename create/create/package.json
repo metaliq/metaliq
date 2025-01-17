@@ -26,8 +26,8 @@
   "type": "module",
   "types": "lib/create.d.ts",
   "engines": {
-    "node": "20",
-    "pnpm": "8"
+    "node": ">=20",
+    "pnpm": ">=8"
   },
   "typedocOptions": {
     "entryPoints": ["./src/*.ts"]
