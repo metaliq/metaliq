@@ -51,10 +51,7 @@ export const graphQLServerRunner = (
 
   console.log(process.env.NODE_ENV)
 
-  const response = await fetch("https://api.ipify.org/")
-  const ip = await response.text()
-
-  const hostname = config?.run?.hostname || ip || "localhost"
+  const hostname = config?.run?.hostname || "localhost"
 
   // Stop any previous running servers
   if (apolloServer) await apolloServer.stop()
@@ -88,7 +85,10 @@ export const graphQLServerRunner = (
     })
   )
 
-  await new Promise<void>((resolve) => httpServer.listen(port, hostname, resolve))
+  const host = config?.run?.hostname
+  const listenOpts = host ? { host, port } : { port }
+
+  await new Promise<void>((resolve) => httpServer.listen(listenOpts, resolve))
   console.log(`GraphQL 123 server running on http://${hostname}:${port}/graphql`)
 
   return true
