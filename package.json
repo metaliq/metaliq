@@ -31,7 +31,7 @@
     "clean-node-modules": "find . -name 'node_modules' -type d -exec rm -rf {} +",
     "dev": "pnpm clean && pnpm -r pkg-prepare && tsc -b --watch",
     "eslint": "eslint",
-    "prepare": "pnpm clean && tsc -b",
+    "prepare": "pnpm clean && pnpm -r pkg-prepare && tsc -b",
     "publish-master": "pnpm publish -r --access public && pnpm test-create",
     "publish-beta": "pnpm publish -r --tag beta --access public",
     "reinstall": "pnpm clean-node-modules && pnpm clean && pnpm install -r --prefer-offline",

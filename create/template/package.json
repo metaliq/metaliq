@@ -11,6 +11,8 @@
     "build-app": "metaliq build",
     "build-codegen": "graphql-codegen",
     "build-md": "metadoc content src/gen/content",
+    "compile-deps": "cd ../../core/metaliq && tsc && cd ../util && tsc && cd ../../policies/publication && tsc && cd ../../ui/metadoc && tsc",
+    "pkg-prepare": "pnpm compile-deps && pnpm prepare",
     "prepare": "pnpm build-md && pnpm build-codegen",
     "start": "pnpm start-md & pnpm start-codegen & pnpm start-api & pnpm start-app",
     "start-api": "metaliq run -f api/api-model apiModel",
