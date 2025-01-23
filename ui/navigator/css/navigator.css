@@ -96,7 +96,7 @@
 				}
 
 				/* Selected item */
-				&.mq-nav-selected-item > * {
+				&.mq-nav-selected-item > *:not(ul) {
 					background: var(--mq-nav-selected-background);
 					color: var(--mq-nav-selected-color);
 				}
