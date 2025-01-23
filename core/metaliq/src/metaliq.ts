@@ -190,23 +190,20 @@ export class Meta$<T, P = any> {
     }
   }
 
-  /**
-   * Run the result of the given MetaFn for this node in the meta graph.
-   */
-  fn <R = any>(metaFn: MetaFn<T, P, R>, event?: Event): R {
-    return metaFn?.(this.value, this, event)
+  on <K extends FieldKey<T>, R = any>(key: FieldKey<T>, metaFn: MetaFn<T[K], T, R>, event?: Event): R {
+    const f$ = this.field$<K>(key as K)
+    return metaFn(f$, event)
   }
 
-  on <K extends FieldKey<T>, R = any>(key: FieldKey<T>, fn: MetaFn<T[K], T, R>, event?: Event): R {
-    const f$ = this.field$<K>(key as K)
-    return f$.fn(fn, event)
+  onDescendants (metaFn: MetaFn<T, P>, onThis: boolean = true) {
+    onDescendants(metaFn, onThis)(this)
   }
 
   /**
    * Return the result of the given metafunction or the parameter value if not a function.
    */
-  maybeFn <R = any>(param: MetaFn<T, P, R> | R) {
-    return isMetaFn(param) ? this.fn(param) : param
+  maybeFn <R = any>(metaFnOrValue: MetaFn<T, P, R> | R) {
+    return isMetaFn(metaFnOrValue) ? metaFnOrValue(this) : metaFnOrValue
   }
 
   /**
@@ -221,8 +218,8 @@ export class Meta$<T, P = any> {
     if (ancestor) {
       while (t$ && typeof t$.model[key] === "undefined") t$ = t$.parent$
     }
-    const value = t$?.model[key]
-    return (isMetaFn(value) ? t$.fn(value) : value) as DerivedTermValue<K>
+    const metaFnOrValue = t$?.model[key]
+    return (isMetaFn(metaFnOrValue) ? metaFnOrValue(t$) : metaFnOrValue) as DerivedTermValue<K>
   }
 
   /**
@@ -292,7 +289,6 @@ export class Meta$<T, P = any> {
  */
 export type MetaFn<Type, Parent = any, Result = any, E extends Event = Event> =
   (
-    value: Type,
     $?: Meta$<Type, Parent>,
     event?: E
   ) => Result
@@ -489,7 +485,7 @@ export const meta$ = <T>(v$: T | Meta$<T>): Meta$<T> => {
  */
 export const isMeta$ = <T, P = any>(v$: T | Meta$<T>): v$ is Meta$<T, P> => {
   v$ = v$ as Meta$<any>
-  return !!(v$?.meta?.$ && v$?.model && v$?.fn && v$?.field$)
+  return !!(v$?.meta?.$ && v$?.model && v$?.field$)
 }
 
 /**
@@ -501,7 +497,9 @@ export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> =>
 /**
  * A type guard to narrow a MetaField to a MetaArray.
  */
-export const isMetaArray = <T, P = any>(m: HasMeta$<T, P>): m is MetaArray<T extends Array<infer I> ? I : never, P> =>
+export const isMetaArray = <
+  T, P = any, I = T extends Array<infer I> ? I : never
+>(m: HasMeta$<T, P>): m is MetaArray<I, P> =>
   Array.isArray(m)
 
 /**
@@ -566,7 +564,7 @@ export const isMetaFn = (term: any): term is MetaFn<any> => typeof term === "fun
  *
  * Note that a root Meta$ won't have a parent type.
  */
-export const root$: MetaFn<any> = (v, $) => {
+export const root$: MetaFn<any, any, Meta$<any>> = $ => {
   let result = $
   while (result.parent$) {
     result = result.parent$
@@ -578,13 +576,13 @@ export const root$: MetaFn<any> = (v, $) => {
  * Return a MetaFn that will run a given MetaFn on all descendant nodes
  * of the provided node.
  */
-export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => (v, $) => {
+export const onDescendants = (metaFn: MetaFn<any>, onBase: boolean = true): MetaFn<any> => $ => {
   const recurse = ($: Meta$<any>, onBase: boolean = true) => {
     if (!$) return
-    if (onBase) $.fn(fn)
+    if (onBase) metaFn($)
     const v = $.value
     if (v && typeof v === "object") {
-      const children$ = isMetaArray($.meta) ? items$(v, $) : fields$(v, $)
+      const children$ = isMetaArray($.meta) ? items$($) : fields$($)
       for (const child$ of children$) {
         recurse(child$)
       }
@@ -597,36 +595,28 @@ export const onDescendants = (fn: MetaFn<any>, onBase: boolean = true): MetaFn<a
 /**
  * Return the result of the given function on the given child field.
  */
-export function on <T, K extends FieldKey<T>> (key: K, fn: MetaFn<T[K]>): MetaFn<T> {
-  return (v, $, event) => $.on(key, fn, event)
+export function on <T, K extends FieldKey<T>> (key: K, metaFn: MetaFn<T[K]>): MetaFn<T> {
+  return ($, event) => $.on(key, metaFn, event)
 }
+
+/**
+ * Convert a plain function for a value of type T into a MetaFn for data type T.
+ */
+export const $fn = <
+  T, P = any, R = any, E extends Event = Event
+>(fn: (value: T) => R): MetaFn<T, P, R, E> => $ => fn($.value)
 
 /**
  * Return a collection of Meta$ values for each field of the given parent Meta$ value.
  */
-export const fields$: MetaFn<any> = (v, $) =>
+export const fields$: MetaFn<any> = $ =>
   $.fieldKeys().map(k => $.field$(k))
 
 /**
  * Return the Meta$ values for each item in a Meta$ of an array type.
  */
-export const items$: MetaFn<any[]> = (v, $) => {
+export const items$: MetaFn<any[]> = $ => {
   if (isMetaArray($.meta)) {
     return $.meta.map(m => m.$)
   }
 }
-
-/**
- * For a given field, return either its value
- * or the result of passing it to a given meta function.
- */
-export const get = <
-  T, // Type of container object
-  K extends FieldKey<T>, // Field key
-  P, // Type of parent to container object
-  R, // Return type of the optional meta function parameter
-  F extends MetaFn<T[K], T, R>, // Signature of optional meta function
-  FP extends F | undefined, // Establishes whether the optional meta function is provided
-  GR extends FP extends F ? R : T[K] // Overall result of `get`
->(key: K, fn?: FP): MetaFn<T, P, GR> => (v, $) =>
-    (fn ? $.field$(key).fn(fn) : $.field$(key).value) as GR

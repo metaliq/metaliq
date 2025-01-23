@@ -72,8 +72,8 @@ export type ExpanderOptions<T, P = any> = {
   expanded: MetaFn<T, P>
 }
 
-export const expander = <T, P = any> ({ expanded }: ExpanderOptions<T, P>) => (view: MetaView<T, P>): MetaView<T, P> => (v, $) => html`
+export const expander = <T, P = any> ({ expanded }: ExpanderOptions<T, P>) => (view: MetaView<T, P>): MetaView<T, P> => $ => html`
   <mq-expander>
-    ${expanded(v, $) ? view(v, $) : ""}
+    ${expanded($) ? view($) : ""}
   </mq-expander>
 `

@@ -42,7 +42,7 @@ metaSetups.push($ => {
  */
 export const call = <C, T, P, R>(channel: ConfigurableMetaFn<C, P, T, R>) => (config: C = undefined): R => {
   const $ = policy.channelMap.get(channel)
-  if ($) return $.fn(channel(config))
+  if ($) return channel(config)($)
 }
 
 /**
@@ -58,7 +58,7 @@ export interface Shared {
  */
 export const getSharedValueChannel = <K extends keyof Shared>(
   key: K
-): MetaFn<Shared, any, Shared[K]> => (v, $) => {
+): MetaFn<Shared, any, Shared[K]> => $ => {
     return $.field$(key).value
   }
 

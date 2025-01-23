@@ -1,7 +1,7 @@
 import chai from "chai"
 import { describe } from "mocha"
 import { parseTagConfig, tag } from "../tag"
-import { MetaModel } from "metaliq"
+import { $fn, MetaModel } from "metaliq"
 
 chai.should()
 
@@ -46,17 +46,17 @@ describe("Tags", () => {
      */
     it("Configurable Container MetaView body type inference", () => {
       // Typed tag compiles with valid field name
-      tag<Thing>(".some-config", v => `Hello ${v.name}`)
+      tag<Thing>(".some-config", $ => `Hello ${$.value.name}`)
       // Typos will not compile
       // newTag<Thing>(".some-config", "", v => `Hello ${v.wrongName}`)
 
       const mm: MetaModel<Thing> = {
         view: [
           // Tag infers type from the MetaModel, `v` is Thing
-          tag("span", v => v.name),
+          tag("span", $fn(v => v.name)),
 
           // Type inference for each configuration property including nested objects
-          tag(["span", { classes: v => [v.name], onClick: v => { console.log(v.name) } }], v => v.name),
+          tag(["span", { classes: $fn(v => [v.name]), onClick: $fn(v => { console.log(v.name) }) }], $fn(v => v.name)),
 
           // Typos will not compile
           // newTag("span", { classes: v => [v.wrongName] }, v => v.wrongName),
@@ -68,7 +68,7 @@ describe("Tags", () => {
                 // Typos will not compile
                 // v => v.wrongName,
                 // Valid field names will
-                v => v.name
+                $fn(v => v.name)
               ])
             ])
           ])
@@ -83,9 +83,9 @@ describe("Tags", () => {
      */
     it("Array body content type inference", () => {
       tag<Thing>(".some-config", [
-        v => `Hello ${v.name}`,
+        $fn(v => `Hello ${v.name}`),
         [
-          v => `Hello ${v.name}`
+          $fn(v => `Hello ${v.name}`)
         ]
       ])
     })

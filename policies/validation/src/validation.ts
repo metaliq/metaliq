@@ -56,10 +56,10 @@ metaSetups.push(<T>($: Meta$<T>) => {
  * Establish a function for mandatory field errors.
  * See src for a basic example of an English language error.
  */
-export function setRequiredLabel (fn: MetaFn<any, any, string>) {
-  requiredLabelFn = fn
+export function setRequiredLabel (metaFn: MetaFn<any, any, string>) {
+  requiredLabelFn = metaFn
 }
-let requiredLabelFn: MetaFn<any, any, string> = (v, $ = meta$(v)) =>
+let requiredLabelFn: MetaFn<any, any, string> = $ =>
   `${labelOrKey($) || "This field"} is required`
 
 /**
@@ -80,11 +80,11 @@ export const validate = <T, P> (v$: T | Meta$<T, P>): ValidationResult => {
   delete $.state.error
   if ($.term("hidden")) return
   if ($.term("mandatory") && !hasValue($)) {
-    return ($.state.error = requiredLabelFn($.value, $))
+    return ($.state.error = requiredLabelFn($))
   } else {
     const validator = $.model.validator
     if (typeof validator === "function") {
-      const result = validator($.value, $)
+      const result = validator($)
       if (result === false) {
         $.state.error = true
       } else if (typeof result === "string") {

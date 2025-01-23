@@ -57,7 +57,7 @@ export interface Presentation$<T, P = any> {
   /**
    * Render a view for the Meta$ and its associated data value.
    *
-   * Calling `$.view(myView)` has several advantages over calling `myView(v, $)`:
+   * Calling `$.view(myView)` has several advantages over calling `myView$`:
    *
    * * `myView` can be a MetaViewTerm, in other words can be an array of MetaViews.
    *
@@ -164,14 +164,14 @@ Meta$.prototype.view = function (viewTerm?, options?) {
     ? options?.resolver ? viewResolver : undefined
     : options?.resolver || viewResolver
 
-  viewTerm = viewTerm ?? $.model.view ?? $.fn(resolver)
+  viewTerm = viewTerm ?? $.model.view ?? resolver($)
   if (!viewTerm) {
     return ""
   } else if (Array.isArray(viewTerm)) {
     return viewTerm.flat(99).map((each) => $.view(each, options))
   } else {
     return (!$.term("hidden") || options?.noHide)
-      ? typeof viewTerm === "function" ? viewTerm($.value, $) : viewTerm
+      ? typeof viewTerm === "function" ? viewTerm($) : viewTerm
       : ""
   }
 }
@@ -190,7 +190,7 @@ Meta$.prototype.field = function <T, K extends FieldKey<T>> (
  */
 export const field = <T, P, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
-): MetaView<T, P> => (v, $) => {
+): MetaView<T, P> => $ => {
     const field$ = $.field$(key)
     if (!field$) console.warn(`No field() key '${key}'`)
     return field$?.view(view, options)
@@ -206,8 +206,8 @@ Meta$.prototype.fields = function (options?) {
  *
  * This functionality is wrapped by the Meta$ function {@link Presentation$.fields}.
  */
-export const fields = <T = any, P = any> (options: FieldsOptions<T> = {}): MetaView<T, P> => (v, $ = meta$(v)) => {
-  return typeof v === "object"
+export const fields = <T = any, P = any> (options: FieldsOptions<T> = {}): MetaView<T, P> => $ => {
+  return typeof $.value === "object"
     ? $.fieldKeys(options).map(key => $.field(key, options.view, options as ViewOptions))
     : ""
 }
@@ -217,7 +217,7 @@ export const fields = <T = any, P = any> (options: FieldsOptions<T> = {}): MetaV
  * a specified view or the item's view from the model.
  */
 export const repeat = <T> (itemView?: MetaViewTerm<T extends Array<infer I> ? I : never>): MetaView<T> =>
-  (v, $) => {
+  $ => {
     if (isMetaArray($.meta)) {
       return $.meta.map(({ $ }) => $.view(itemView))
     } else return ""
@@ -232,8 +232,8 @@ export const ifThen = <T, P = any> (
   condition: MetaFn<T, P>,
   thenView: MetaViewTerm<T, P>,
   elseView?: MetaViewTerm<T, P>
-): MetaViewTerm<T, P> => (v, $) =>
-    condition(v, $) ? $.view(thenView)
+): MetaViewTerm<T, P> => $ =>
+    condition($) ? $.view(thenView)
       : elseView ? $.view(elseView)
         : ""
 
@@ -247,7 +247,7 @@ export const content = (textOrHtml: ViewResult): MetaView<any> => () => textOrHt
  * The `renderPage` meta function can be provided to the `review` term from the app policy
  * to produce a global-state single page app.
  */
-export const renderPage: MetaFn<any> = (v, $) => {
+export const renderPage: MetaFn<any> = $ => {
   document.title = $.term("label")
   render($.view(), document.body)
 }
@@ -273,12 +273,12 @@ let viewResolver: MetaViewResolver = null
 /**
  * Obtain an item of transient view state.
  */
-export const getViewState = <T>(key: string): MetaFn<T> => (v, $) => $.state.view?.[key]
+export const getViewState = <T = any>(key: string): MetaFn<T> => $ => $.state.view?.[key]
 
 /**
  * Assign an item of transient view state.
  */
-export const setViewState = (key: string, value: any): MetaFn<any> => (v, $) => {
+export const setViewState = (key: string, value: any): MetaFn<any> => $ => {
   $.state.view = $.state.view || {}
   $.state.view[key] = value
 }
@@ -286,7 +286,7 @@ export const setViewState = (key: string, value: any): MetaFn<any> => (v, $) => 
 /**
  * Perform boolean inversion on an item of transient view state.
  */
-export const toggleViewState = (key: string): MetaFn<any> => (v, $) => {
+export const toggleViewState = (key: string): MetaFn<any> => $ => {
   $.state.view = $.state.view || {}
   $.state.view[key] = !$.state.view[key]
 }

@@ -12,23 +12,23 @@ export type TextAreaOptions = FieldOptions<string> & {
   rows?: number
 }
 
-export const textArea = (options: TextAreaOptions = {}): MetaView<string> => (v, $) => html`
+export const textArea = (options: TextAreaOptions = {}): MetaView<string> => $ => html`
   <label class="mq-field mq-text-area-field ${
     classMap({ [options.classes]: !!options.classes, ...fieldClasses($) })
   }">
-    ${fieldLabel(options)(v, $)}
+    ${fieldLabel(options)($)}
     <textarea 
       cols=${ifDefined(options.cols)}
       rows=${options.rows ?? 3}
-      ?disabled=${$.fn(isDisabled)}
+      ?disabled=${isDisabled($)}
       class="mq-input ${classMap({
         "mq-error-field": $.state.error,
-        "mq-disabled": $.fn(isDisabled)
+        "mq-disabled": isDisabled($)
       })}"
       @focus=${up(onFocus, $)}
       @blur=${up(onBlur, $)}
     >${$.value ?? ""}</textarea>
-    ${errorMsg({ classes: "mq-field-error" })(v, $)}
+    ${errorMsg({ classes: "mq-field-error" })($)}
   </label>
 `
 

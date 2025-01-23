@@ -37,11 +37,12 @@ export type DatePickerOptions = {
 
 // Instance name for storing in meta-state
 // Prefixed with `$_` to avoid partial serialisation
-const flatpickrInstance = "$_flatpickr-instance"
+const FLATPICKR_INSTANCE = "$_flatpickr-instance"
 
-const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (value, $) => {
-  const disabled = $.fn(isDisabled)
-  const fl = $.fn(getViewState(flatpickrInstance)) as Instance
+const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => $ => {
+  let value = $.value
+  const disabled = isDisabled($)
+  const fl = getViewState(FLATPICKR_INSTANCE)($) as Instance
 
   if (fl) {
     if ($.value && new Date(fl.selectedDates[0]) !== new Date($.value)) {
@@ -81,7 +82,7 @@ const innerDatePicker = (options: DatePickerOptions = {}): MetaView<string> => (
             },
             ...options.fpOptions
           }) as Instance
-          $.fn(setViewState(flatpickrInstance, !Array.isArray(fl) && fl))
+          setViewState(FLATPICKR_INSTANCE, !Array.isArray(fl) && fl)($)
         }
       )
       return html`

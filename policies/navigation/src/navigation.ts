@@ -1,5 +1,5 @@
 import { Route, Router } from "./router"
-import { FieldKey, Meta$, meta$, MetaFn, MetaFnTerm, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
+import { FieldKey, Meta$, MetaFn, MetaFnTerm, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
 import { APPLICATION, bootstrapComplete } from "@metaliq/application"
 
@@ -234,7 +234,7 @@ export const getNavSelection = ($: Meta$<any>, {
   if (recurse) {
     while ($?.state.nav?.selected) {
       $ = $.field$($.state.nav?.selected)
-      if (isMustHave && $.fn(mustHave)) {
+      if (isMustHave && mustHave($)) {
         have$ = $
       }
     }
@@ -250,35 +250,35 @@ export const getNavSelection = ($: Meta$<any>, {
  *
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
-export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
+export const setNavSelection: MetaFn<any> = $ => {
   $.state.nav ||= {}
-  $.fn(root$).fn(onDescendants((v, $) => {
+  onDescendants($ => {
     if ($.state.nav?.expandMenu) $.state.nav.expandMenu = false
-  }))
+  })
   $.state.nav.expandMenu = true
 
   policy.selectedRoute$ = $
 
-  const clearSelection: MetaFn<any> = (v, $) => {
+  const clearSelection: MetaFn<any> = $ => {
     if ($.state.nav) {
       delete $.state.nav.selected
     }
   }
 
-  $.fn(root$).fn(onDescendants(clearSelection))
+  clearSelection(root$($))
 
   // Set any upper selections
-  const setParentSelection: MetaFn<any> = (v, $) => {
+  const setParentSelection: MetaFn<any> = $ => {
     const parent$ = $.parent$
     if (parent$) {
       parent$.state.nav = parent$.state.nav || {}
       parent$.state.nav.selected = $.key
       parent$.state.nav.expandMenu = true
-      setParentSelection(parent$.value, parent$)
+      setParentSelection(parent$)
     }
   }
 
-  setParentSelection(v, $)
+  setParentSelection($)
 }
 
 /**
@@ -287,13 +287,14 @@ export const setNavSelection: MetaFn<any> = (v, $ = meta$(v)) => {
  *
  * Usually not used directly, but referenced via {@link setNavSelectionResponsive}.
  */
-export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $ = meta$(v)) => {
+export const closeMenuResponsive = (width: number): MetaFn<any> => $ => {
   if (typeof document === "object" && document.body?.clientWidth < width) {
-    $.fn(root$).fn(onDescendants((v, $) => {
+    const root = root$($)
+    root.onDescendants($ => {
       if ($.state.nav?.showMenu) {
         $.state.nav.showMenu = false
       }
-    }))
+    })
   }
 }
 
@@ -303,9 +304,9 @@ export const closeMenuResponsive = (width: number): MetaFn<any> => (v, $ = meta$
  *
  * Suitable as an {@link NavigationTerms.onNavigate} term value.
  */
-export const setNavSelectionResponsive = (width: number): MetaFn<any> => (v, $) => {
-  $.fn(setNavSelection)
-  $.fn(closeMenuResponsive(width))
+export const setNavSelectionResponsive = (width: number): MetaFn<any> => $ => {
+  setNavSelection($)
+  closeMenuResponsive(width)($)
 }
 
 /**
@@ -318,7 +319,7 @@ export const setNavSelectionResponsive = (width: number): MetaFn<any> => (v, $) 
  * such as preventing event defaults and bubbling.
  *
  */
-export const goNavRoute: MetaFn<any> = (v, item$, event) => {
+export const goNavRoute: MetaFn<any> = (item$, event) => {
   while (item$ && !item$.model.route) {
     const firstChildKey = item$.fieldKeys()[0]
     item$ = item$.field$(firstChildKey)
@@ -328,17 +329,17 @@ export const goNavRoute: MetaFn<any> = (v, item$, event) => {
   item$?.model.route?.go()
 }
 
-export const toggleMenu: MetaFn<any> = (v, $) => {
+export const toggleMenu: MetaFn<any> = $ => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = !$.state.nav.showMenu
 }
 
-export const openMenu: MetaFn<any> = (v, $) => {
+export const openMenu: MetaFn<any> = $ => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = true
 }
 
-export const closeMenu: MetaFn<any> = (v, $) => {
+export const closeMenu: MetaFn<any> = $ => {
   $.state.nav = $.state.nav || {}
   $.state.nav.showMenu = false
 }
@@ -348,7 +349,7 @@ export const closeMenu: MetaFn<any> = (v, $) => {
  * Otherwise return true.
  * Useful for controlling menu items in a "partially" closable (e.g. minimisable) menu.
  */
-export const isMenuShown: MetaFn<any> = (_, item$: Meta$<any>) => {
+export const isMenuShown: MetaFn<any> = item$ => {
   while (item$) {
     item$ = item$.parent$
     if (item$?.state?.nav?.showMenu === false) return false

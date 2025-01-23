@@ -5,7 +5,7 @@ import { guard } from "lit/directives/guard.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
 import { Meta$, MetaFn } from "metaliq"
-import { fieldContainer, isDisabled, FieldOptions, fieldKey, fieldPath } from "@metaliq/forms"
+import { fieldContainer, FieldOptions, isDisabled, fieldKey, fieldPath } from "@metaliq/forms"
 import { getModuleDefault } from "@metaliq/util/lib/import"
 import { equals, remove } from "@metaliq/util"
 import { hasValue, validate } from "@metaliq/validation"
@@ -82,7 +82,9 @@ declare module "metaliq" {
 
 const Choices = <any>getModuleDefault(ChoicesModule, "Choices") as typeof ChoicesModule.default
 
-export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
+export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): MetaView<T, P> => $ => {
+  let v = $.value
+
   options = { sort: true, ...options }
 
   const resetChoices = (choicesJs: ChoicesJs = $.state.choicesJs) => {
@@ -103,14 +105,14 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
     choicesJs.setChoices($.state.choices, "value", "label", true)
   }
 
-  const disabled = $.fn(isDisabled)
+  const disabled = isDisabled($)
 
   if (typeof options.choices === "function") {
     const oldChoices = JSON.parse(JSON.stringify(
       $.state.choices || [],
       (k, v) => ["$", "selected"].includes(k) ? undefined : v)
     )
-    const newChoices = options.choices(v, $) || []
+    const newChoices = options.choices($) || []
     if (!equals(newChoices, oldChoices)) {
       if ($.state.choices) $.state.choicesValue = $.value = null // There was previously a different initialised choice list
       $.state.choices = newChoices
@@ -163,8 +165,8 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
 
       return html`
         <select id=${id}
-          data-mq-field-key=${fieldKey(v, $)}
-          data-mq-field-path=${fieldPath(v, $)}
+          data-mq-field-key=${fieldKey($)}
+          data-mq-field-path=${fieldPath($)}
           @change=${up(onChange(options), $)}
           @addItem=${up(onAddItem(options), $)}
           @removeItem=${up(onRemoveItem(options), $)}
@@ -222,7 +224,7 @@ const onChange = (options: SelectorOptions<any>) => ($: Meta$<any>, event: Event
   $.state.choicesValue = $.value
   validate($)
   state.proposedChange = null
-  if (typeof options.onChange === "function") $.fn(options.onChange)
+  if (typeof options.onChange === "function") options.onChange($)
 }
 
 const onAddItem = (options: SelectorOptions<any>) => ($: Meta$<any>, event: { detail: { value: string } }) => {

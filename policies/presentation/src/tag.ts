@@ -74,7 +74,7 @@ export const tags = <T = any, P = any>(
  */
 export const tagFactory = <T = any, P = any>(
   config: TagConfig<T, P> | Array<TagConfig<T, P>> = ""
-) => (body: MetaViewTerm<T, P> = ""): MetaView<T, P> => (v, $) => {
+) => (body: MetaViewTerm<T, P> = ""): MetaView<T, P> => $ => {
     // Merge options parameter into a single TagOptions
     const configArray = Array.isArray(config) ? config : [config]
     let mergedOptions: TagOptions<T, P> = {}

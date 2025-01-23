@@ -94,7 +94,7 @@ export type Init<T> = T | InitFunction<T>
 
 Meta$.prototype.up = function (metaFnTerm, options) {
   const metaUpdate = (metaFn: MetaFn<any>) =>
-    ($: any, event: any) => metaFn($.value, $, event)
+    ($: any, event: any) => metaFn($, event)
 
   if (Array.isArray(metaFnTerm)) {
     return up(metaFnTerm.map(metaUpdate), this, options)
@@ -127,14 +127,14 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     review: async () => {
       reset(meta.$)
       if (typeof model.review === "function") {
-        await model.review(meta.$.value, meta.$)
+        await model.review(meta.$)
       }
     },
     log,
     local
   })
   if (!meta.$.stateValue("disableAsyncLoad", true)) {
-    await bootstrap(meta.$.value, meta.$)
+    await bootstrap(meta.$)
   }
   bootstrapPromiseResolve(true)
 
@@ -209,7 +209,7 @@ export const bootstrapComplete = new Promise((resolve) => {
  *
  * Returns true if a bootstrap was performed.
  */
-export const bootstrap: MetaFn<any> = async (v, $) => {
+export const bootstrap: MetaFn<any> = async $ => {
   let bootstrapped = false
   let recurse = true
   if (typeof $.model.bootstrap === "function") {
@@ -218,7 +218,7 @@ export const bootstrap: MetaFn<any> = async (v, $) => {
   }
   if (recurse !== false) {
     for (const key of $.fieldKeys()) {
-      const nestedBootstrap = await $.field$(key)?.fn(bootstrap)
+      const nestedBootstrap = await bootstrap($.field$(key))
       if (nestedBootstrap) bootstrapped = true
     }
   }

@@ -48,7 +48,7 @@ const Scanner: typeof Html5QrcodeScanner = (window as any).Html5QrcodeScanner
 
 let scanner: Html5QrcodeScanner
 
-export const barcodeScanner = <T, P = any>(options: BarcodeScannerOptions<T, P> = {}): MetaView<T> => (v, $) => {
+export const barcodeScanner = <T, P = any>(options: BarcodeScannerOptions<T, P> = {}): MetaView<T> => $ => {
   return html`
     ${guard([$], () => {
       // const id = `mq-barcode-scanner-${Math.ceil(Math.random() * 1000000)}`
@@ -56,14 +56,14 @@ export const barcodeScanner = <T, P = any>(options: BarcodeScannerOptions<T, P> 
 
       setTimeout(() => {
         const resultHandler = typeof options.onScan === "function"
-          ? options.onScan(v, $)
+          ? options.onScan($)
           : () => {}
         scanner = scanner || new Scanner(id, {
           fps: 10,
           ...options.config
         }, false)
         scanner.render(
-          (text) => {
+          text => {
             $.up(() => {
               if (!options.noBind) {
                 $.value = text as any
@@ -73,7 +73,7 @@ export const barcodeScanner = <T, P = any>(options: BarcodeScannerOptions<T, P> 
               setTimeout(() => {
                 scanner.clear().catch(e => console.log)
               }, 1000)
-            })()
+            })().catch(console.error)
           }, () => {}
         )
       }, 250)

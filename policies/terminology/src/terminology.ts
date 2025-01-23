@@ -1,4 +1,4 @@
-import { meta$, Meta$, MetaFn } from "metaliq"
+import { Meta$, MetaFn } from "metaliq"
 
 /**
  * Policy registration.
@@ -46,7 +46,6 @@ export function labelPath (from: Meta$<any>, to: Meta$<any>) {
  * Can accept the meta info $ object (recommended)
  * or its associated data value (not a primitive).
  */
-export const labelOrKey = <T, P>(v$: T | Meta$<T, P>, $?: Meta$<T, P>) => {
-  $ = ($ || meta$(v$) || v$) as Meta$<T, P>
+export const labelOrKey: MetaFn<any> = $ => {
   return $.term("label") ?? $.key
 }

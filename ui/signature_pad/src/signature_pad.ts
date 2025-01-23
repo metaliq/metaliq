@@ -4,7 +4,7 @@ import { guard } from "lit/directives/guard.js"
 import { fieldContainer, isDisabled } from "@metaliq/forms"
 import { up } from "@metaliq/up"
 import SignaturePad from "signature_pad"
-import { Meta$ } from "metaliq"
+import { MetaFn } from "metaliq"
 
 export type SignaturePadFormat = "PNG" | "JPG" | "SVG" | "RAW"
 
@@ -55,25 +55,25 @@ const SIG_PAD_INSTANCE = "sig-pad-instance"
  * A configurable MetaView<string> that displays a signature pad
  * and saves the value as either a data URL or a JSON string (recommended).
  */
-export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string> => (value, $) => {
+export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string> => $ => {
   options = { ...defaultSignaturePadOptions, ...options }
 
-  const metaDisabled = $.fn(isDisabled)
-  const viewerDisabled = !!$.fn(getViewState(DISABLED_FLAG))
+  const metaDisabled = isDisabled($)
+  const viewerDisabled = !!getViewState(DISABLED_FLAG)($)
 
   if (viewerDisabled !== metaDisabled) {
-    const sigPad = $.fn(getViewState(SIG_PAD_INSTANCE)) as SignaturePad
+    const sigPad = getViewState(SIG_PAD_INSTANCE)($) as SignaturePad
     if (metaDisabled) {
       if (sigPad) sigPad.off()
-      $.fn(setViewState(DISABLED_FLAG, true))
+      setViewState(DISABLED_FLAG, true)($)
     } else {
       if (sigPad) sigPad.on()
-      $.fn(setViewState(DISABLED_FLAG, false))
+      setViewState(DISABLED_FLAG, false)($)
     }
   }
 
-  const clearSignature = ($: Meta$<string>) => {
-    const sigPad: SignaturePad = $.fn(getViewState(SIG_PAD_INSTANCE))
+  const clearSignature: MetaFn<string> = $ => {
+    const sigPad: SignaturePad = getViewState(SIG_PAD_INSTANCE)($)
     $.value = ""
     sigPad.clear()
   }
@@ -137,11 +137,11 @@ export const signaturePad = (options: SignaturePadOptions = {}): MetaView<string
           }
         }
 
-        if ($.fn(isDisabled)) {
+        if (isDisabled($)) {
           sigPad.off()
-          $.fn(setViewState(DISABLED_FLAG, true))
+          setViewState(DISABLED_FLAG, true)($)
         }
-        $.fn(setViewState(SIG_PAD_INSTANCE, sigPad))
+        setViewState(SIG_PAD_INSTANCE, sigPad)($)
       }, 100)
       return html`
         <canvas class="mq-input" id=${id} height="600" width="1000" >  </canvas>

@@ -1,4 +1,4 @@
-import { MetaModel } from "metaliq"
+import { $fn, MetaModel } from "metaliq"
 import { Address, Contact, Organisation } from "./test-types"
 import { TERMINOLOGY } from "@metaliq/terminology"
 
@@ -50,7 +50,7 @@ export const contactModel: MetaModel<Contact, any> = {
     },
     isSelfEmployed: {
       label: "Is Self-Employed",
-      hidden: (v, $) => $.parent$.value.age < 18
+      hidden: $ => $.parent$.value.age < 18
     }
   }
 }
@@ -63,7 +63,7 @@ export const organisationModel: MetaModel<Organisation> = {
         ...contactModel.fields,
         age: {
           ...contactModel.fields.age,
-          validator: age => age >= 18
+          validator: $fn(age => age >= 18)
         }
       }
     }

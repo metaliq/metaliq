@@ -13,11 +13,11 @@ const closeButton: ModalButton = {
   up: () => { closeModal() }
 }
 
-export const showModalChannel = (newModalInfo: ModalInfo): MetaFn<ModalInfo> => (modalInfo, modalInfo$) => {
+export const showModalChannel = (newModalInfo: ModalInfo): MetaFn<ModalInfo> => modalInfo$ => {
   modalInfo$.value = newModalInfo
 }
 
-export const closeModalChannel = (): MetaFn<ModalInfo> => (modalInfo, modalInfo$) => {
+export const closeModalChannel = (): MetaFn<ModalInfo> => modalInfo$ => {
   modalInfo$.value = {
     body: "",
     title: ""

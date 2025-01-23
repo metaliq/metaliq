@@ -53,15 +53,15 @@ declare module "metaliq" {
 
 // Can't use getModelValue as it is nested
 // TODO: EITHER make a nested version of getModelValue OR switch to a review-and-state model
-export const forwardsLabel: MetaFn<any, any, StepLabel> = (value, $) => {
+export const forwardsLabel: MetaFn<any, any, StepLabel> = $ => {
   const label = $.model.wizardStep?.forwardsLabel
-  if (isMetaFn(label)) return label(value, $)
+  if (isMetaFn(label)) return label($)
   else return label
 }
 
-export const backwardsLabel: MetaFn<any, any, StepLabel> = (value, $) => {
+export const backwardsLabel: MetaFn<any, any, StepLabel> = $ => {
   const label = $.model.wizardStep?.backwardsLabel
-  if (isMetaFn(label)) return label(value, $)
+  if (isMetaFn(label)) return label($)
   else return label
 }
 
@@ -102,7 +102,7 @@ export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
   return { stepNames, nowIndex, nowStep$ }
 }
 
-export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v, wizard$) => {
+export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async wizard$ => {
   // Deduce indices of current and next step
   const { stepNames, nowIndex, nowStep$ } = getWizardInfo(wizard$)
 
@@ -112,7 +112,7 @@ export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v
   if (nextIndex < 0 || nextIndex >= stepNames.length) { // Index out of bounds
     if (wizard$.parent$?.model.wizard) {
       const direction: StepDirection = nextIndex < 0 ? "backwards" : "forwards"
-      await wizard$.parent$.fn(changeStep({ direction }))
+      await changeStep({ direction })(wizard$.parent$)
     }
     return
   }
@@ -136,7 +136,7 @@ export const changeStep = <T> (stepChange: StepChange<T>): MetaFn<T> => async (v
 
   const onComplete = nowStep$.model.wizardStep?.onComplete
   if (typeof onComplete === "function" && nextIndex > nowIndex) {
-    const completionResponse = await onComplete(nowStep$.value, nowStep$)
+    const completionResponse = await onComplete(nowStep$)
     if (completionResponse === false) return
   }
   wizard$.state.step = stepNames[nextIndex]

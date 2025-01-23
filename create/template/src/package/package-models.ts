@@ -1,4 +1,4 @@
-import { MetaModel } from "metaliq"
+import { $fn, MetaModel } from "metaliq"
 import { Dependency, Package } from "../gen/graphql-types"
 import { fetchPackageQuery, updatePackageMutation } from "../gen/graphql-operations"
 import { fields, MetaViewTerm, tag } from "@metaliq/presentation"
@@ -40,7 +40,7 @@ export const dependenciesModel: MetaModel<Dependency[]> = {
     }
   },
   view: [
-    tag("h2", (v, $) => $.term("label")),
+    tag("h2", $ => $.term("label")),
     grid(".deps-grid", ["Package Name", "Version"], fields())
   ]
 }
@@ -74,7 +74,7 @@ export const packageInfoModel: MetaModel<Package> = {
     },
     version: {
       label: "Version",
-      validator: versionValidator
+      validator: $fn(versionValidator)
     }
   },
   view: page([

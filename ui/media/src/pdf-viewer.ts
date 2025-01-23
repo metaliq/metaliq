@@ -10,14 +10,14 @@ export type PdfViewerOptions = {
   fetch?: Fetch
 }
 
-export const pdfViewer = (options: PdfViewerOptions = {}): MetaView<string> => (v, $) => html`
-  ${guard(v, () => {
+export const pdfViewer = (options: PdfViewerOptions = {}): MetaView<string> => $ => html`
+  ${guard($.value, () => {
     const id = Math.ceil(Math.random() * 999999)
     const viewerId = "mq-pdf-viewer-" + id.toString()
 
-    if (v) {
+    if ($.value) {
       setTimeout(() => {
-        makeBlobUrl(v, options)
+        makeBlobUrl($.value, options)
           .then(blobUrl => {
             const iframe: HTMLIFrameElement = document.querySelector(`#${viewerId}`)
             iframe.src = `node_modules/@metaliq/media/res/pdf-viewer/viewer.html?file=${blobUrl}`
@@ -41,9 +41,9 @@ export const pdfInputField = (options: FileInputOptions & PdfViewerOptions = {})
     icon: "bi bi-file-pdf",
     ...options
   }
-  return fieldContainer(options)((v, $) => [
-    fileInput(options)(v, $),
-    v ? pdfViewer(options)(v, $) : ""
+  return fieldContainer(options)($ => [
+    fileInput(options)($),
+    $.value ? pdfViewer(options)($) : ""
   ])
 }
 

@@ -13,13 +13,13 @@ APPLICATION()
 
 const Compressor = <unknown>getModuleDefault(CompressorModule, "Compressor") as typeof CompressorModule.default
 
-export const object: MetaView<string> = (v, $) => html`
+export const object: MetaView<string> = $ => html`
   <object data=${$.value}>
     <a href="#" target="_blank" @click=${() => window.open($.value, "_blank")}>Open in New Tab</a>
   </object>
 `
 
-export const iframe: MetaView<string> = (v, $) => html`
+export const iframe: MetaView<string> = $ => html`
   <iframe src=${$.value}></iframe>
 `
 
@@ -66,12 +66,12 @@ export const defaultFileInputOptions: FileInputOptions = {
   format: "base64"
 }
 
-export const fileInput = (options: FileInputOptions): MetaView<string> => (v, $) => {
+export const fileInput = (options: FileInputOptions): MetaView<string> => $ => {
   options = { ...defaultFileInputOptions, ...options }
 
-  const disabled = $.fn(isDisabled)
+  const disabled = isDisabled($)
 
-  const fileSelected: MetaFn<string> = async (v, $, event) => {
+  const fileSelected: MetaFn<string> = async ($, event) => {
     const input = event.target as HTMLInputElement
     let blob: Blob = input.files[0]
     if (blob.type === "image" && options.compressImageTo) {
@@ -115,9 +115,9 @@ export const imageInputField = (options: FileInputOptions) => {
     icon: "bi bi-camera-fill",
     ...options
   }
-  return fieldContainer(options)((v, $) => [
-    fileInput(options)(v, $),
-    v ? html`<div class="mq-media-preview">
+  return fieldContainer(options)($ => [
+    fileInput(options)($),
+    $.value ? html`<div class="mq-media-preview">
       <img src=${$.value} alt="Image Preview">
     </div>` : ""
   ])
@@ -134,7 +134,7 @@ export const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolv
   }
 })
 
-const clearValue: MetaFn<string> = (v, $) => { $.value = "" }
+const clearValue: MetaFn<string> = $ => { $.value = "" }
 
 const compress = (file: File, options: Compressor.Options = {}): Promise<Blob> =>
   new Promise((resolve, reject) => {

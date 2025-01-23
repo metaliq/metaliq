@@ -39,9 +39,9 @@ export type NavigationOptions = {
   pageWrapper?: MetaViewWrapper<any>
 }
 
-const hasOwnView: MetaFn<any> = (v, $) => !!$.raw("view")
+const hasOwnView: MetaFn<any> = $ => !!$.raw("view")
 
-export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v, $) => {
+export const navigator = (options: NavigationOptions = {}): MetaView<any> => $ => {
   const pageBody = getNavSelection($, { mustHave: hasOwnView })?.view(null, { noHide: true })
   return html`
     <div class="mq-navigator">
@@ -63,7 +63,7 @@ export const navigator = (options: NavigationOptions = {}): MetaView<any> => (v,
   `
 }
 
-export const defaultNavHeaderContent = (options: NavigationOptions = {}): MetaView<any> => (v, $) => html`
+export const defaultNavHeaderContent = (options: NavigationOptions = {}): MetaView<any> => $ => html`
   ${options.logoUrl ? html`
     <img src=${options.logoUrl} alt="Logo" @click=${$.up(options.logoUpdate)}>
   ` : ""}
@@ -100,11 +100,11 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
 
 const menuItem = (
   isSelected: boolean, isSelectedItem: boolean, level: number = 1
-): MetaView<any> => (navItem, navItem$) => {
+): MetaView<any> => navItem$ => {
   const text = navItem$.term("labelView") ?? navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
-    <li @click=${(evt: Event) => navItem$.fn(menuItemClick(isSelected), evt)} class=${classMap({
+    <li @click=${(evt: Event) => menuItemClick(isSelected)(navItem$, evt)} class=${classMap({
       "mq-nav-selected": isSelected,
       "mq-nav-selected-item": isSelectedItem,
       "mq-nav-no-icon": !icon
@@ -121,7 +121,7 @@ const menuItem = (
   `
 }
 
-const menuItemClick = (isSelected: boolean): MetaFn<any> => (v, $, event) => {
+const menuItemClick = (isSelected: boolean): MetaFn<any> => ($, event) => {
   // If currently selected leaf has a different parent with the new selection, close menu expansions
-  $.fn(goNavRoute, event)
+  goNavRoute($, event)
 }

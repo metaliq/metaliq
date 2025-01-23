@@ -22,12 +22,11 @@ export type MetaFormOptions<T> = FieldsOptions<T> & {
 /**
  * A MetaView for an object type that displays all its child fields.
  */
-export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v, $ = meta$(v)) => {
-  const { meta } = $
-  if (isMeta(meta)) {
+export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => $ => {
+  if (isMeta($.meta)) {
     return html`
       <div class="${options.baseClass ?? "mq-form"} ${options.classes || ""}" >
-        ${fields(options)(v, $)}
+        ${fields(options)($)}
       </div>
     `
   }
@@ -36,7 +35,7 @@ export const metaForm = <T>(options: MetaFormOptions<T> = {}): MetaView<T> => (v
 /**
  * Return a default view for a meta based upon its value type.
  */
-const defaultView = <T>(v: T, $: Meta$<T>): MetaView<T> => {
+const defaultView: MetaFn<any> = <T>($: Meta$<T>): MetaView<T> => {
   if (!$) { // Possible when used on empty array
     return () => "Default view for non-existent meta"
   } else if (isMetaArray($.meta)) {
@@ -44,7 +43,7 @@ const defaultView = <T>(v: T, $: Meta$<T>): MetaView<T> => {
     return repeat()
   } else if ($.value && typeof $.value === "object") {
     return fields()
-  } else if (typeof v === "boolean") {
+  } else if (typeof $.value === "boolean") {
     return checkboxField()
   } else if (typeof $.value === "number") {
     return inputField({ type: "number" })
@@ -99,8 +98,8 @@ export type InputOptions<T, P = any> = FieldOptions<T> & {
  * Basic input element that uses some InputOptions.
  * To get full use of all options use `inputField`.
  */
-export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T, P> => (v, $) => {
-  const disabled = $.fn(isDisabled)
+export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T, P> => $ => {
+  const disabled = isDisabled($)
   return html`
     <input type=${options.type || "text"}
       ?disabled=${disabled}
@@ -108,7 +107,7 @@ export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T,
         "mq-error-field": $.state.error,
         "mq-disabled": disabled
       })}"
-      .value=${live(options.formatter?.($.value) ?? $.value ?? "")}
+      .value=${live(options.formatter?.($) ?? $.value ?? "")}
       @focus=${up(onFocus, $)}
       @blur=${up(onBlur(options), $)}
       @click=${options.type === "checkbox" ? up(onInput(options), $, { doDefault: true }) : () => {}}
@@ -124,7 +123,7 @@ export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T,
  * Returns the first explicitly defined disabled state by searching on the meta
  * and then ascending through its ancestors. If none is found, return false.
  */
-export const isDisabled: MetaFn<any, any, boolean> = (v, $) => {
+export const isDisabled: MetaFn<any, any, boolean> = $ => {
   const result = $.term("disabled", true)
   return !!result
 }
@@ -140,7 +139,7 @@ export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
     "mq-mandatory": $.term("mandatory"),
     "mq-active": $.state.active,
     "mq-populated": hasValue($),
-    "mq-disabled": $.fn(isDisabled)
+    "mq-disabled": isDisabled($)
   }
 }
 
@@ -156,9 +155,9 @@ export const inputField = <T, P = any>(options: InputOptions<T, P> = {}): MetaVi
 /**
  * Label element for input field.
  */
-export const fieldLabel = <T, P = any>(options?: FieldOptions<T, P>): MetaView<T, P> => (value, $) =>
+export const fieldLabel = <T, P = any>(options?: FieldOptions<T, P>): MetaView<T, P> => $ =>
   typeof options?.label === "function"
-    ? options.label(value, $)
+    ? options.label($)
     : typeof options?.label === "object"
       ? options?.label as TemplateResult
       : html`<span class="mq-input-label">${options?.label || labelOrKey($)}</span>`
@@ -167,33 +166,33 @@ export const fieldLabel = <T, P = any>(options?: FieldOptions<T, P>): MetaView<T
  * Standard container for MetaliQ form fields.
  */
 export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): MetaViewWrapper<T, P> =>
-  fieldContent => (v, $) => html`
+  fieldContent => $ => html`
     <label
-      data-mq-field-key=${fieldKey(v, $)}
-      data-mq-field-path=${fieldPath(v, $)}
+      data-mq-field-key=${fieldKey($)}
+      data-mq-field-path=${fieldPath($)}
       class="mq-field ${classMap({
         [options?.classes]: !!options?.classes,
         [`mq-${options?.type || "text"}-field`]: options?.type,
         ...fieldClasses($)
       })}">
-      ${fieldLabel(options)(v, $)}
+      ${fieldLabel(options)($)}
       ${$.view(fieldContent)}
-      ${fieldError(v, $)}
+      ${fieldError($)}
     </label>
   `
 
 /**
  * Value for the data-mq-field-key attribute of MetaliQ form fields.
  */
-export const fieldKey: MetaFn<any> = (v, $) =>
+export const fieldKey: MetaFn<any> = $ =>
   ($.key ?? "") + (typeof $.index === "number" ? `[${$.index}]` : "")
 
 /**
  * Value for the data-mq-field-path property of MetaliQ form fields.
  */
-export const fieldPath: MetaFn<any> = (v, $) => {
-  const key = fieldKey(v, $)
-  return [$.parent$?.fn(fieldPath), key].filter(Boolean).join(".")
+export const fieldPath: MetaFn<any> = $ => {
+  const key = fieldKey($)
+  return [$.parent$ ? fieldPath($.parent$) : "", key].filter(Boolean).join(".")
 }
 
 /**
@@ -208,7 +207,7 @@ export const checkboxField = <T, P = any> (options: InputOptions<T, P> = {}): Me
 /**
  * Error message for the given field.
  */
-export const errorMsg = (options: { classes?: string } = {}): MetaView<any> => (v, $ = meta$(v)) => {
+export const errorMsg = (options: { classes?: string } = {}): MetaView<any> => $ => {
   const error = $.state.error
   const errorMsg = typeof error === "string" ? error : "Invalid value"
   const classes = `mq-error-msg ${options.classes ?? ""}`
@@ -238,13 +237,13 @@ const onInput = <T>({ unvalidated, type, onChange }: InputOptions<T>) =>
     if (newValue !== $.value) {
       $.value = newValue
       if (typeof onChange === "function") {
-        $.fn(onChange)
+        onChange($)
       }
     }
     if (!unvalidated) validate($)
   }
 
-export const errorsBlock: MetaView<any> = (v, $ = meta$(v)) => {
+export const errorsBlock: MetaView<any> = $ => {
   return html`
     <div class="mq-error-msg mq-page-error">
       ${$.state.allErrors?.map(error$ => html`
@@ -261,12 +260,12 @@ export type ButtonOptions<T, P = any> = FieldOptions<T, P> & {
 
 export const button = <T, P = any>(
   options: ButtonOptions<T, P> = {}
-): MetaView<T, P> => (v, $ = meta$(v)) => html`
-  <button ?disabled=${$?.fn(isDisabled)}
+): MetaView<T, P> => $ => html`
+  <button ?disabled=${isDisabled($)}
     class="mq-button ${options.classes ?? ""} ${
       options.type ? `mq-${options.type}-button` : ""
     }"
-    @click=${$ ? $.up(options.onClick) : up(options.onClick, v)}>
+    @click=${$.up(options.onClick)}>
     ${$?.maybeFn(options.label) ?? $?.term("label") ?? options.label}
   </button> 
 `

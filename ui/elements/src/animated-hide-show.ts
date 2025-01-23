@@ -84,7 +84,7 @@ export type AnimatedHideShowOptions = {
  * Wrap a MetaView with the mq-animated-hide-show custom element and link its `mq-hidden`
  * property with the hidden term from the MetaModel.
  */
-export const animatedHideShow = <T = any, P = any>({ duration }: AnimatedHideShowOptions = {}): MetaViewWrapper<T, P> => (view) => (v, $) => html`
+export const animatedHideShow = <T = any, P = any>({ duration }: AnimatedHideShowOptions = {}): MetaViewWrapper<T, P> => (view) => $ => html`
   <mq-animated-hide-show ?mqHidden=${!!$.term("hidden")} ?mqDuration=${duration}>
     ${$.view(view, { noHide: true })}
   </mq-animated-hide-show>

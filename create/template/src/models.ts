@@ -89,7 +89,7 @@ export const appModel: MetaModel<App> = {
     nav: navModel,
     modal: modalModel
   },
-  init: () => initApi(`http://${location.href}:8940/graphql`, {
+  init: () => initApi(`http://${location.hostname}:8940/graphql`, {
     // Link the initialised API to a response handler that displays progress and errors
     onResponse: handleResponseErrors(showMessage, showProgress)
   }) && null,

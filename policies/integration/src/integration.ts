@@ -23,7 +23,7 @@ export interface Integration$ <T, P> {
    *
    * is the equivalent of
    *
-   * `$.fn(op(operationFunction))`
+   * `op(operationFunction)($)`
    */
   op?: <I> (
     operation: Operation<I, T>,
@@ -86,7 +86,7 @@ declare module "metaliq" {
 }
 
 Meta$.prototype.op = function (operation, options) {
-  return this.fn(op(operation, options))
+  return op(operation, options)(this)
 }
 
 /**
@@ -123,7 +123,7 @@ let showProgress: (msg: string, title?: string) => any = () => {}
  *
  * or within a broader update process, like:
  *
- * `$.fn(op(operation, options))`
+ * `op(operation, options)($)`
  *
  * A shorthand exists for the above case:
  *
@@ -131,14 +131,14 @@ let showProgress: (msg: string, title?: string) => any = () => {}
  */
 export const op = <I, O> (
   operation: Operation<I, O>, options: OperationOptions<O, I> = {}
-): MetaFn<O> => async (v, $) => {
+): MetaFn<O> => async $ => {
     if (options.message) showProgress?.(options.message)
     const input = options.input ?? as<I>($.value)
     options = { ...defaultOperationOptions, ...options }
     const response = await operation(input)
     // Operation-level response handling option
     if (options.onResponse) {
-      await $.fn(options.onResponse)(response)
+      await options.onResponse($)(response)
     }
     // Assign response data back into local graph
     const isObject = (x: any) => typeof x === "object" && !Array.isArray(x)

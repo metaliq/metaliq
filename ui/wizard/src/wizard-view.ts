@@ -6,12 +6,12 @@ import { backwardsLabel, changeStep, forwardsLabel } from "./wizard"
 import { pageError } from "@metaliq/forms"
 import { fields, MetaView, tag } from "@metaliq/presentation"
 
-export const wizardView: MetaView<any> = (value, $) => [
-  wizardTramline(value, $),
-  wizardStep(value, $)
+export const wizardView: MetaView<any> = $ => [
+  wizardTramline($),
+  wizardStep($)
 ]
 
-const tramStop: MetaView<any> = (v, $) => html`
+const tramStop: MetaView<any> = $ => html`
   <div class="mq-wizard-nav-item ${classMap({
     current: $.key === $.parent$.state.step,
     visited: $.state.validated,
@@ -27,12 +27,11 @@ const tramStop: MetaView<any> = (v, $) => html`
 
 export const wizardTramline: MetaView<any> = tag(".mq-wizard-nav", fields({ view: tramStop }))
 
-export const wizardStep: MetaView<any> = (value, wizard$) => {
+export const wizardStep: MetaView<any> = wizard$ => {
   const currentStep$ = (wizard$.meta as Meta<any>)[wizard$.state.step].$ as Meta$<any>
-  const currentValue = currentStep$.value
   const labels = {
-    forwards: forwardsLabel(currentValue, currentStep$),
-    backwards: backwardsLabel(currentValue, currentStep$)
+    forwards: forwardsLabel(currentStep$),
+    backwards: backwardsLabel(currentStep$)
   }
 
   return html`
@@ -51,7 +50,7 @@ export const wizardStep: MetaView<any> = (value, wizard$) => {
           ? currentStep$.view()
           : notConfiguredWarning
         }
-        ${pageError(currentValue, currentStep$)}
+        ${pageError(currentStep$)}
       </div>
       ${currentStep$.model.wizard ? "" : html`
         <div class="mq-wizard-buttons">
