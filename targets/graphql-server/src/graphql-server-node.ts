@@ -89,7 +89,7 @@ export const graphQLServerRunner = (
   const listenOpts = host ? { host, port } : { port }
 
   await new Promise<void>((resolve) => httpServer.listen(listenOpts, resolve))
-  console.log(`GraphQL 123 server running on http://${hostname}:${port}/graphql`)
+  console.log(`GraphQL server running on http://${hostname}:${port}/graphql`)
 
   return true
 }

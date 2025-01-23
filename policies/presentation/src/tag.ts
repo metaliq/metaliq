@@ -153,7 +153,9 @@ export const tagLiterals = {
   thead: literal`thead`,
   tfoot: literal`tfoot`,
   tr: literal`tr`,
-  td: literal`td`
+  td: literal`td`,
+  a: literal`a`,
+  button: literal`button`
 }
 
 /**
