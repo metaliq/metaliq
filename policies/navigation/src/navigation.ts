@@ -265,7 +265,7 @@ export const setNavSelection: MetaFn<any> = $ => {
     }
   }
 
-  clearSelection(root$($))
+  onDescendants(clearSelection, true)(root$($))
 
   // Set any upper selections
   const setParentSelection: MetaFn<any> = $ => {
