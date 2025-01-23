@@ -179,7 +179,7 @@ Meta$.prototype.view = function (viewTerm?, options?) {
 Meta$.prototype.field = function <T, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
 ) {
-  return field(key, view, options)(this.value, this)
+  return field(key, view, options)(this)
 }
 
 /**

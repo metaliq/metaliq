@@ -80,9 +80,9 @@ export async function generatePage (inDir: string, outDir: string, inPath: strin
 
   const model: ModuleModel = frontmatter.model
     ? typeof frontmatter.model === "string"
-      ? { type: frontmatter.model, name: "v", name$: "$" }
-      : { type: frontmatter.model[0], name: frontmatter.model[1], name$: frontmatter.model[1] + "$" }
-    : { type: "any", name: "v", name$: "$" }
+      ? { type: frontmatter.model, name$: "$" }
+      : { type: frontmatter.model[0], name$: frontmatter.model[1] + "$" }
+    : { type: "any", name$: "$" }
 
   const moduleData: ModuleData = {
     viewName,
@@ -138,8 +138,8 @@ const htmlTs = (html: string, moduleData: ModuleData) => {
   const importsTs = imports.map(i => `import ${i.id} from "${i.from}"`).join("\n")
 
   const mvParamTypes = modelType !== "any"
-    ? `(${moduleData.model.name}, ${moduleData.model.name$})`
-    : `(${moduleData.model.name}: any, ${moduleData.model.name$}: Meta$<any>)`
+    ? `(${moduleData.model.name$})`
+    : `(${moduleData.model.name$}: Meta$<any>)`
 
   const ts = dedent`
     ${importsTs}

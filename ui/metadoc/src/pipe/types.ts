@@ -20,6 +20,5 @@ export type ModuleImport = {
 
 export type ModuleModel = {
   type?: string
-  name?: string
   name$?: string
 }
