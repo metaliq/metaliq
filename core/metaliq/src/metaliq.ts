@@ -273,6 +273,7 @@ export class Meta$<T, P = any> {
    * as a result of a call to {@link field$}.
    */
   fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
+    if (Array.isArray(this.meta)) return []
     const allKeys = Array.from(new Set([...modelKeys(this.model), ...Object.keys(this.meta)]))
       .filter(k => k !== "$") as Array<FieldKey<T>>
     return includeExclude(allKeys, options)
