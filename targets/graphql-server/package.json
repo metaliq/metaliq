@@ -10,8 +10,6 @@
     "@lit-labs/ssr": "1.0.0",
     "@metaliq/publication": "workspace:*",
     "@metaliq/util": "workspace:*",
-    "apollo-server-cloud-functions": "3.5.0",
-    "apollo-server-lambda": "3.10.0",
     "cors": "2.8.5",
     "dotenv": "16.0.1",
     "express": "4.21.1",
@@ -42,5 +40,9 @@
     "entryPoints": [
       "./src/*.ts"
     ]
+  },
+  "exports": {
+    ".": "./lib/graphql-server.js",
+    "./lib/graphql-server-node": "./lib/graphql-server-node.js"
   }
 }

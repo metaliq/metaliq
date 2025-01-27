@@ -23,6 +23,7 @@ import { dedent } from "ts-dedent"
 import "dotenv/config"
 import findFreePorts from "find-free-ports"
 import sourceMapSupport from "source-map-support"
+import { AddressInfo } from "node:net"
 
 sourceMapSupport.install()
 
@@ -42,16 +43,12 @@ interface DevContext {
  */
 export const graphQLServerRunner = (
   config: GraphQLServerConfig = {}
-): Runner => async ({ modelName, simplePath, model }) => {
+): Runner => async ({ model }) => {
   let port = config.run?.port
   if (!port) {
     const ports = await findFreePorts(1, { startPort: 9400, jobCount: 1 })
     port = ports[0]
   }
-
-  console.log(process.env.NODE_ENV)
-
-  const hostname = config?.run?.hostname || "localhost"
 
   // Stop any previous running servers
   if (apolloServer) await apolloServer.stop()
@@ -89,7 +86,8 @@ export const graphQLServerRunner = (
   const listenOpts = host ? { host, port } : { port }
 
   await new Promise<void>((resolve) => httpServer.listen(listenOpts, resolve))
-  console.log(`GraphQL server running on http://${hostname}:${port}/graphql`)
+  const info = httpServer.address() as AddressInfo
+  console.log(`GraphQL server running on http://${host || "localhost"}:${info.port}/graphql`)
 
   return true
 }
