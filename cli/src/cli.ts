@@ -71,13 +71,16 @@ program
   .action(serve)
 
 program
-  .command("dev-local-link")
-  .description("For MetaliQ devs - `pnpm link` all packages in a local copy of the metaliq monorepo to a client project. They should be in same base dir.")
+  .command("dev-local-link [path]")
+  .description(
+    "For MetaliQ devs - `pnpm link` all packages in a local copy of the metaliq monorepo to a client project. " +
+    "Optionally specify path to metaliq, defaults to same base dir as project.")
   .action(link)
 
 program
-  .command("dev-local-unlink")
-  .description("For MetaliQ devs - `pnpm unlink` all packages in a local copy of the metaliq monorepo from a client project. They should be in same base dir.")
+  .command("dev-local-unlink [path]")
+  .description("For MetaliQ devs - `pnpm unlink` all packages in a local copy of the metaliq monorepo from a client project. " +
+    "Optionally specify path to metaliq, defaults to same base dir as project.")
   .action(unlink)
 
 program.parse()
