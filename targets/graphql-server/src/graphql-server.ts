@@ -1,4 +1,8 @@
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
+import type { ContextFunction } from "@apollo/server"
+import type { CorsOptions } from "cors"
+import type { RequestHandler } from "express"
+import { ExpressContextFunctionArgument } from "@apollo/server/express4"
 
 export interface GraphQLServerTerms<T> {
   /**
@@ -34,6 +38,30 @@ export type GraphQLServerConfig = {
      * Defaults to blank.
      */
     hostname?: string
+
+    /**
+     * Custom middleware for adding things to the GraphQL resolver context object. For example:
+     *
+     * ```
+     * async ({ req }) => {
+     *   return {
+     *     sessionToken: req.headers["session-token"] as string
+     *   }
+     * }
+     * ```
+     */
+    middleware?: ContextFunction<ExpressContextFunctionArgument[]>
+
+    /**
+     * Configure CORS.
+     * If not provided, CORS will be enabled by default, suitable for development.
+     */
+    cors?: CorsOptions
+
+    /**
+     * Handlers for routes other than GraphQL, for example authorization callbacks.
+     */
+    otherRoutes?: Array<[string, RequestHandler]>
   }
 
   /**

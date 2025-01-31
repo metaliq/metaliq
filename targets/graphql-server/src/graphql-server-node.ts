@@ -30,13 +30,9 @@ sourceMapSupport.install()
 const { readFile, remove } = fsExtra
 
 let httpServer: Server
-let apolloServer: ApolloServer<DevContext>
+let apolloServer: ApolloServer<any>
 
 const jsSrc = "bin/index.js" // Location for generated JS entry point in dev and src for build
-
-interface DevContext {
-  sessionToken: string
-}
 
 /**
  * Starts the development server for the MetaliQ GraphQL Server publication target.
@@ -61,7 +57,7 @@ export const graphQLServerRunner = (
   // Create the HTTP server that will host the API
   const expressApp = express()
   httpServer = createServer(expressApp)
-  apolloServer = new ApolloServer<DevContext>({
+  apolloServer = new ApolloServer<any>({
     typeDefs,
     resolvers: model.resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
@@ -71,16 +67,17 @@ export const graphQLServerRunner = (
 
   expressApp.use(
     "/graphql",
-    cors(),
+    cors(config.run.cors),
     express.json({ limit: "50mb" }),
-    expressMiddleware<DevContext>(apolloServer, {
-      context: async ({ req }) => {
-        return {
-          sessionToken: req.headers["session-token"] as string
-        }
-      }
-    })
+    expressMiddleware<any>(
+      apolloServer,
+      config.run?.middleware && { context: config.run.middleware }
+    )
   )
+
+  for (const handler of config.run?.otherRoutes) {
+    expressApp.use(handler[0], handler[1])
+  }
 
   const host = config?.run?.hostname
   const listenOpts = host ? { host, port } : { port }
