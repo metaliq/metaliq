@@ -57,7 +57,7 @@ export interface Presentation$<T, P = any> {
   /**
    * Render a view for the Meta$ and its associated data value.
    *
-   * Calling `$.view(myView)` has several advantages over calling `myView$`:
+   * Calling `$.view(myView)` has several advantages over calling `myView($)`:
    *
    * * `myView` can be a MetaViewTerm, in other words can be an array of MetaViews.
    *
@@ -70,11 +70,6 @@ export interface Presentation$<T, P = any> {
    * * The $ backlink on the value object will be re-established.
    * This can assist in situations where a single value object is being shared
    * (with possibly different MetaModels) across multiple points in the meta graph.
-   *
-   * ```
-   * $.view() // View the data value with the view from the model, if present
-   * $.view(maybeView) // View using maybeView if present, otherwise fall back to model view if present
-   * ```
    */
   view: (view?: MetaViewTerm<T, P>, options?: ViewOptions) => ViewResult
 

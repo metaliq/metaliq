@@ -2,7 +2,7 @@ import { html, TemplateResult } from "lit"
 import { live } from "lit/directives/live.js"
 import { classMap } from "lit/directives/class-map.js"
 import { up } from "@metaliq/up"
-import { isMeta, isMetaArray, MaybeFn, meta$, Meta$, MetaFn } from "metaliq"
+import { isMeta, isMetaArray, MaybeFn, Meta$, MetaFn } from "metaliq"
 import { hasValue, validate } from "@metaliq/validation"
 import { labelOrKey, labelPath } from "@metaliq/terminology"
 import { fields, FieldsOptions, MetaView, MetaViewWrapper, repeat, setViewResolver, ViewResult } from "@metaliq/presentation"
@@ -133,15 +133,12 @@ export const isDisabled: MetaFn<any, any, boolean> = $ => {
  * Can pass the meta info $ object (recommended)
  * or its associated data value (not a primitive).
  */
-export const fieldClasses = <T, P = any> (v$: T | Meta$<T, P>) => {
-  const $ = (meta$(v$) || v$) as Meta$<T, P>
-  return {
-    "mq-mandatory": $.term("mandatory"),
-    "mq-active": $.state.active,
-    "mq-populated": hasValue($),
-    "mq-disabled": isDisabled($)
-  }
-}
+export const fieldClasses: MetaFn<any> = $ => ({
+  "mq-mandatory": $.term("mandatory"),
+  "mq-active": $.state.active,
+  "mq-populated": hasValue($),
+  "mq-disabled": isDisabled($)
+})
 
 /**
  * Configurable input field.

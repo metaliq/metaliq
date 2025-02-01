@@ -484,10 +484,8 @@ export const meta$ = <T>(v$: T | Meta$<T>): Meta$<T> => {
 /**
  * A type guard to narrow a value or its meta value down to a meta value$.
  */
-export const isMeta$ = <T, P = any>(v$: T | Meta$<T>): v$ is Meta$<T, P> => {
-  v$ = v$ as Meta$<any>
-  return !!(v$?.meta?.$ && v$?.model && v$?.field$)
-}
+export const isMeta$ = <T, P = any>(v$: T | Meta$<T>): v$ is Meta$<T, P> =>
+  v$ instanceof Meta$
 
 /**
  * A type guard to narrow a MetaField to a Meta.
@@ -500,7 +498,7 @@ export const isMeta = <T, P = any>(m: HasMeta$<T, P>): m is Meta<T, P> =>
  */
 export const isMetaArray = <
   T, P = any, I = T extends Array<infer I> ? I : never
->(m: HasMeta$<T, P>): m is MetaArray<I, P> =>
+>(m: HasMeta$<T, P> | MetaArray<I, P>): m is MetaArray<I, P> =>
   Array.isArray(m)
 
 /**
