@@ -7,6 +7,7 @@
     "metaliq": "./bin/cli-es6.js"
   },
   "dependencies": {
+    "@lit-labs/ssr": "3.2.2",
     "@metaliq/application": "workspace:*",
     "@metaliq/presentation": "workspace:*",
     "@metaliq/publication": "workspace:*",

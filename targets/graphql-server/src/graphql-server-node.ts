@@ -75,7 +75,7 @@ export const graphQLServerRunner = (
     )
   )
 
-  for (const handler of config.run?.otherRoutes) {
+  for (const handler of config?.run?.otherRoutes || []) {
     expressApp.use(handler[0], handler[1])
   }
 

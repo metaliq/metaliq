@@ -599,11 +599,14 @@ export function on <T, K extends FieldKey<T>> (key: K, metaFn: MetaFn<T[K]>): Me
 }
 
 /**
- * Convert a plain function for a value of type T into a MetaFn for data type T.
+ * Convert a plain function for a value of type T
+ * (or a MetaliQ V1 style meta function)
+ * into a MetaFn for data type T.
  */
 export const $fn = <
   T, P = any, R = any, E extends Event = Event
->(fn: (value: T) => R): MetaFn<T, P, R, E> => $ => fn($.value)
+>(fn: (v: T, $?: Meta$<T, P>, event?: E) => R): MetaFn<T, P, R, E> =>
+  ($, event?) => fn($.value, $, event)
 
 /**
  * Return a collection of Meta$ values for each field of the given parent Meta$ value.
