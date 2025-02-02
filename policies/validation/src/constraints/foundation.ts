@@ -26,7 +26,7 @@ export const minLength = (min: number, msg?: string): Validator<string> => $ =>
   $.value?.length >= min || msg || `Should be at least ${min} characters`
 
 export const maxLength = (max: number, msg?: string): Validator<string> => $ =>
-  $.value?.length <= max || msg || `Should not be more than ${min} characters`
+  $.value?.length <= max || msg || `Should not be more than ${max} characters`
 
 export const hasLength = (length: number, msg?: string): Validator<string> => $ =>
   $.value?.length === length || msg || `Should be exactly ${length} characters`
