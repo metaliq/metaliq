@@ -4,8 +4,8 @@ import { FieldKey, meta$, MetaFn } from "metaliq"
 /**
  * Checks equality with the given value.
  */
-export const equalTo = (equalTo: any, msg?: string): Validator<any> => value =>
-  value === equalTo || msg || "Wrong value"
+export const equalTo = (equalTo: any, msg?: string): Validator<any> => $ =>
+  $.value === equalTo || msg || "Wrong value"
 
 /**
  * Checks equality with another field in the same parent.
@@ -34,8 +34,8 @@ export const hasLength = (length: number, msg?: string): Validator<string> => $ 
 export const notBlank = (msg?: string): Validator<string> => $ =>
   !!$.value?.length || msg || "Cannot be blank"
 
-export const blankOr = (other: Validator<string>): Validator<string> => (value, meta) =>
-  !value || other(value, meta)
+export const blankOr = (other: Validator<string>): Validator<string> => $ =>
+  !$.value || other($)
 
 export const siblingsBlankOr = <T, P>(siblings: Array<FieldKey<P>>, other: Validator<T>): Validator<T, P> => $ =>
   !siblings.map(key => $.parent$.field$(key).value).filter(Boolean).length || other($)
