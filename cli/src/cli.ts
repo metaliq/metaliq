@@ -71,7 +71,7 @@ program
   .command("serve [location]")
   .option("-i --index <index>", "Alternate to index.html")
   .option("-p --port <port>", "Port to serve on", "8888")
-  .description("Start a static server for the given location (useful for checking prod builds)")
+  .description("Start a static server for the given location (defaults to prod/www, useful for checking prod builds)")
   .action(serve)
 
 program
@@ -196,7 +196,7 @@ export async function build (modelNames: string[], options: BuildOptions = {}) {
   console.log("Build completed")
 }
 
-export async function serve (location: string = "", options: ServeOptions = {}) {
+export async function serve (location: string = "prod/www", options: ServeOptions = {}) {
   console.log(`Starting MetaliQ static file server for location ${location || "/"}`)
   const devServerConfig: DevServerConfig = {
     rootDir: join(process.cwd(), location),
