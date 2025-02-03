@@ -171,6 +171,11 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   }
 }
 
+/**
+ * Display the field view (with optional view term and view options) for the given field key.
+ *
+ * So `$.field("lastName") is the equivalent of `$.$("lastName").view()`.
+ */
 Meta$.prototype.field = function <T, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
 ) {
@@ -186,7 +191,7 @@ Meta$.prototype.field = function <T, K extends FieldKey<T>> (
 export const field = <T, P, K extends FieldKey<T>> (
   key: K, view?: MetaViewTerm<T[K], T>, options?: ViewOptions
 ): MetaView<T, P> => $ => {
-    const field$ = $.field$(key)
+    const field$ = $.$(key)
     if (!field$) console.warn(`No field() key '${key}'`)
     return field$?.view(view, options)
   }

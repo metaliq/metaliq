@@ -72,12 +72,12 @@ export const defaultNavHeaderContent = (options: NavigationOptions = {}): MetaVi
 
 // Test whether a part of the navigation structure contains a route itself or at any descendant level
 const containsRoute = ($: Meta$<any>): boolean =>
-  !!($.term("route") || $.fieldKeys().some(k => containsRoute($.field$(k))))
+  !!($.term("route") || $.fieldKeys().some(k => containsRoute($.$(k))))
 
 const menuItems = ($: Meta$<any>, level: number = 0) => {
   const keys = ($.fieldKeys() || [])
     .filter(key => {
-      const item$ = $.field$(key)
+      const item$ = $.$(key)
       return !item$.term("offMenu") &&
         (item$.term("label") || item$.term("symbol")) &&
         containsRoute(item$)
@@ -88,7 +88,7 @@ const menuItems = ($: Meta$<any>, level: number = 0) => {
     return html`
       <ul class=${`mq-level-${level}`}>
         ${keys.map(key => {
-          const child$ = $.field$(key)
+          const child$ = $.$(key)
           const isSelected = selectedChild$ === child$ // Anywhere in the selection chain
           const isSelectedItem = selectedLeaf$ === child$ // The specifically selected item
           return child$.view(menuItem(isSelected, isSelectedItem, level))

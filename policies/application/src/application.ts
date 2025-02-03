@@ -218,7 +218,7 @@ export const bootstrap: MetaFn<any> = async $ => {
   }
   if (recurse !== false) {
     for (const key of $.fieldKeys()) {
-      const nestedBootstrap = await bootstrap($.field$(key))
+      const nestedBootstrap = await bootstrap($.$(key))
       if (nestedBootstrap) bootstrapped = true
     }
   }

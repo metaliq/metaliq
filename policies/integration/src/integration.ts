@@ -156,7 +156,7 @@ export const op = <I, O> (
         const path = err.path
         let err$: Meta$<any> = $
         while (path.length && err$) {
-          err$ = err$.field$(path.shift() as FieldKey<O>)
+          err$ = err$.$(path.shift() as FieldKey<O>)
         }
         if (err$) err$.state.error = err.message
       }

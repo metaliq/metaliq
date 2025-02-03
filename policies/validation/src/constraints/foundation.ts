@@ -11,7 +11,7 @@ export const equalTo = (equalTo: any, msg?: string): Validator<any> => $ =>
  * Checks equality with another field in the same parent.
  */
 export const sameAs = <T, P>(other: FieldKey<P>, msg?: string): Validator<T, P> => $ => {
-  const otherMeta$ = $.parent$.field$(other)
+  const otherMeta$ = $.parent$.$(other)
   return $.value === otherMeta$.value as any || msg || `Does not match ${otherMeta$.model.label}`
 }
 
@@ -38,7 +38,7 @@ export const blankOr = (other: Validator<string>): Validator<string> => $ =>
   !$.value || other($)
 
 export const siblingsBlankOr = <T, P>(siblings: Array<FieldKey<P>>, other: Validator<T>): Validator<T, P> => $ =>
-  !siblings.map(key => $.parent$.field$(key).value).filter(Boolean).length || other($)
+  !siblings.map(key => $.parent$.$(key).value).filter(Boolean).length || other($)
 
 export const matchRegex = (regex: RegExp, msg?: string): Validator<string> => $ =>
   !!$.value.match(regex) || msg || "Does not match required pattern"

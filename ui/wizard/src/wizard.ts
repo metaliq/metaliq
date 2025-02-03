@@ -98,7 +98,7 @@ metaSetups.push(<T>($: Meta$<T>) => {
 export const getWizardInfo = <T> (wizard$: Meta$<T>): WizardInfo<T> => {
   const stepNames = Object.keys(wizard$.model.fields) as Array<FieldKey<T>>
   const nowIndex = stepNames.indexOf(wizard$.state.step)
-  const nowStep$ = wizard$.field$(stepNames[nowIndex])
+  const nowStep$ = wizard$.$(stepNames[nowIndex])
   return { stepNames, nowIndex, nowStep$ }
 }
 

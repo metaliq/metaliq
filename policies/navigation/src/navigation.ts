@@ -228,12 +228,12 @@ export const getNavSelection = ($: Meta$<any>, {
    */
   mustHave?: MetaFn<any>
 } = {}) => {
-  $ = $.field$($.state.nav?.selected)
+  $ = $.$($.state.nav?.selected)
   const isMustHave = typeof mustHave === "function"
   let have$ = $
   if (recurse) {
     while ($?.state.nav?.selected) {
-      $ = $.field$($.state.nav?.selected)
+      $ = $.$($.state.nav?.selected)
       if (isMustHave && mustHave($)) {
         have$ = $
       }
@@ -322,7 +322,7 @@ export const setNavSelectionResponsive = (width: number): MetaFn<any> => $ => {
 export const goNavRoute: MetaFn<any> = (item$, event) => {
   while (item$ && !item$.model.route) {
     const firstChildKey = item$.fieldKeys()[0]
-    item$ = item$.field$(firstChildKey)
+    item$ = item$.$(firstChildKey)
   }
   event?.preventDefault()
   event?.stopPropagation()

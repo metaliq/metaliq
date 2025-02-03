@@ -191,7 +191,7 @@ export class Meta$<T, P = any> {
   }
 
   on <K extends FieldKey<T>, R = any>(key: FieldKey<T>, metaFn: MetaFn<T[K], T, R>, event?: Event): R {
-    const f$ = this.field$<K>(key as K)
+    const f$ = this.$<K>(key as K)
     return metaFn(f$, event)
   }
 
@@ -247,7 +247,7 @@ export class Meta$<T, P = any> {
   /**
    * Return the nested meta value for the field with the given key.
    */
-  field$ <K extends FieldKey<T>>(key: K): Meta$<T[K], T> {
+  $ <K extends FieldKey<T>>(key: K): Meta$<T[K], T> {
     const meta = this.meta
     if (isMeta(meta)) {
       const fieldMeta = <unknown>meta[key] as Meta<T[K], T>
@@ -262,7 +262,7 @@ export class Meta$<T, P = any> {
    * Return an array of all meta values for fields of this object.
    */
   fields$ (options: IncludeExclude<T> = {}) {
-    return this.fieldKeys(options).map(this.field$)
+    return this.fieldKeys(options).map(this.$)
   }
 
   /**
@@ -270,7 +270,7 @@ export class Meta$<T, P = any> {
    *
    * Unlike the modelKeys function, which takes a model and returns modelled keys,
    * fieldKeys returns keys for unmodelled fields which have been dynamically generated
-   * as a result of a call to {@link field$}.
+   * as a result of a call to {@link $}.
    */
   fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
     if (Array.isArray(this.meta)) return []
@@ -612,7 +612,7 @@ export const $fn = <
  * Return a collection of Meta$ values for each field of the given parent Meta$ value.
  */
 export const fields$: MetaFn<any> = $ =>
-  $.fieldKeys().map(k => $.field$(k))
+  $.fieldKeys().map(k => $.$(k))
 
 /**
  * Return the Meta$ values for each item in a Meta$ of an array type.
