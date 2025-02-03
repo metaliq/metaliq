@@ -159,7 +159,7 @@ Meta$.prototype.view = function (viewTerm?, options?) {
     ? options?.resolver ? viewResolver : undefined
     : options?.resolver || viewResolver
 
-  viewTerm = viewTerm ?? $.model.view ?? resolver($)
+  viewTerm = viewTerm ?? $.model.view ?? resolver?.($)
   if (!viewTerm) {
     return ""
   } else if (Array.isArray(viewTerm)) {
