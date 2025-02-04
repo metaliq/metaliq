@@ -1,7 +1,7 @@
 import { PageInfo } from "@metaliq/publication/lib/page"
 import { Builder, Cleaner, PublicationTarget, Runner } from "@metaliq/publication"
 
-type CopyEntry = string | {
+export type CopyEntry = string | {
   src: string // Within project dir.
   dest?: string // Within destDir. Defaults to same as src
 }
