@@ -108,7 +108,11 @@ export async function generatePage (inDir: string, outDir: string, inPath: strin
     })
   }
 
-  const html = file.value.toString()
+  const html = `
+    <!-- mdc+ ${subPath} -->
+  ${file.value.toString()}
+    <!-- mdc- ${subPath} -->
+  `
     .replace(/`/gm, "\\`") // Escape any remaining backtick characters, for example within code blocks
   const value = fixCodeIndent(htmlTs(html, moduleData))
 
