@@ -232,7 +232,7 @@ export const ifThen = <T, P = any> (
   condition: MetaFn<T, P>,
   thenView: MetaViewTerm<T, P>,
   elseView?: MetaViewTerm<T, P>
-): MetaViewTerm<T, P> => $ =>
+): MetaView<T, P> => $ =>
     condition($) ? $.view(thenView)
       : elseView ? $.view(elseView)
         : ""
