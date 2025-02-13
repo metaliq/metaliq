@@ -12,9 +12,11 @@
     "@metaliq/presentation": "workspace:*",
     "@metaliq/publication": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
+    "@types/jsdom": "21.1.7",
     "@web/dev-server": "0.4.1",
     "commander": "8.2.0",
     "extensionless": "1.5.2",
+    "jsdom": "26.0.0",
     "metaliq": "workspace:*"
   },
   "devDependencies": {

@@ -9,14 +9,18 @@ import { MetaModel } from "metaliq"
 import { webPageApp } from "@metaliq/web-page-app"
 import { PublicationContext, PublicationTarget } from "@metaliq/publication"
 import { link, unlink } from "./linker"
+import { JSDOM } from "jsdom"
 import { installWindowOnGlobal } from "@lit-labs/ssr/lib/dom-shim.js"
 
 export { ApplicationTerms } from "@metaliq/application"
 
 const pExec = promisify(exec)
-installWindowOnGlobal() // Shim to prevent import error in lit
-Object.assign(global, { window: global })
-Object.assign(document, { documentElement: { style: {} } })
+
+// Shim to ensure global window methods available for imported models referencing `lit`
+installWindowOnGlobal()
+// Shim to prevent various other import errors when loading MetaModels
+const { window } = new JSDOM("<!DOCTYPE html><p>Hello world</p>")
+Object.assign(global, { window }, { document: window.document })
 
 const tscPath = join(".", "node_modules", ".bin", "tsc")
 
