@@ -341,9 +341,7 @@ export type StateValue<K extends StateKey> = Policy.State<any>[K]
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
  * Setups should check the policy's term(s) in the MetaModel to determine applicability of any such setup.
  */
-export type MetaSetup<T, P = any> = ($: Meta$<T, P>) => void
-
-export const metaSetups: Array<MetaSetup<any>> = []
+export const metaSetups: Array<MetaFn<any, any, any>> = []
 
 function setupMeta ($: Meta$<any>) {
   for (const metaSetup of metaSetups) {
