@@ -197,7 +197,7 @@ export const field = <T, P, K extends FieldKey<T>> (
   }
 
 Meta$.prototype.fields = function (options?) {
-  return fields(options)(this.value, this)
+  return fields(options)(this)
 }
 
 /**
