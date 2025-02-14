@@ -1,4 +1,4 @@
-import { ConfigurableMetaFn, Meta$, MetaFn, MetaModel, metaSetups } from "metaliq"
+import { ConfigurableMetaFn, Meta$, metaSetups } from "metaliq"
 
 /**
  * Policy registration.
@@ -43,32 +43,4 @@ metaSetups.push($ => {
 export const call = <C, T, P, R>(channel: ConfigurableMetaFn<C, P, T, R>) => (config: C = undefined): R => {
   const $ = policy.channelMap.get(channel)
   if ($) return channel(config)($)
-}
-
-/**
- * This interface should be extended by some shared value provider.
- */
-export interface Shared {
-  // Prevent error on empty interface
-  this?: Shared
-}
-
-/**
- * A useful channel for implementing a shared value store.
- */
-export const getSharedValueChannel = <K extends keyof Shared>(
-  key: K
-): MetaFn<Shared, any, Shared[K]> => $ => {
-    return $.$(key).value
-  }
-
-export const getShared: <K extends keyof Shared>(key?: K) => Shared[K] = call(getSharedValueChannel)
-
-/**
- * A useful base model for a shared values store.
- */
-export const sharedValuesModel: MetaModel<Shared> = {
-  channels: [
-    getSharedValueChannel
-  ]
 }

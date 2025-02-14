@@ -35,6 +35,22 @@ export declare namespace Policy {
      */
     this?: State<T, P>
   }
+
+  /**
+   * This interface can be extended by one or more shared value provider Policies
+   * to define a set of values that are available to all nodes in the meta graph.
+   *
+   * This is useful for creating shared lookups (e.g. current user ID) without extended
+   * data model traversal, and without reverting to other techniques that reduce
+   * testability and reusability such as global object values or module exports.
+   *
+   * All properties added to this type should be optional,
+   * in order that it can be incrementally initialised.
+   */
+  export interface Shared {
+    // Prevent error on empty interface
+    this?: Shared
+  }
 }
 
 /**
@@ -223,6 +239,23 @@ export class Meta$<T, P = any> {
   }
 
   /**
+   * Access a shared values.
+   */
+  getShared <K extends SharedKey>(
+    key: K // TODO: Should be typed as K, but merged keys not recognised. Why?
+  ): Policy.Shared[K] { return shared[key as SharedKey] }
+
+  /**
+   * Set a shared value within.
+   */
+  setShared <K extends SharedKey>(
+    key: K, // TODO: Should be typed as K extends SharedKey, but merged keys not recognised. Why?
+    value: Policy.Shared[K] // TODO: Should be typed as Shared[K], but see above.
+  ): MetaFn<any> { return () => {
+    shared[key as SharedKey] = value
+  }}
+
+  /**
    * Return the raw value of a meta model term, without running it if it is a function.
    */
   raw <K extends TermKey> (key: K, ancestor?: boolean): TermValue<K> {
@@ -338,6 +371,16 @@ export type StateKey = keyof Policy.State<any>
 export type StateValue<K extends StateKey> = Policy.State<any>[K]
 
 /**
+ * A key from a shared data provider
+ */
+export type SharedKey = keyof Policy.Shared
+
+/**
+ * A value from a shared data provider.
+ */
+export type SharedValue<K extends SharedKey> = Policy.Shared[K]
+
+/**
  * Setups are registered by policies to perform any policy-based tasks and state initialisation.
  * Setups should check the policy's term(s) in the MetaModel to determine applicability of any such setup.
  */
@@ -347,6 +390,14 @@ function setupMeta ($: Meta$<any>) {
   for (const metaSetup of metaSetups) {
     metaSetup($)
   }
+}
+
+const shared: Policy.Shared = {}
+/**
+ * Initialise a centralised lookup data provider shared by all nodes in the meta graph.
+ */
+export const initShared = (initSharedVals: Policy.Shared) => {
+  Object.assign(shared, initSharedVals)
 }
 
 /**
