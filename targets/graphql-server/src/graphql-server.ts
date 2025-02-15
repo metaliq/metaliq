@@ -85,8 +85,6 @@ export type GraphQLServerConfig = {
      */
     cloudFnOptions?: CloudFnOptions
 
-    useDomShim?: boolean
-
     /**
      * Files to copy into build.
      * Note, unlike webPageApp, the `res` folder is _not_ copied by default.

@@ -104,13 +104,12 @@ export const graphQLServerBuilder = (
 ): Builder => async ({ model, simplePath, modelName }) => {
   const destDir = config.build?.destDir || "prod/api"
   const cloud = config.build?.cloud || "firebase"
-  const useDomShim = !!config.build?.useDomShim
 
   // Make production javascript
   // TODO: Make schema location configurable
   const schema = await readFile("./gql/schema.gql", "utf8")
   await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
-  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, cloud, config?.build?.cloudFnOptions, useDomShim))
+  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, cloud, config?.build?.cloudFnOptions))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     external: ["apollo-server-cloud-functions", "apollo-server-lambda", "electron", "firebase-functions", "node-fetch", "@supabase/supabase-js", "@sendgrid/mail"]
@@ -125,10 +124,6 @@ export const graphQLServerBuilder = (
     const fileName = i === 0 ? mainFileName : output.fileName
     await ensureAndWriteFile(join(destDir, fileName), output.code)
   }
-
-  // Add package.json
-  const json = JSON.stringify(packageJson[cloud], null, "  ")
-  await ensureAndWriteFile(join(destDir, "package.json"), json)
 
   await ensureAndWriteFile(join(destDir, ".npmrc"), "auto-install-peers=true")
   // Copy additional files
@@ -160,8 +155,7 @@ const indexJs = (
   modelName: string,
   modelPath: string,
   cloud: Cloud,
-  cloudFnOptions: CloudFnOptions = {},
-  useDomShim: boolean
+  cloudFnOptions: CloudFnOptions = {}
 ) => {
   if (cloudFnOptions.vpcConnector) Object.assign(cloudFnOptions, { vpcConnectorEgressSettings: "ALL_TRAFFIC" })
 
@@ -187,7 +181,6 @@ const indexJs = (
   const cloudExport = cloudExportMap[cloud]()
 
   return dedent`
-    ${useDomShim ? "import { installWindowOnGlobal } from \"@lit-labs/ssr/lib/dom-shim\"" : ""}
     import { typeDefs } from "./schema.js"
     import { ${modelName} } from "./${modelPath}.js"
     
@@ -203,52 +196,4 @@ const indexJs = (
     
     ${cloudExport}
   `
-}
-
-const packageJson: Record<Cloud, object> = {
-  firebase: {
-    name: "functions",
-    description: "Cloud Functions for Firebase",
-    scripts: {
-      serve: "firebase emulators:start --only functions",
-      shell: "firebase functions:shell",
-      start: "npm run shell",
-      deploy: "firebase deploy --only functions",
-      logs: "firebase functions:log"
-    },
-    engines: {
-      node: "20"
-    },
-    type: "module",
-    main: "index.js",
-    dependencies: {
-      "@google-cloud/functions-framework": "^3.2.1",
-      "@lit-labs/ssr": "1.0.0",
-      "apollo-server-cloud-functions": "3.6.1",
-      "firebase-admin": "9.8.0",
-      "firebase-functions": "3.14.1",
-      graphql: "16.2.0",
-      lit: "2.0.0",
-      "node-fetch": "3"
-    },
-    devDependencies: {
-      "firebase-functions-test": "0.2.0"
-    },
-    private: true
-  },
-  netlify: {
-    name: "functions",
-    engines: {
-      node: "18"
-    },
-    type: "module",
-    main: "hello.js",
-    dependencies: {
-      "apollo-server-lambda": "3.10.0",
-      graphql: "15.8.0",
-      lit: "2.0.0",
-      "node-fetch": "3"
-    },
-    private: true
-  }
 }
