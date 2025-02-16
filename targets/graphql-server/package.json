@@ -4,18 +4,13 @@
   "version": "1.0.0-beta.139",
   "author": "tstewart@klaudhaus.com",
   "dependencies": {
-    "@apollo/server": "4.11.2",
-    "@firebase/app-compat": "0.1.19",
-    "@firebase/app-types": "0.7.0",
-    "@lit-labs/ssr": "1.0.0",
+    "@apollo/server": "4.11.3",
     "@metaliq/publication": "workspace:*",
     "@metaliq/util": "workspace:*",
     "cors": "2.8.5",
     "dotenv": "16.0.1",
     "express": "4.21.1",
     "find-free-ports": "3.1.1",
-    "firebase-admin": "10.0.1",
-    "firebase-functions": "3.16.0",
     "fs-extra": "10.0.0",
     "graphql": "^16.9.0",
     "metaliq": "workspace:*",
@@ -43,6 +38,7 @@
   },
   "exports": {
     ".": "./lib/graphql-server.js",
-    "./lib/graphql-server-node": "./lib/graphql-server-node.js"
+    "./lib/graphql-server-node": "./lib/graphql-server-node.js",
+    "./lib/default-handler": "./lib/default-handler.js"
   }
 }

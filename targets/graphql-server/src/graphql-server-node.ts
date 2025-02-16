@@ -15,7 +15,7 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import express from "express"
 import cors from "cors"
 import fsExtra, { copy } from "fs-extra"
-import { Cloud, CloudFnOptions, GraphQLServerConfig } from "./graphql-server"
+import { Cloud, GraphQLServerConfig } from "./graphql-server"
 import { ensureAndWriteFile } from "@metaliq/util/lib/fs"
 import { join } from "path"
 import { makeProdJs } from "@metaliq/publication/lib/prod-js"
@@ -24,6 +24,7 @@ import "dotenv/config"
 import findFreePorts from "find-free-ports"
 import sourceMapSupport from "source-map-support"
 import { AddressInfo } from "node:net"
+import { startStandaloneServer } from "@apollo/server/standalone"
 
 sourceMapSupport.install()
 
@@ -51,8 +52,8 @@ export const graphQLServerRunner = (
   if (httpServer) httpServer.close()
 
   // Load the GraphQL schema and resolvers
-  // TODO: Make schema location configurable
-  const typeDefs = await readFile("./gql/schema.gql", "utf8")
+  const schemaPath = config.run.schemaPath || "./gql/schema.gql"
+  const typeDefs = await readFile(schemaPath, "utf8")
 
   // Create the HTTP server that will host the API
   const expressApp = express()
@@ -103,23 +104,25 @@ export const graphQLServerBuilder = (
   config: GraphQLServerConfig = {}
 ): Builder => async ({ model, simplePath, modelName }) => {
   const destDir = config.build?.destDir || "prod/api"
-  const cloud = config.build?.cloud || "firebase"
 
   // Make production javascript
-  // TODO: Make schema location configurable
-  const schema = await readFile("./gql/schema.gql", "utf8")
-  await ensureAndWriteFile("bin/schema.js", schemaJs(schema, cloud))
-  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, cloud, config?.build?.cloudFnOptions))
+  const schemaPath = config.run.schemaPath || "./gql/schema.gql"
+  const schema = await readFile(schemaPath, "utf8")
+  await ensureAndWriteFile("bin/schema.js", dedent`
+    export const typeDefs = \`
+      ${schema}
+    \`
+  `)
+
+  model.publicationTarget
+
+  await ensureAndWriteFile(jsSrc, indexJs(modelName, simplePath, config))
   const prodJsOutputs = await makeProdJs({
     src: jsSrc,
     external: ["apollo-server-cloud-functions", "apollo-server-lambda", "electron", "firebase-functions", "node-fetch", "@supabase/supabase-js", "@sendgrid/mail"]
   })
   await remove(jsSrc)
-  const cloudFileNames: Record<Cloud, string> = {
-    firebase: "index",
-    netlify: "graphql"
-  }
-  const mainFileName = `${cloudFileNames[cloud]}.js`
+  const mainFileName = `${config.build?.jsFilename || "index"}.js`
   for (const [i, output] of prodJsOutputs.entries()) {
     const fileName = i === 0 ? mainFileName : output.fileName
     await ensureAndWriteFile(join(destDir, fileName), output.code)
@@ -138,62 +141,30 @@ export const graphQLServerBuilder = (
   return true
 }
 
-const apolloCloudLib: Record<Cloud, string> = {
-  firebase: "apollo-server-cloud-functions",
-  netlify: "apollo-server-lambda"
-}
-
-const schemaJs = (schema: string, cloud: Cloud) => dedent`
-  import { gql } from "${apolloCloudLib[cloud]}"
-  
-  export const typeDefs = gql\`
-    ${schema}
-  \`
-`
-
 const indexJs = (
   modelName: string,
   modelPath: string,
-  cloud: Cloud,
-  cloudFnOptions: CloudFnOptions = {}
+  config: GraphQLServerConfig
 ) => {
-  if (cloudFnOptions.vpcConnector) Object.assign(cloudFnOptions, { vpcConnectorEgressSettings: "ALL_TRAFFIC" })
-
-  const cloudExportMap: Record<Cloud, () => string> = {
-    firebase: () => dedent`
-      export const graphql = functions
-      .runWith(${JSON.stringify(cloudFnOptions)})
-      .https
-      .onRequest(server.createHandler())
-    `,
-    // In Netlify we need to add the requestContext that is missing from underlying vendia/serverless-express
-    netlify: () => dedent`
-      const apolloHandler = server.createHandler();
-      
-      export const handler = (event, context) => {
-        if (!event.requestContext) {
-          event.requestContext = context;
-        }
-        return apolloHandler(event, context);
-      }
-    `
-  }
-  const cloudExport = cloudExportMap[cloud]()
-
+  const handlerExportName = config.build.handlerExportName || "handler"
+  const handler = config.build.handler
+    ? `${modelName}.publicationTarget.web`
   return dedent`
+    import { ApolloServer } from "@apollo/server"
     import { typeDefs } from "./schema.js"
     import { ${modelName} } from "./${modelPath}.js"
     
-    import { ApolloServer } from "${apolloCloudLib[cloud]}"
-    ${cloud === "firebase" ? "import functions from \"firebase-functions\"" : ""}
+    ${config.build.handler ? "" : 
+      "import { defaultHandler } from \"@metaliq/graphql-server/lib/default-handler\""
+    }
     
     const server = new ApolloServer({ 
       typeDefs, 
-      resolvers: ${modelName}.resolvers,
-      playground: true,
-      introspection: true
+      resolvers: ${modelName}.resolvers
     })
     
-    ${cloudExport}
+    export const ${handlerExportName} = ${config.build.handler
+      ?
+    }
   `
 }
