@@ -19,7 +19,8 @@ const pExec = promisify(exec)
 // Shim to ensure global window methods available for imported models referencing `lit`
 installWindowOnGlobal()
 // Shim to prevent various other import errors when loading MetaModels
-const { window } = new JSDOM("<!DOCTYPE html><p>Hello world</p>")
+const { window } = new JSDOM("<!DOCTYPE html><p></p>")
+window.fetch = fetch
 Object.assign(global, { window }, { document: window.document })
 
 const tscPath = join(".", "node_modules", ".bin", "tsc")
