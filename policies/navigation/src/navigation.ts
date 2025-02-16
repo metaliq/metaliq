@@ -1,7 +1,8 @@
 import { Route, Router } from "./router"
 import { FieldKey, Meta$, MetaFn, MetaFnTerm, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
-import { APPLICATION, bootstrapComplete } from "@metaliq/application"
+import { APPLICATION, bootstrapComplete, init } from "@metaliq/application"
+import { option } from "syncpack/dist/option"
 
 export * from "./router"
 
@@ -185,23 +186,62 @@ metaSetups.push($ => {
   }
 })
 
+export type MapNavDataOptions = {
+  /**
+   * Only map the common data object to a page in a nav structure
+   * if its route is included in this list.
+   *
+   * If no list provided, all routes are included.
+   */
+  includeRoutes?: Array<Route<any>>
+
+  /**
+   * Only map the common data object to a page in a nav structure
+   * if its route is NOT included in this list.
+   *
+   * If no list provided, no routes are excluded..
+   */
+  excludeRoutes?: Array<Route<any>>
+}
+
 /**
- * Convenience method to map all nodes of a navigation model
- * to the same underlying data object.
+ * Convenience method to map a common data object to all nodes of a navigation model.
+ *
+ * This can be a useful and convenient pattern for sharing data across pages
+ * with different MetaModels for each page,
+ * although it is probably better in most cases for a page to manage its own data in
+ * terms such as `onEnter`.
+ *
+ * Pages can be included or excluded from this behaviour.
+ * If both includes and excludes are provided they are cumulative,
+ * i.e. a page has to be both in the includes and NOT in the excludes.
+ * Normally it makes sense to provide only one or the other.
+ *
+ * Excluded nodes are initialised according to their own `init` term.
  */
-export const mapNavData = <M, N> (data: M, navModel?: MetaModel<N>) => {
+export const mapNavData = <M, N> (
+  data: M, navModel: MetaModel<N>, options?: MapNavDataOptions
+) => {
   const navData = {} as N
   const keys = modelKeys(navModel)
   for (const key of keys) {
     const childModel = navModel.fields?.[key] as unknown as MetaModel<unknown>
-    const childKeys = modelKeys(childModel)
-    // Continue recursing if there are nested-level routes
-    const grandChildModels = childKeys.map(ck => childModel.fields[ck]) as Array<MetaModel<unknown>>
-    const hasGrandChildRoutes = grandChildModels.some(s => s.route)
-    const keyModel = hasGrandChildRoutes
-      ? mapNavData(data, childModel)
-      : data
-    Object.assign(navData, { [key]: keyModel })
+    const include = (
+      !options.includeRoutes ||
+      options.includeRoutes?.includes(childModel.route)
+    ) && !options.excludeRoutes?.includes(childModel.route)
+    if (include) {
+      const childKeys = modelKeys(childModel)
+      // Continue recursing if there are nested-level routes
+      const grandChildModels = childKeys.map(ck => childModel.fields[ck]) as Array<MetaModel<unknown>>
+      const hasGrandChildRoutes = grandChildModels.some(s => s.route)
+      const keyData = hasGrandChildRoutes
+        ? mapNavData(data, childModel, options)
+        : data
+      Object.assign(navData, { [key]: keyData })
+    } else {
+      Object.assign(navData, { [key]: init(childModel) })
+    }
   }
   return navData
 }
