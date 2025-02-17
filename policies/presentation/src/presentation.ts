@@ -160,15 +160,20 @@ Meta$.prototype.view = function (viewTerm?, options?) {
     : options?.resolver || viewResolver
 
   viewTerm = viewTerm ?? $.model.view ?? resolver?.($)
-  if (!viewTerm) {
-    return ""
-  } else if (Array.isArray(viewTerm)) {
-    return viewTerm.flat(99).map((each) => $.view(each, options))
-  } else {
-    return (!$.term("hidden") || options?.noHide)
-      ? typeof viewTerm === "function" ? viewTerm($) : viewTerm
-      : ""
+  let result: ViewResult = ""
+  try {
+    if (viewTerm) {
+      if (Array.isArray(viewTerm)) {
+        result = viewTerm.flat(99).map((each) => $.view(each, options))
+      } else if (!$.term("hidden") || options?.noHide) {
+        result = typeof viewTerm === "function" ? viewTerm($) : viewTerm
+      }
+    }
+  } catch (error) {
+    console.warn(`Failed to render view: ${$.path}`)
+    console.error(error)
   }
+  return result
 }
 
 /**
