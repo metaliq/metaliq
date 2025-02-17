@@ -35,7 +35,7 @@ export const webPageAppRunner = (
     const ports = await findFreePorts(1, { startPort: 8400, jobCount: 1 })
     port = ports[0]
   }
-  console.log(`Starting MetaliQ SPA server on port ${port}`)
+  console.log(`Starting MetaliQ web page app server on port ${port}`)
 
   const devServerConfig: DevServerConfig = {
     rootDir: process.cwd(),

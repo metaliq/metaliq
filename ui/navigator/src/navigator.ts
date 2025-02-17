@@ -43,8 +43,10 @@ const hasOwnView: MetaFn<any> = $ => !!$.raw("view")
 
 export const navigator = (options: NavigationOptions = {}): MetaView<any> => $ => {
   const selected$ = getNavSelection($, { mustHave: hasOwnView })
-  const pageView = selected$?.term("view") ?? ""
-  const pageBody = selected$.view(pageView, { noHide: true })
+  const pageBody = selected$?.view(null, {
+    resolver: false,
+    noHide: true
+  })
   return html`
     <div class="mq-navigator">
       ${options.header
