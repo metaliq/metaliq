@@ -211,7 +211,7 @@ Meta$.prototype.fields = function (options?) {
  *
  * This functionality is wrapped by the Meta$ function {@link Presentation$.fields}.
  */
-export const fields = <T = any, P = any> (options: FieldsOptions<T> = {}): MetaView<T, P> => $ => {
+export const fields = <T, P = any> (options: FieldsOptions<T> = {}): MetaView<T, P> => $ => {
   return typeof $.value === "object"
     ? $.fieldKeys(options).map(key => $.field(key, options.view, options as ViewOptions))
     : ""

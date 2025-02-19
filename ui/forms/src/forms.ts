@@ -129,6 +129,13 @@ export const isDisabled: MetaFn<any, any, boolean> = $ => {
 }
 
 /**
+ * Tests whether a field is enabled.
+ *
+ * As with isDisabled, takes account of any parent-level disablement / enablement.
+ */
+export const isEnabled: MetaFn<any> = $ => !isDisabled($)
+
+/**
  * A standard set of field classes for the meta.
  * Can pass the meta info $ object (recommended)
  * or its associated data value (not a primitive).

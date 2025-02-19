@@ -10,5 +10,9 @@
   "types": "lib/metaliq.d.ts",
   "typedocOptions": {
     "entryPoints": ["./src/*.ts"]
+  },
+  "exports": {
+    ".": "./lib/metaliq.js",
+    "./lib/fns": "./lib/fns.js"
   }
 }

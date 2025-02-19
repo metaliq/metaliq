@@ -641,13 +641,6 @@ export const onDescendants = (metaFn: MetaFn<any>, onBase: boolean = true): Meta
 }
 
 /**
- * Return the result of the given function on the given child field.
- */
-export function on <T, K extends FieldKey<T>> (key: K, metaFn: MetaFn<T[K]>): MetaFn<T> {
-  return ($, event) => $.on(key, metaFn, event)
-}
-
-/**
  * Convert a plain function for a value of type T
  * (or a MetaliQ V1 style meta function)
  * into a MetaFn for data type T.
@@ -671,3 +664,5 @@ export const items$: MetaFn<any[]> = $ => {
     return $.meta.map(m => m.$)
   }
 }
+
+export * from "./fns"
