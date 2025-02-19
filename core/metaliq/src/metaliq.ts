@@ -292,13 +292,6 @@ export class Meta$<T, P = any> {
   }
 
   /**
-   * Return an array of all meta values for fields of this object.
-   */
-  fields$ (options: IncludeExclude<T> = {}) {
-    return this.fieldKeys(options).map(this.$)
-  }
-
-  /**
    * Get an array of keys of all child fields.
    *
    * Unlike the modelKeys function, which takes a model and returns modelled keys,
@@ -307,7 +300,10 @@ export class Meta$<T, P = any> {
    */
   fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
     if (Array.isArray(this.meta)) return []
-    const allKeys = Array.from(new Set([...modelKeys(this.model), ...Object.keys(this.meta)]))
+    const allKeys = Array.from(new Set([
+      ...modelKeys(this.model),
+      ...(options.dynamic ? Object.keys(this.meta) : [])
+    ]))
       .filter(k => k !== "$") as Array<FieldKey<T>>
     return includeExclude(allKeys, options)
   }
@@ -469,7 +465,8 @@ export function metafy <T, P = any> (
       metafy(model.items || {}, item, parent$, key, itemMeta, itemIndex)
     }
   } else {
-    for (const fieldKey of result.$.fieldKeys()) {
+    // Remetafy all child fields includeing dynamically created ones
+    for (const fieldKey of result.$.fieldKeys({ dynamic: true })) {
       const fieldValue = value?.[fieldKey]
       const fieldModel = result.$.model.fields?.[fieldKey] || {}
       const fieldMeta = (result[fieldKey] ?? null) as Meta<any> // Re-attach to the existing meta
@@ -509,7 +506,7 @@ export const relink = <T>($: Meta$<T>) => {
   if (typeof ($.value ?? false) === "object") {
     Object.assign($.value, { $ })
     if (isMeta<T>($.meta)) {
-      for (const key of $.fieldKeys()) {
+      for (const key of $.fieldKeys({ dynamic: true })) {
         relink($.meta[key].$ as Meta$<any>)
       }
     } else if (isMetaArray($.meta)) {
@@ -564,8 +561,21 @@ export type FieldType<Parent, Key extends FieldKey<Parent>> = Parent[Key]
  * A type for including in options for functions that can include or exclude certain keys.
  */
 export type IncludeExclude<T> = {
+  /**
+   * Include these field keys.
+   */
   include?: Array<FieldKey<T>>
+  /**
+   * Exclude these field keys.
+   */
   exclude?: Array<FieldKey<T>>
+  /**
+   * Include dynamically generated fields.
+   * By default only fields defined in the original model are included.
+   * Specifiying `dynamic: true` includes fields that have been dynamically added
+   * using `field` functions from elsewhere.
+   */
+  dynamic?: boolean
 }
 
 /**
