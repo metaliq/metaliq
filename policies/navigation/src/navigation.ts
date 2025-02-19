@@ -2,7 +2,6 @@ import { Route, Router } from "./router"
 import { FieldKey, Meta$, MetaFn, MetaFnTerm, MetaModel, metaSetups, modelKeys, onDescendants, root$ } from "metaliq"
 import { catchUp } from "@metaliq/up"
 import { APPLICATION, bootstrapComplete, init } from "@metaliq/application"
-import { option } from "syncpack/dist/option"
 
 export * from "./router"
 
@@ -225,7 +224,7 @@ export const mapNavData = <M, N> (
   const navData = {} as N
   const keys = modelKeys(navModel)
   for (const key of keys) {
-    const childModel = navModel.fields?.[key] as unknown as MetaModel<unknown>
+    const childModel = navModel.fields?.[key] as MetaModel<any>
     const include = (
       !options.includeRoutes ||
       options.includeRoutes?.includes(childModel.route)
@@ -233,7 +232,7 @@ export const mapNavData = <M, N> (
     if (include) {
       const childKeys = modelKeys(childModel)
       // Continue recursing if there are nested-level routes
-      const grandChildModels = childKeys.map(ck => childModel.fields[ck]) as Array<MetaModel<unknown>>
+      const grandChildModels = childKeys.map(ck => childModel.fields[ck]) as Array<MetaModel<any>>
       const hasGrandChildRoutes = grandChildModels.some(s => s.route)
       const keyData = hasGrandChildRoutes
         ? mapNavData(data, childModel, options)
