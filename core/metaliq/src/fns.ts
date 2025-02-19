@@ -5,12 +5,17 @@
 import { FieldKey, type MetaFn } from "./metaliq"
 
 /**
- * Returns the field value.
+ * Returns the key of this node in the graph.
+ */
+export const key: MetaFn<any> = $ => $.key
+
+/**
+ * Returns the data value.
  */
 export const val: MetaFn<any> = $ => $.value
 
 /**
- * Sets and returns the field value.
+ * Sets and returns the data value.
  */
 export const set = <T>(value: T): MetaFn<T> => $ => {
   $.value = value
@@ -71,3 +76,14 @@ export const isNotNull: MetaFn<any> = $ => ($.value ?? null) !== null
  * Return the length of an array or string data value.
  */
 export const length: MetaFn<any[] | string> = $ => $.value.length
+
+/**
+ * Log the given function. Useful for debugging.
+ */
+export const debug = <T, P, R>(fn: MetaFn<T, P, R>): MetaFn<T, P, R> => $ => {
+  if (!(typeof global === "object" && typeof global.process === "object")) {
+    // eslint-disable-next-line no-debugger
+    debugger
+  }
+  return fn($)
+}
