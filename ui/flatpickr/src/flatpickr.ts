@@ -6,16 +6,15 @@ import flatpickr from "flatpickr"
 import { up } from "@metaliq/up"
 import { DateLimit } from "flatpickr/dist/types/options"
 import { hasValue, validate } from "@metaliq/validation"
-import { fieldContainer, isDisabled } from "@metaliq/forms"
+import { fieldContainer, FieldOptions, isDisabled } from "@metaliq/forms"
 import { Meta$ } from "metaliq"
+import { TERMINOLOGY } from "@metaliq/terminology"
 import Instance = flatpickr.Instance
 import FPOptions = flatpickr.Options.Options
-import { TERMINOLOGY } from "@metaliq/terminology"
 
 TERMINOLOGY()
 
-export type DatePickerOptions = {
-  classes?: string
+export type DatePickerOptions = FieldOptions<any> & {
   labelTrigger?: boolean
   disable?: DateLimit[]
 
