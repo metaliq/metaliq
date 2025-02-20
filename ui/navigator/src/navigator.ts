@@ -108,11 +108,15 @@ const menuItem = (
   const text = navItem$.term("labelView") ?? navItem$.term("label")
   const icon = navItem$.term("symbol")
   return html`
-    <li @click=${(evt: Event) => menuItemClick(isSelected)(navItem$, evt)} class=${classMap({
-      "mq-nav-selected": isSelected,
-      "mq-nav-selected-item": isSelectedItem,
-      "mq-nav-no-icon": !icon
-    })}>
+    <li @click=${(evt: Event) => menuItemClick(isSelected)(navItem$, evt)} 
+      class=${classMap({
+        "mq-nav-selected": isSelected,
+        "mq-nav-selected-item": isSelectedItem,
+        "mq-nav-no-icon": !icon
+      })}
+      data-mq-field-key=${navItem$.key}
+      data-mq-field-path=${navItem$.path}
+    >
       ${icon
         ? html`<i class=${ifDefined(icon)}>`
         : navItem$.model.controlView
