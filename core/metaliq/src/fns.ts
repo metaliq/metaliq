@@ -2,12 +2,17 @@
  * A collection of meta functions useful in functional composition patterns.
  */
 
-import { FieldKey, type MetaFn } from "./metaliq"
+import { FieldKey, type MetaFn, TermKey } from "./metaliq"
 
 /**
  * Returns the key of this node in the graph.
  */
 export const key: MetaFn<any> = $ => $.key
+
+/**
+ * Return the value of a term, or derived value of a dynamic term.
+ */
+export const term = (key: TermKey): MetaFn<any> => $ => $.term(key)
 
 /**
  * Returns the data value.
