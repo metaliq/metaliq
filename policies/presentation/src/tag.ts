@@ -11,6 +11,7 @@ export type TagOptions<T, P = any> = {
   id?: string
   classes?: MaybeFn<T, P, CssClass[]>
   onClick?: MetaFn<T, P>
+  title?: string
 }
 
 /**
@@ -105,7 +106,8 @@ export const tagFactory = <T = any, P = any>(
       <${tagLiteral} 
         id=${options.id || nothing} 
         class=${classes.join(" ") || nothing}
-        @click=${onClick}
+        @click=${onClick || nothing}
+        title=${options.title || nothing}
       >
         ${$.view(body)}
       </${tagLiteral}>
