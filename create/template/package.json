@@ -41,7 +41,7 @@
     "@metaliq/validation": "workspace:*",
     "@metaliq/web-page-app": "workspace:*",
     "bootstrap-icons": "1.10.5",
-    "graphqlex": "0.16.0",
+    "graphqlex": "0.18.0",
     "lit": "^3.1.4",
     "metaliq": "workspace:*"
   },
@@ -63,7 +63,7 @@
     "eslint-plugin-n": "^16.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "graphql": "^16.9.0",
-    "graphqlex-codegen": "0.21.0",
+    "graphqlex-codegen": "0.23.0",
     "typescript": "^5.2.2"
   },
   "typedocOptions": {
