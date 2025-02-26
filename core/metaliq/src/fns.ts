@@ -2,7 +2,7 @@
  * A collection of meta functions useful in functional composition patterns.
  */
 
-import { FieldKey, type MetaFn, TermKey } from "./metaliq"
+import { FieldKey, isMetaArray, type MetaFn, TermKey } from "./metaliq"
 
 /**
  * Returns the key of this node in the graph.
@@ -92,6 +92,20 @@ export const isNull: MetaFn<any> = $ => ($.value ?? null) === null
  * Return the length of an array or string data value.
  */
 export const length: MetaFn<any[] | string> = $ => $.value.length
+
+/**
+ * Return the result of mapping the given array meta value over the given function.
+ */
+export const map = <T, R>(
+  fn: MetaFn<T extends Array<infer I> ? I : never, any, R>
+): MetaFn<T, any, R[]> => $ => {
+    const meta = $.meta
+    if (isMetaArray(meta)) {
+      return meta.map(m => fn(m.$))
+    } else {
+      return []
+    }
+  }
 
 /**
  * Log the given function. Useful for debugging.
