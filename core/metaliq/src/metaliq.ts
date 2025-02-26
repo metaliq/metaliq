@@ -294,9 +294,21 @@ export class Meta$<T, P = any> {
   /**
    * Get an array of keys of all child fields.
    *
-   * Unlike the modelKeys function, which takes a model and returns modelled keys,
-   * fieldKeys returns keys for unmodelled fields which have been dynamically generated
-   * as a result of a call to {@link $}.
+   * If no options are provided, the original model field keys values are returned.
+   *
+   * If the `dynamic` option is set, keys for unmodelled fields which have been dynamically generated
+   * as a result of a call to {@link $} are also returned.
+   *
+   * If an include options is provided, it replaces the default keys as the base set,
+   * allowing for both the specification of a subset of fields for inclusion,
+   * and the inclusion of valid dynamically generated keys that are not specified in a model.
+   *
+   * If an exclude option is provided, any specified keys are NOT returned.
+   *
+   * If both options are included they are cumulative,
+   * i.e. the field must appear in includes and NOT appear in excludes.
+   *
+   * If an includes option is provided, keys will be returned in that order.
    */
   fieldKeys (options: IncludeExclude<T> = {}): Array<FieldKey<T>> {
     if (Array.isArray(this.meta)) return []
@@ -579,13 +591,10 @@ export type IncludeExclude<T> = {
 }
 
 /**
- * Return the subset of the given keys that match the given IncludeExclude options.
+ * Include / exclude field key utility, used by `fieldKeys` and `modelKeys`.
  */
-export const includeExclude = <T>(keys: Array<FieldKey<T>>, options?: IncludeExclude<T>) => {
-  if (options?.include) return keys.filter(k => options.include.includes(k))
-  else if (options?.exclude) return keys.filter(k => !options.exclude.includes(k))
-  else return keys
-}
+export const includeExclude = <T>(keys: Array<FieldKey<T>>, options?: IncludeExclude<T>) =>
+  (options.include || keys).filter(k => !options.exclude?.includes(k))
 
 /**
  * Return the field keys of a given MetaModel.

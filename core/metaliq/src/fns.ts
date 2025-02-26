@@ -63,8 +63,14 @@ export const onParent = <T = any, P = any, R = any> (fn: MetaFn<P, any, R> = val
 /**
  * Returns true if the data is equal to the given value.
  */
-export const isEqualTo = <T = any, P = any> (value: T): MetaFn<T, P, boolean> => $ =>
+export const is = <T = any, P = any> (value: T): MetaFn<T, P, boolean> => $ =>
   $.value === value
+
+/**
+ * Returns true if the data is equal to the given value.
+ */
+export const isNot = <T = any, P = any> (value: T): MetaFn<T, P, boolean> => $ =>
+  $.value !== value
 
 /**
  * Returns the data value or a fallback value if null or undefined.
@@ -76,6 +82,11 @@ export const valOr = <T = any, P = any> (value: T): MetaFn<T, P, T> => $ =>
  * Returns true if the data value is NOT null or undefined.
  */
 export const isNotNull: MetaFn<any> = $ => ($.value ?? null) !== null
+
+/**
+ * Returns true if the value is `null` or `undefined`.
+ */
+export const isNull: MetaFn<any> = $ => ($.value ?? null) === null
 
 /**
  * Return the length of an array or string data value.
