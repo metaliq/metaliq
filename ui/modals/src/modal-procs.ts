@@ -8,7 +8,7 @@ export const modalDefaults = {
   progressIndicator: "bi-arrow-repeat mq-modal-progress-indicator"
 }
 
-const closeButton: ModalButton = {
+export const closeModalButton: ModalButton = {
   label: modalDefaults.closeLabel,
   up: () => { closeModal() }
 }
@@ -29,7 +29,7 @@ export const showModal = call(showModalChannel)
 export const closeModal = call(closeModalChannel)
 
 export const showMessage = (body: ViewResult, title: string = "") => {
-  showModal({ title, body, buttons: [closeButton] })
+  showModal({ title, body, buttons: [closeModalButton] })
 }
 
 export const showProgress = (body: ViewResult, title: string = "") => {
