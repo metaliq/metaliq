@@ -82,6 +82,11 @@ export type FieldOptions<T, P = any> = {
    * "text" | "checkbox" | "number" | "tel".
    */
   type?: string
+
+  /**
+   * Override the field's associated disabled state.
+   */
+  disabled?: MaybeFn<boolean>
 }
 
 /**
@@ -99,7 +104,7 @@ export type InputOptions<T, P = any> = FieldOptions<T> & {
  * To get full use of all options use `inputField`.
  */
 export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T, P> => $ => {
-  const disabled = isDisabled($)
+  const disabled = isFieldDisabled(options)($)
   return html`
     <input type=${options.type || "text"}
       ?disabled=${disabled}
@@ -129,6 +134,13 @@ export const isDisabled: MetaFn<any, any, boolean> = $ => {
 }
 
 /**
+ * Determines whether the field is disabled either by the optional field options
+ * or by its own or parent's disabled state.
+ */
+export const isFieldDisabled = (options: FieldOptions<any>): MetaFn<any, any, boolean> => $ =>
+  $?.maybeFn(options.disabled) ?? isDisabled($)
+
+/**
  * Tests whether a field is enabled.
  *
  * As with isDisabled, takes account of any parent-level disablement / enablement.
@@ -140,11 +152,11 @@ export const isEnabled: MetaFn<any> = $ => !isDisabled($)
  * Can pass the meta info $ object (recommended)
  * or its associated data value (not a primitive).
  */
-export const fieldClasses: MetaFn<any> = $ => ({
+export const fieldClasses = (options: FieldOptions<any>): MetaFn<any> => $ => ({
   "mq-mandatory": $.term("mandatory"),
   "mq-active": $.state.active,
   "mq-populated": hasValue($),
-  "mq-disabled": isDisabled($)
+  "mq-disabled": isFieldDisabled(options)($)
 })
 
 /**
@@ -177,7 +189,7 @@ export const fieldContainer = <T, P = any>(options?: FieldOptions<T, P>): MetaVi
       class="mq-field ${classMap({
         [options?.classes]: !!options?.classes,
         [`mq-${options?.type || "text"}-field`]: options?.type,
-        ...fieldClasses($)
+        ...fieldClasses(options)($)
       })}">
       ${fieldLabel(options)($)}
       ${$.view(fieldContent)}
@@ -265,10 +277,11 @@ export type ButtonOptions<T, P = any> = FieldOptions<T, P> & {
 export const button = <T, P = any>(
   options: ButtonOptions<T, P> = {}
 ): MetaView<T, P> => $ => html`
-  <button ?disabled=${isDisabled($)}
+  <button
     class="mq-button ${options.classes ?? ""} ${
       options.type ? `mq-${options.type}-button` : ""
     }"
+    ?disabled=${isFieldDisabled(options)($)}
     @click=${$.up(options.onClick)}>
     ${$?.maybeFn(options.label) ?? $?.term("label") ?? options.label}
   </button> 

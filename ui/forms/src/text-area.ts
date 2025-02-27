@@ -1,4 +1,4 @@
-import { errorMsg, fieldClasses, fieldLabel, FieldOptions, isDisabled } from "./forms"
+import { errorMsg, fieldClasses, fieldLabel, FieldOptions, isDisabled, isFieldDisabled } from "./forms"
 import { MetaView } from "@metaliq/presentation"
 import { html } from "lit"
 import { classMap } from "lit/directives/class-map.js"
@@ -14,13 +14,13 @@ export type TextAreaOptions = FieldOptions<string> & {
 
 export const textArea = (options: TextAreaOptions = {}): MetaView<string> => $ => html`
   <label class="mq-field mq-text-area-field ${
-    classMap({ [options.classes]: !!options.classes, ...fieldClasses($) })
+    classMap({ [options.classes]: !!options.classes, ...fieldClasses(options)($) })
   }">
     ${fieldLabel(options)($)}
     <textarea 
       cols=${ifDefined(options.cols)}
       rows=${options.rows ?? 3}
-      ?disabled=${isDisabled($)}
+      ?disabled=${isFieldDisabled(options)($)}
       class="mq-input ${classMap({
         "mq-error-field": $.state.error,
         "mq-disabled": isDisabled($)

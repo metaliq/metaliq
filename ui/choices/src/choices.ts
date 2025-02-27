@@ -105,7 +105,7 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
     choicesJs.setChoices($.state.choices, "value", "label", true)
   }
 
-  const disabled = isDisabled($)
+  const disabled = $?.maybeFn(options.disabled) ?? isDisabled($)
 
   if (typeof options.choices === "function") {
     const oldChoices = JSON.parse(JSON.stringify(
