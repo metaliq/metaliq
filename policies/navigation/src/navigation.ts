@@ -134,6 +134,9 @@ metaSetups.push($ => {
   const model = $.model
   // If this model has a route, initialise any route handling functions
   if (model?.route) {
+    if (!model.route.pattern.match(/^\//)) {
+      console.warn(`Model ${$.key} route pattern is not absolute: ${model.route.pattern}`)
+    }
     policy.route$s.set(model.route, $)
     if (model.onLeave) {
       model.route.onLeave = async (params) => {
