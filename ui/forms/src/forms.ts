@@ -86,7 +86,7 @@ export type FieldOptions<T, P = any> = {
   /**
    * Override the field's associated disabled state.
    */
-  disabled?: MaybeFn<boolean>
+  disabled?: MaybeFn<T, P ,boolean>
 }
 
 /**
@@ -105,6 +105,9 @@ export type InputOptions<T, P = any> = FieldOptions<T> & {
  */
 export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T, P> => $ => {
   const disabled = isFieldDisabled(options)($)
+  const clickHandler = options.type === "checkbox"
+    ? up(onInput(options), $, { doDefault: true })
+    : undefined
   return html`
     <input type=${options.type || "text"}
       ?disabled=${disabled}
@@ -115,7 +118,7 @@ export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T,
       .value=${live(options.formatter?.($) ?? $.value ?? "")}
       @focus=${up(onFocus, $)}
       @blur=${up(onBlur(options), $)}
-      @click=${options.type === "checkbox" ? up(onInput(options), $, { doDefault: true }) : () => {}}
+      @click=${ifDefined(clickHandler)}
       .checked=${options.type === "checkbox" && $.value}
       autocomplete=${ifDefined(options.autocomplete)}
     />
