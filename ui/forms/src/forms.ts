@@ -132,7 +132,7 @@ export const input = <T, P = any>(options: InputOptions<T, P> = {}): MetaView<T,
  * and then ascending through its ancestors. If none is found, return false.
  */
 export const isDisabled: MetaFn<any, any, boolean> = $ => {
-  const result = $.term("disabled", true)
+  const result = $?.term("disabled", true)
   return !!result
 }
 
@@ -285,7 +285,7 @@ export const button = <T, P = any>(
       options.type ? `mq-${options.type}-button` : ""
     }"
     ?disabled=${isFieldDisabled(options)($)}
-    @click=${$.up(options.onClick)}>
+    @click=${up(options.onClick, $)}>
     ${$?.maybeFn(options.label) ?? $?.term("label") ?? options.label}
   </button> 
 `
