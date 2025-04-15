@@ -163,6 +163,8 @@ export class Router {
           this.currentRoute = route
           if (this.onHandled) await this.onHandled()
         } catch (error) {
+          console.log(`Failed to navigate to ${window.location.pathname} due to error:`)
+          console.error(error)
           revert()
         }
         return
