@@ -24,6 +24,8 @@ type ChoicesJs = {
   setChoiceByValue: (v: string) => void
   clearChoices: () => void
   clearStore: () => void
+  enable: () => void
+  disable: () => void
 }
 
 export type SelectorOptions<T, P = any> = FieldOptions<T, P> & {
@@ -70,6 +72,7 @@ interface SelectorState {
   choices?: ChoicesModule.Choice[]
   choicesJs?: ChoicesJs
   choicesValue: any
+  choicesDisabled: boolean
 }
 
 declare module "metaliq" {
@@ -105,7 +108,16 @@ export const innerSelector = <T, P = any>(options: SelectorOptions<T, P> = {}): 
     choicesJs.setChoices($.state.choices, "value", "label", true)
   }
 
-  const disabled = $?.maybeFn(options.disabled) ?? isDisabled($)
+  const disabled = !!($?.maybeFn(options.disabled) ?? isDisabled($))
+
+  if ($.state.choicesJs && typeof $.state.choicesDisabled === "boolean" && $.state.choicesDisabled !== disabled) {
+    if (disabled) {
+      $.state.choicesJs.disable()
+    } else {
+      $.state.choicesJs.enable()
+    }
+  }
+  $.state.choicesDisabled = disabled
 
   if (typeof options.choices === "function") {
     const oldChoices = JSON.parse(JSON.stringify(
