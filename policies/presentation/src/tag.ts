@@ -2,6 +2,10 @@ import { html, literal } from "lit/static-html.js"
 import { CssClass, MetaView, MetaViewTerm } from "./presentation"
 import { nothing } from "lit"
 import { isMetaFn, MaybeFn, MetaFn } from "metaliq"
+import { APPLICATION } from "@metaliq/application"
+
+// TODO: Move tags to their own package and remove dependency of Presentation on Application
+APPLICATION()
 
 /**
  * Options to support additional functionality, e.g. click handling.

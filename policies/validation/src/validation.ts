@@ -15,11 +15,25 @@ export interface ValidationTerms<T, P = any> {
 }
 
 export interface ValidationState {
-  validated?: boolean // Indicates that this field has been visited for validation
+  /**
+   * Indicates that this field has been visited for validation
+   */
+  validated?: boolean
+
+  /**
+   * The boolean result from a Validator is reversed for the value of `error` on the state properties.
+   *
+   * i.e. a Validator result of `false` (no error) produces a `state.error` value of `true`.
+   *
+   * The ValidationResult type is used for both for conciseness as it is a simple union of boolean and string.
+   * HOWEVER the meaning of the boolean form is inverted.
+   */
   error?: ValidationResult // An error message string or true for an unspecified error,
+
+  /**
+   * A collection of the results of all validators of this model and nested models.
+   */
   allErrors?: Array<Meta$<any>>
-  active?: boolean
-  showing?: boolean // Support animated hide/show
 }
 
 declare module "metaliq" {
@@ -68,7 +82,7 @@ let requiredLabelFn: MetaFn<any, any, string> = $ =>
  * or its associated data value (not a primitive).
  * Sets the `validated` state to true and the `error` state according to the validation result.
  * Note that a boolean result from a Validator is reversed for the value of `error` on the state properties.
- * i.e. a Validator result of `false` (no error) produces a `props.error` value of `true`.
+ * i.e. a Validator result of `false` (no error) produces a `state.error` value of `true`.
  *
  * Returns the validation result.
  *

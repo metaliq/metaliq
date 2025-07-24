@@ -104,10 +104,11 @@ Meta$.prototype.up = function (metaFnTerm, options) {
 }
 
 /**
- * Run a MetaModel - initialise its data value and set `up`
- * state transition management with any specified logging.
+ * Run or re-run a MetaModel, attaching it to an `up` state management process.
+ *
+ * If an initialized (or deserialized) Meta is passed, just attach to new `up`.
  */
-export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
+export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>, value?: T) {
   let model: MetaModel<T>
   let meta: Meta<T>
   // Determine whether a model or an initialised meta was passed
@@ -117,8 +118,7 @@ export async function run<T> (modelOrMeta: MetaModel<T> | Meta<T>) {
     init(model)
   } else {
     model = modelOrMeta as MetaModel<T>
-    const value = init(model)
-    meta = metafy(model, value)
+    meta = metafy(model, value || init(model))
   }
 
   const log = model.log || false

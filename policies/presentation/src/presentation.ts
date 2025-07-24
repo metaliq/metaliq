@@ -1,9 +1,5 @@
 import { render, TemplateResult } from "lit"
-import { FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, relink } from "metaliq"
-import { PUBLICATION } from "@metaliq/publication"
-import { APPLICATION } from "@metaliq/application"
-import { TERMINOLOGY } from "@metaliq/terminology"
-import { VALIDATION } from "@metaliq/validation"
+import { FieldKey, IncludeExclude, isMetaArray, meta$, Meta$, MetaFn, Policy, relink } from "metaliq"
 
 export * from "./tag"
 
@@ -11,10 +7,6 @@ export * from "./tag"
  * Policy registration.
  */
 export const PRESENTATION = () => {}
-PUBLICATION()
-APPLICATION()
-TERMINOLOGY()
-VALIDATION()
 
 export interface PresentationTerms<T, P> {
   /**
@@ -163,13 +155,16 @@ Meta$.prototype.view = function (viewTerm?, options?) {
   let result: ViewResult = ""
   try {
     if (viewTerm) {
+      // Enable optional inclusion of terminology policy
+      const HIDDEN = "hidden" as keyof Policy.Terms<any>
       if (Array.isArray(viewTerm)) {
         result = viewTerm.flat(99).map((each) => $.view(each, options))
-      } else if (!$.term("hidden") || options?.noHide) {
+      } else if (!$.term(HIDDEN) || options?.noHide) {
         result = typeof viewTerm === "function" ? viewTerm($) : viewTerm
       }
     }
   } catch (error) {
+    // Warn of single view failure rather than halt whole view process
     console.warn(`Failed to render view: ${$.path}`)
     console.error(error)
   }
@@ -249,12 +244,30 @@ export const ifThen = <T, P = any> (
 export const content = (textOrHtml: ViewResult): MetaView<any> => () => textOrHtml
 
 /**
- * The `renderPage` meta function can be provided to the `review` term from the app policy
+ * The `renderPage` meta function can be used as the `review` term from the app policy
  * to produce a global-state single page app.
  */
 export const renderPage: MetaFn<any> = $ => {
-  document.title = $.term("label")
+  // Enable optional inclusion of terminology policy
+  const LABEL = "label" as keyof Policy.Terms<any>
+  const newLabel = $.term(LABEL) as string
+  if (newLabel) {
+    document.title = newLabel
+  }
   render($.view(), document.body)
+}
+
+/**
+ * The `renderElement` meta function can be used as the `review` term when a model view
+ * should be rendered in a particular element.
+ */
+export const renderElement = (selector: string): MetaFn<any> => $ => {
+  const el = document.querySelector(selector)
+  if (el instanceof HTMLElement) {
+    render($.view(), el)
+  } else {
+    console.warn(`No element found for selector '${selector}'`)
+  }
 }
 
 /**
